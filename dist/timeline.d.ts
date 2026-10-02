@@ -1,4 +1,4 @@
-import { type Scene } from "./schema.js";
+import type { Scene } from "./schema.js";
 /** Exported so scrubbers, effects, and exporters share the exact same clock. */
 export declare function sceneTime(scene: Scene, seconds: number): number;
 /**

@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { isSceneAssetUrl, MAX_INLINE_IMAGE_BYTES } from "./assets.js";
+import { FORBIDDEN_KEYS, MAX_MESSAGES, pointerSegments, readPointer } from "./pointer.js";
+export { INTEGER_FIELD_PATTERNS, isIntegerField, MAX_MESSAGES, pointerSegments, readPointer, writePointer, } from "./pointer.js";
 /** v1 is an immutable wire contract. Introduce a new version for incompatible changes. */
 export const SCENE_VERSION = 1;
 export const MAX_SCENE_BYTES = 262_144;
-export const MAX_MESSAGES = 160;
 export const MAX_DURATION = 300;
 const id = z
     .string()
@@ -520,43 +521,6 @@ const SceneBaseSchema = z.strictObject({
         .default({ duration: 8, loop: true, fps: 30, tracks: [] }),
     extensions,
 });
-const forbidden = new Set(["__proto__", "prototype", "constructor"]);
-/** Standard RFC 6901 pointers, own-properties only; prototype traversal is never permitted. */
-export function pointerSegments(path) {
-    if (!path.startsWith("/") || /~(?![01])/u.test(path))
-        throw new Error("Invalid JSON pointer");
-    const parts = path
-        .slice(1)
-        .split("/")
-        .map((part) => part.replace(/~1/g, "/").replace(/~0/g, "~"));
-    if (parts.some((part) => !part || forbidden.has(part)))
-        throw new Error("Unsafe JSON pointer");
-    return parts;
-}
-export function readPointer(root, path) {
-    let value = root;
-    for (const part of pointerSegments(path)) {
-        if (!value || typeof value !== "object" || !Object.hasOwn(value, part))
-            throw new Error(`Unknown animation path: ${path}`);
-        if (Array.isArray(value) && !/^(?:0|[1-9]\d*)$/.test(part))
-            throw new Error("Invalid array index");
-        value = value[part];
-    }
-    return value;
-}
-export function writePointer(root, path, next) {
-    const parts = pointerSegments(path);
-    const key = parts.pop();
-    const parent = parts.length
-        ? readPointer(root, "/" +
-            parts
-                .map((part) => part.replace(/~/g, "~0").replace(/\//g, "~1"))
-                .join("/"))
-        : root;
-    if (!parent || typeof parent !== "object" || !Object.hasOwn(parent, key))
-        throw new Error(`Unknown animation path: ${path}`);
-    parent[key] = next;
-}
 function unwrapSchema(schema) {
     while (schema instanceof z.ZodOptional || schema instanceof z.ZodDefault)
         schema = schema.unwrap();
@@ -783,7 +747,7 @@ function inspectJson(value, ancestors = new Set(), depth = 0, budget = { nodes: 
         throw new Error("Scene must contain plain JSON objects");
     ancestors.add(value);
     for (const [key, child] of Object.entries(value)) {
-        if (forbidden.has(key))
+        if (FORBIDDEN_KEYS.has(key))
             throw new Error("Scene contains an unsafe object key");
         inspectJson(child, ancestors, depth + 1, budget);
     }
