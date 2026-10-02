@@ -37,6 +37,19 @@ export function watermarkStyle(sceneId, seconds) {
         background: `linear-gradient(${Math.round(125 + seconds * 4)}deg, hsl(${hue(0)} 35% 16%), hsl(${hue(2.1)} 38% 24%) 55%, hsl(${hue(4.2)} 32% 15%))`,
     };
 }
+/**
+ * The phone scaled to the width of its container, with no script: the wrapper
+ * keeps the device's aspect ratio and the device scales by CSS alone. Use it
+ * for responsive pages; use `Phone` when you size the device yourself.
+ */
+export function PhoneFit({ className, style, ...props }) {
+    const { width, height } = props.scene.device;
+    return (_jsx("div", { className: className ? `tm-fit ${className}` : "tm-fit", style: {
+            aspectRatio: `${width} / ${height}`,
+            ...{ "--tm-fit-width": `${width}px` },
+            ...style,
+        }, children: _jsx(Phone, { ...props }) }));
+}
 export function Phone({ scene: source, time, selectedMessageId, onSelectMessage, exporting = false, watermark = true, media: mediaSlots, }) {
     const slots = { ...defaultPhoneMedia, ...mediaSlots };
     const scene = time === undefined ? source : evaluateScene(source, time);
@@ -111,7 +124,7 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                         scene.conversation?.unread?.visible &&
                                                         scene.conversation.unread.messageId === message.id && (_jsx("div", { className: "tm-unread-divider", children: scene.platform === "whatsapp"
                                                             ? `${scene.conversation.unread.count} UNREAD MESSAGE${scene.conversation.unread.count === 1 ? "" : "S"}`
-                                                            : "Unread Messages" })), message.dateLabel && (_jsx("div", { className: "tm-date", children: _jsx("span", { children: message.dateLabel }) })), scene.platform === "imessage" &&
+                                                            : "Unread Messages" })), message.dateLabel && (_jsx("div", { className: "tm-date", children: _jsx(DateLabel, { label: message.dateLabel, platform: scene.platform }) })), scene.platform === "imessage" &&
                                                         message.scheduledAt &&
                                                         (!previous?.scheduledAt ||
                                                             previous.scheduledAt !== message.scheduledAt) && (_jsxs("div", { className: "tm-scheduled-label", children: [_jsx("span", { children: "Send Later" }), _jsxs("span", { children: [message.scheduledAt, " ", _jsx("b", { children: "Edit" })] })] })), _jsxs("div", { className: "tm-message-row", "data-side": outgoing ? "out" : "in", "data-reactions": message.reactions.length > 0 || undefined, children: [!outgoing && scene.appearance.showAvatars && (_jsx(Avatar, { slots: slots, name: person.name, url: person.avatar, color: person.color, className: "tm-row-avatar", hidden: !last })), _jsxs("div", { className: "tm-message-stack", children: [scene.platform === "imessage" &&
@@ -236,6 +249,15 @@ function PhoneHeader({ slots, scene, person, }) {
     if (platform === "telegram")
         return (_jsxs("div", { className: "tm-phone-header", "aria-hidden": "true", children: [back, _jsxs("span", { className: "tm-contact-title", children: [_jsxs("strong", { children: [scene.contact.name, mute] }), subtitle && _jsx("small", { children: subtitle })] }), avatar] }));
     return (_jsxs("div", { className: "tm-phone-header", "aria-hidden": "true", children: [back, platform === "imessage" ? (_jsxs(_Fragment, { children: [_jsxs("div", { className: "tm-im-contact", children: [avatar, _jsxs("span", { className: "tm-im-name", children: [scene.contact.name, mute, _jsx(Glyph, { name: "chevron", size: 10 })] }), subtitle && (_jsx("span", { className: "tm-contact-subtitle", children: subtitle }))] }), reply ? (_jsx("span", { className: "tm-im-video", children: _jsx(Glyph, { name: "close", size: 23 }) })) : (control("video") !== "hidden" && (_jsx("span", { className: "tm-im-video", "data-disabled": disabled("video") || undefined, children: _jsx(Glyph, { name: "video", size: 23 }) })))] })) : (_jsxs(_Fragment, { children: [avatar, _jsxs("span", { className: "tm-contact-title", children: [_jsxs("strong", { children: [scene.contact.name, mute] }), subtitle && _jsx("small", { children: subtitle })] }), _jsxs("span", { className: "tm-nav-actions", children: [control("video") !== "hidden" && (_jsx("span", { "data-disabled": disabled("video") || undefined, children: _jsx(Glyph, { name: "video", size: 25 }) })), control("call") !== "hidden" && (_jsx("span", { "data-disabled": disabled("call") || undefined, children: _jsx(Glyph, { name: "phone", size: 22 }) }))] })] }))] }));
+}
+/** iMessage sets the day in semibold before the time: "**Today** 9:41 AM". */
+function DateLabel({ label, platform, }) {
+    const split = platform === "imessage"
+        ? /^(.+?) (\d{1,2}:\d{2}(?:\s?[AP]M)?)$/i.exec(label)
+        : null;
+    if (!split)
+        return _jsx("span", { children: label });
+    return (_jsxs("span", { children: [_jsx("b", { children: split[1] }), " ", split[2]] }));
 }
 function BubbleTail({ platform }) {
     return platform === "imessage" ? (_jsx("svg", { className: "tm-tail", viewBox: "-16 -17.5 23 18", "aria-hidden": "true", children: _jsx("path", { d: "M-16 -17.5H0C0 -7.6 1.7 -2.4 6.4 -.45 6.95 -.2 6.85 .45 6.2 .5 2.6 .7-1.2-.6-3.4-2.5-4.3-3.3-5.2-4.1-6-4.9L-16-17.5Z" }) })) : (_jsx("svg", { className: "tm-tail", viewBox: "0 0 12 14", "aria-hidden": "true", children: _jsx("path", { d: "M0 0h12v14C7 13 2 8 0 0Z" }) }));

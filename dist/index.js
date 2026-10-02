@@ -1,4 +1,4 @@
-export { Phone, PhoneImage, PhoneVideoPoster, defaultPhoneMedia, watermarkStyle, } from "./phone.js";
+export { Phone, PhoneImage, PhoneFit, PhoneVideoPoster, defaultPhoneMedia, watermarkStyle, } from "./phone.js";
 export { Glyph } from "./glyph.js";
 export * from "./schema.js";
 export { evaluateScene, reconcileSceneEdit, sceneTime } from "./timeline.js";

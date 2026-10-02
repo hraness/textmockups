@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
-import { Phone, type PhoneImageProps } from "./phone.js";
+import { Phone, PhoneFit, type PhoneImageProps } from "./phone.js";
 import { defaultScene, presets } from "./presets.js";
 import { parseScene } from "./schema.js";
 
@@ -53,5 +53,27 @@ describe("Phone", () => {
     expect(
       renderToStaticMarkup(<Phone scene={defaultScene} watermark={false} />),
     ).not.toContain("data-textmock-watermark");
+  });
+  test("PhoneFit keeps the device ratio and scales by CSS", () => {
+    const html = renderToStaticMarkup(<PhoneFit scene={defaultScene} />);
+    expect(html).toContain('class="tm-fit"');
+    expect(html).toContain("aspect-ratio:393 / 852");
+    expect(html).toContain("--tm-fit-width:393px");
+  });
+  test("iMessage sets the day of a date label in semibold", () => {
+    const scene = parseScene({
+      ...defaultScene,
+      messages: [{ ...defaultScene.messages[0], dateLabel: "Today 9:41 AM" }],
+    });
+    expect(renderToStaticMarkup(<Phone scene={scene} />)).toContain(
+      "<b>Today</b> 9:41 AM",
+    );
+    const plain = parseScene({
+      ...scene,
+      messages: [{ ...scene.messages[0], dateLabel: "Yesterday" }],
+    });
+    expect(renderToStaticMarkup(<Phone scene={plain} />)).toContain(
+      "<span>Yesterday</span>",
+    );
   });
 });

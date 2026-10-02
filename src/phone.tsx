@@ -106,6 +106,32 @@ export function watermarkStyle(
   };
 }
 
+export type PhoneFitProps = PhoneProps & {
+  className?: string;
+  style?: CSSProperties;
+};
+
+/**
+ * The phone scaled to the width of its container, with no script: the wrapper
+ * keeps the device's aspect ratio and the device scales by CSS alone. Use it
+ * for responsive pages; use `Phone` when you size the device yourself.
+ */
+export function PhoneFit({ className, style, ...props }: PhoneFitProps) {
+  const { width, height } = props.scene.device;
+  return (
+    <div
+      className={className ? `tm-fit ${className}` : "tm-fit"}
+      style={{
+        aspectRatio: `${width} / ${height}`,
+        ...({ "--tm-fit-width": `${width}px` } as CSSProperties),
+        ...style,
+      }}
+    >
+      <Phone {...props} />
+    </div>
+  );
+}
+
 export function Phone({
   scene: source,
   time,
@@ -287,7 +313,10 @@ export function Phone({
                       )}
                     {message.dateLabel && (
                       <div className="tm-date">
-                        <span>{message.dateLabel}</span>
+                        <DateLabel
+                          label={message.dateLabel}
+                          platform={scene.platform}
+                        />
                       </div>
                     )}
                     {scene.platform === "imessage" &&
@@ -937,6 +966,26 @@ function PhoneHeader({ slots,
         </>
       )}
     </div>
+  );
+}
+
+/** iMessage sets the day in semibold before the time: "**Today** 9:41 AM". */
+function DateLabel({
+  label,
+  platform,
+}: {
+  label: string;
+  platform: Scene["platform"];
+}) {
+  const split =
+    platform === "imessage"
+      ? /^(.+?) (\d{1,2}:\d{2}(?:\s?[AP]M)?)$/i.exec(label)
+      : null;
+  if (!split) return <span>{label}</span>;
+  return (
+    <span>
+      <b>{split[1]}</b> {split[2]}
+    </span>
   );
 }
 
