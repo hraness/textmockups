@@ -2074,9 +2074,7 @@ function Composer({ scene, time }: { scene: Scene; time: number }) {
               name={
                 scene.platform === "imessage"
                   ? "wave"
-                  : scene.platform === "whatsapp"
-                    ? "camera"
-                    : "sticker"
+                  : "sticker"
               }
               size={20}
             />
@@ -2087,6 +2085,11 @@ function Composer({ scene, time }: { scene: Scene; time: number }) {
             </span>
           )}
         </div>
+        {scene.platform === "whatsapp" && !hasText && (
+          <span className="tm-composer-mic" data-camera>
+            <Glyph name="camera" size={22} />
+          </span>
+        )}
         {scene.platform !== "imessage" && (
           <span className={hasText ? "tm-send" : "tm-composer-mic"}>
             <Glyph
@@ -2094,7 +2097,8 @@ function Composer({ scene, time }: { scene: Scene; time: number }) {
                 hasText
                   ? mode === "edit"
                     ? "check"
-                    : scene.platform === "telegram"
+                    : scene.platform === "telegram" ||
+                        scene.platform === "whatsapp"
                       ? "send"
                       : "arrow-up"
                   : "mic"

@@ -25,7 +25,7 @@ Pin a release tag:
 ```json
 {
   "dependencies": {
-    "@hraness/textmockups": "github:hraness/textmockups#v0.1.0"
+    "@hraness/textmockups": "github:hraness/textmockups#v0.2.0"
   }
 }
 ```
