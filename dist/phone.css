@@ -1222,7 +1222,7 @@
 }
 .tm-phone[data-platform="whatsapp"][data-theme="dark"] {
   --tm-in: #202c33;
-  --tm-out: #005c4b;
+  --tm-out: #144d37;
   --tm-out-ink: #e9edef;
   --tm-tint: #21c384;
   --tm-screen: #0b141a;
@@ -1370,7 +1370,7 @@
   height: 12px;
 }
 .tm-inline-meta[data-status="read"] svg {
-  color: #49b6e8;
+  color: #53bdeb;
 }
 .tm-phone[data-platform="telegram"] .tm-inline-meta[data-status="read"] svg {
   color: #58a144;
@@ -2054,6 +2054,20 @@
   font-weight: 500;
   color: var(--tm-muted);
   background: color-mix(in srgb, var(--tm-chrome) 75%, transparent);
+}
+/* WhatsApp draws every reaction in a neutral pill, including your own. */
+.tm-phone[data-platform="whatsapp"] .tm-reaction,
+.tm-phone[data-platform="whatsapp"] .tm-reaction[data-self] {
+  background: var(--tm-in);
+}
+.tm-phone[data-platform="whatsapp"] .tm-composer {
+  gap: 14px;
+}
+.tm-phone[data-platform="whatsapp"] .tm-composer-mic[data-camera] {
+  margin-right: -2px;
+}
+.tm-phone[data-platform="whatsapp"] .tm-composer-field > svg {
+  color: var(--tm-ink);
 }
 .tm-phone[data-platform="whatsapp"] .tm-unread-divider {
   width: max-content;
