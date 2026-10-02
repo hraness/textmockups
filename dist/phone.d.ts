@@ -38,4 +38,14 @@ export type PhoneProps = {
 };
 /** Stable, smooth, scene-seeded color drift. This is branding, not a security watermark. */
 export declare function watermarkStyle(sceneId: string, seconds: number): CSSProperties;
+export type PhoneFitProps = PhoneProps & {
+    className?: string;
+    style?: CSSProperties;
+};
+/**
+ * The phone scaled to the width of its container, with no script: the wrapper
+ * keeps the device's aspect ratio and the device scales by CSS alone. Use it
+ * for responsive pages; use `Phone` when you size the device yourself.
+ */
+export declare function PhoneFit({ className, style, ...props }: PhoneFitProps): import("react").JSX.Element;
 export declare function Phone({ scene: source, time, selectedMessageId, onSelectMessage, exporting, watermark, media: mediaSlots, }: PhoneProps): import("react").JSX.Element;

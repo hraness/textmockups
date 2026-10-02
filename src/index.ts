@@ -1,9 +1,11 @@
 export {
   Phone,
   PhoneImage,
+  PhoneFit,
   PhoneVideoPoster,
   defaultPhoneMedia,
   watermarkStyle,
+  type PhoneFitProps,
   type PhoneImageProps,
   type PhoneMedia,
   type PhoneProps,

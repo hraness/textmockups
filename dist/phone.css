@@ -402,6 +402,24 @@
 .tm-date span {
   white-space: pre-wrap;
 }
+.tm-date b {
+  font-weight: 600;
+}
+/* PhoneFit: scale the fixed-size device to its container without script.
+   tan(atan2(a, b)) turns the ratio of two lengths into a plain number. */
+.tm-fit {
+  container-type: inline-size;
+  position: relative;
+  width: 100%;
+}
+.tm-fit > .tm-device-stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* zoom, not scale: Chromium can keep a stale raster for a transform that
+     depends on container units. */
+  zoom: tan(atan2(100cqw, var(--tm-fit-width)));
+}
 .tm-message-row {
   display: flex;
   align-items: flex-end;

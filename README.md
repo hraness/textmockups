@@ -25,7 +25,7 @@ Pin a release tag:
 ```json
 {
   "dependencies": {
-    "@hraness/textmockups": "github:hraness/textmockups#v0.2.0"
+    "@hraness/textmockups": "github:hraness/textmockups#v0.3.0"
   }
 }
 ```
@@ -65,7 +65,15 @@ export function Example() {
 
 `parseScene` fills in defaults (device, status bar, composer, appearance) and rejects anything outside the scene format, so a scene from a URL, a file, or a form is safe to render once it parses. `Phone` has no hooks and no effects, so it renders on the server and in static HTML.
 
-The result is a 393 × 852 iPhone. Set `device.frame` to `"none"` for the screen alone, or change `device.width`, `device.height`, and `device.scale`.
+The result is a 393 × 852 iPhone. To fit it to the width of its container instead, with no script, use `PhoneFit`:
+
+```tsx
+<div style={{ maxWidth: 360 }}>
+  <PhoneFit scene={scene} watermark={false} />
+</div>
+```
+
+Set `device.frame` to `"none"` for the screen alone, or change `device.width`, `device.height`, and `device.scale`.
 
 ## What it draws
 
