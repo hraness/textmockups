@@ -25,7 +25,7 @@ Pin a release tag:
 ```json
 {
   "dependencies": {
-    "@hraness/textmockups": "github:hraness/textmockups#v0.3.0"
+    "@hraness/textmockups": "github:hraness/textmockups#v0.3.1"
   }
 }
 ```
@@ -63,7 +63,7 @@ export function Example() {
 }
 ```
 
-`parseScene` fills in defaults (device, status bar, composer, appearance) and rejects anything outside the scene format, so a scene from a URL, a file, or a form is safe to render once it parses. `Phone` has no hooks and no effects, so it renders on the server and in static HTML.
+`parseScene` fills in defaults (device, status bar, composer, appearance) and rejects anything outside the scene format, so a scene from a URL, a file, or a form is safe to render once it parses. `Phone` has no hooks and no effects, so it renders on the server and in static HTML. Drawing a scene never loads Zod, so pages with a strict Content-Security-Policy (no `unsafe-eval`) can hydrate `Phone` and play its timeline; validate scenes with `parseScene` on the server.
 
 The result is a 393 × 852 iPhone. To fit it to the width of its container instead, with no script, use `PhoneFit`:
 

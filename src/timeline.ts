@@ -1,13 +1,11 @@
 import {
   MAX_MESSAGES,
-  isIntegerPresentationField,
+  isIntegerField,
   pointerSegments,
   readPointer,
   writePointer,
-  type Keyframe,
-  type Scene,
-  type Track,
-} from "./schema.js";
+} from "./pointer.js";
+import type { Keyframe, Scene, Track } from "./schema.js";
 
 /** Exported so scrubbers, effects, and exporters share the exact same clock. */
 export function sceneTime(scene: Scene, seconds: number): number {
@@ -148,7 +146,7 @@ export function evaluateScene(scene: Scene, seconds: number): Scene {
       time,
     );
     // These fields are discrete counters/dimensions even during a numeric tween.
-    if (typeof value === "number" && isIntegerPresentationField(track.path))
+    if (typeof value === "number" && isIntegerField(track.path))
       value = Math.round(value);
     writePointer(evaluated, track.path, value);
   }

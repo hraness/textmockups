@@ -1,8 +1,8 @@
 import { z } from "zod";
+export { INTEGER_FIELD_PATTERNS, isIntegerField, MAX_MESSAGES, pointerSegments, readPointer, writePointer, } from "./pointer.js";
 /** v1 is an immutable wire contract. Introduce a new version for incompatible changes. */
 export declare const SCENE_VERSION: 1;
 export declare const MAX_SCENE_BYTES = 262144;
-export declare const MAX_MESSAGES = 160;
 export declare const MAX_DURATION = 300;
 export type JsonValue = string | number | boolean | null | JsonValue[] | {
     [key: string]: JsonValue;
@@ -693,10 +693,6 @@ declare const SceneBaseSchema: z.ZodObject<{
     extensions: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>>>;
 }, z.core.$strict>;
 export type Scene = z.infer<typeof SceneBaseSchema>;
-/** Standard RFC 6901 pointers, own-properties only; prototype traversal is never permitted. */
-export declare function pointerSegments(path: string): string[];
-export declare function readPointer(root: unknown, path: string): unknown;
-export declare function writePointer(root: unknown, path: string, next: unknown): void;
 /** Integer animation behavior follows the schema, not a list of field names. */
 export declare function isIntegerPresentationField(path: string): boolean;
 export declare const SceneSchema: z.ZodObject<{
@@ -1063,4 +1059,3 @@ export type PresentationField = {
 };
 /** The manual motion editor derives its controls from the same target contract as validation. */
 export declare function presentationField(scene: Scene, path: string): PresentationField;
-export {};

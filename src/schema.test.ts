@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { defaultScene, presets } from "./presets.js";
+import { z } from "zod";
 import { MAX_SCENE_BYTES, parseScene } from "./schema.js";
 
 const fresh = () => structuredClone(defaultScene);
@@ -173,5 +174,48 @@ describe("animation field contracts", () => {
       },
     ];
     expect(() => parseScene(valid)).not.toThrow();
+  });
+});
+
+describe("zod-free renderer helpers", () => {
+  test("INTEGER_FIELD_PATTERNS is exactly the schema's integer fields", async () => {
+    const { SceneSchema, INTEGER_FIELD_PATTERNS, isIntegerField, isIntegerPresentationField } = await import("./schema.js");
+    const found: string[] = [];
+    const unwrap = (schema: z.ZodType): z.ZodType => {
+      while (schema instanceof z.ZodOptional || schema instanceof z.ZodDefault)
+        schema = schema.unwrap() as z.ZodType;
+      return schema;
+    };
+    const walk = (node: z.ZodType, path: string): void => {
+      const schema = unwrap(node);
+      if (schema instanceof z.ZodNumber) {
+        if (schema.isInt) found.push(path);
+      } else if (schema instanceof z.ZodObject) {
+        for (const [key, child] of Object.entries(schema.shape)) walk(child as z.ZodType, `${path}/${key}`);
+      } else if (schema instanceof z.ZodArray) walk(schema.element as z.ZodType, `${path}/*`);
+    };
+    walk(SceneSchema as unknown as z.ZodType, "");
+    expect([...INTEGER_FIELD_PATTERNS].sort()).toEqual([...new Set(found)].sort());
+    for (const pattern of found) {
+      const path = pattern.replaceAll("*", "0");
+      expect(isIntegerField(path)).toBe(true);
+      expect(isIntegerPresentationField(path)).toBe(true);
+    }
+    expect(isIntegerField("/messages/0/text")).toBe(false);
+    expect(isIntegerField("/appearance/textScale")).toBe(false);
+  });
+
+  test("drawing a scene never loads the Zod schema module", async () => {
+    const seen = new Set<string>();
+    const visit = async (file: string) => {
+      if (seen.has(file)) return;
+      seen.add(file);
+      const source = await Bun.file(new URL(file, import.meta.url)).text();
+      for (const match of source.matchAll(/^import\s+(?!type\b)[^;]*?from\s+"(\.\/[^"]+)\.js";/gms))
+        await visit(`${match[1]}${match[1] === "./phone" || match[1] === "./glyph" ? ".tsx" : ".ts"}`);
+      expect(source.includes('from "zod"')).toBe(false);
+    };
+    await visit("./phone.tsx");
+    expect(seen.has("./schema.ts")).toBe(false);
   });
 });

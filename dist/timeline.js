@@ -1,4 +1,4 @@
-import { MAX_MESSAGES, isIntegerPresentationField, pointerSegments, readPointer, writePointer, } from "./schema.js";
+import { MAX_MESSAGES, isIntegerField, pointerSegments, readPointer, writePointer, } from "./pointer.js";
 /** Exported so scrubbers, effects, and exporters share the exact same clock. */
 export function sceneTime(scene, seconds) {
     const value = Number.isFinite(seconds) ? Math.max(0, seconds) : 0;
@@ -101,7 +101,7 @@ export function evaluateScene(scene, seconds) {
     for (const track of scene.timeline.tracks) {
         let value = trackValue(readPointer(scene, track.path), track, time);
         // These fields are discrete counters/dimensions even during a numeric tween.
-        if (typeof value === "number" && isIntegerPresentationField(track.path))
+        if (typeof value === "number" && isIntegerField(track.path))
             value = Math.round(value);
         writePointer(evaluated, track.path, value);
     }
