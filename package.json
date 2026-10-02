@@ -1,0 +1,89 @@
+{
+  "name": "@hraness/textmockups",
+  "version": "0.1.0",
+  "description": "React components for realistic iMessage, WhatsApp, Telegram and Instagram chat mockups. The renderer behind textmock.com.",
+  "license": "MIT",
+  "author": "Hraness",
+  "type": "module",
+  "sideEffects": [
+    "./dist/phone.css"
+  ],
+  "packageManager": "bun@1.3.14",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hraness/textmockups.git"
+  },
+  "homepage": "https://textmock.com",
+  "bugs": {
+    "url": "https://github.com/hraness/textmockups/issues"
+  },
+  "keywords": [
+    "react",
+    "imessage",
+    "whatsapp",
+    "telegram",
+    "instagram",
+    "chat-ui",
+    "chat-mockup",
+    "mockup",
+    "fake-text",
+    "text-message",
+    "iphone-mockup",
+    "messaging",
+    "components",
+    "typescript"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./schema": {
+      "types": "./dist/schema.d.ts",
+      "import": "./dist/schema.js"
+    },
+    "./timeline": {
+      "types": "./dist/timeline.d.ts",
+      "import": "./dist/timeline.js"
+    },
+    "./phone.css": "./dist/phone.css",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "style": "./dist/phone.css",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "bun run ./scripts/build.ts",
+    "gallery": "bun run ./scripts/gallery.tsx",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test ./src",
+    "check:dist": "bun run ./scripts/build.ts --check",
+    "test:package": "bun run ./scripts/package-smoke.ts",
+    "check": "bun run typecheck && bun run test && bun run check:dist && bun run test:package",
+    "prepack": "bun run check"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "peerDependencies": {
+    "react": ">=18 <20"
+  },
+  "devDependencies": {
+    "@types/bun": "1.3.14",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "playwright-core": "1.62.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "typescript": "6.0.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

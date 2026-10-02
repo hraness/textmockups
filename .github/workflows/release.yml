@@ -1,0 +1,181 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stable-release
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      verified_tag: ${{ steps.identity.outputs.tag }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: "1.3.14"
+      - name: Verify release identity
+        id: identity
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          package_version="$(bun -e 'const value = await Bun.file("package.json").json(); if (typeof value.version !== "string") process.exit(1); process.stdout.write(value.version)')"
+          if [[ ! "$package_version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::Package version $package_version is not a stable semantic version"
+            exit 1
+          fi
+          expected_tag="v$package_version"
+          if [[ "$GITHUB_REF_NAME" != "$expected_tag" ]]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package version $expected_tag"
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" "origin/$DEFAULT_BRANCH"; then
+            echo "::error::Tag $GITHUB_REF_NAME is not reachable from $DEFAULT_BRANCH"
+            exit 1
+          fi
+          newest_stable_tag="$(git tag --list 'v*' | grep -E '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$' | LC_ALL=C sort -V | tail -n 1)"
+          if [[ "$newest_stable_tag" != "$GITHUB_REF_NAME" ]]; then
+            echo "::error::Tag $GITHUB_REF_NAME is not newer than $newest_stable_tag"
+            exit 1
+          fi
+          printf 'tag=%s\n' "$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: bun run check
+      - run: |
+          generated_status="$(git status --porcelain --untracked-files=all -- bun.lock)"
+          if [[ -n "$generated_status" ]]; then
+            printf '%s\n' "$generated_status"
+            exit 1
+          fi
+      - run: bun pm pack --dry-run --ignore-scripts
+
+  publish:
+    name: Publish
+    needs: verify
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ github.token }}
+      VERIFIED_TAG: ${{ needs.verify.outputs.verified_tag }}
+    steps:
+      - name: Publish verified GitHub Release
+        run: |
+          set -euo pipefail
+          if [[ -z "$VERIFIED_TAG" || "$VERIFIED_TAG" != "$GITHUB_REF_NAME" ]]; then
+            echo "::error::Publish request does not match the verified tag"
+            exit 1
+          fi
+          if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" \
+              --verify-tag \
+              --generate-notes \
+              --latest \
+              --title "Textmockups $GITHUB_REF_NAME"
+          fi
+          release_state="$(gh release view "$GITHUB_REF_NAME" \
+            --json assets,isDraft,isImmutable,isPrerelease,tagName \
+            --jq '[.tagName, .isDraft, .isPrerelease, .isImmutable, (.assets | length)] | @tsv')"
+          expected_state="$GITHUB_REF_NAME"$'\tfalse\tfalse\ttrue\t0'
+          if [[ "$release_state" != "$expected_state" ]]; then
+            echo "::error::Release $GITHUB_REF_NAME is not published and immutable"
+            exit 1
+          fi
+          latest_tag="$(gh api "/repos/$GITHUB_REPOSITORY/releases/latest" --jq '.tag_name')"
+          if [[ "$latest_tag" != "$GITHUB_REF_NAME" ]]; then
+            echo "::error::Latest release is $latest_tag, expected $GITHUB_REF_NAME"
+            exit 1
+          fi
+
+  npm:
+    # Publishes the tagged commit to npm through npm trusted publishing: the
+    # registry exchanges this job's GitHub OIDC token for a short-lived credential,
+    # so no npm token is stored and no one approves the release. CONTRIBUTING.md
+    # lists the one-time registry setup the job needs.
+    name: Publish to npm
+    needs: [verify, publish]
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      EXPECTED_NAME: "@hraness/textmockups"
+      VERIFIED_TAG: ${{ needs.verify.outputs.verified_tag }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          package-manager-cache: false
+          registry-url: "https://registry.npmjs.org"
+      - name: Pin npm
+        run: |
+          set -euo pipefail
+          npm install --global npm@11.19.0 --ignore-scripts --registry=https://registry.npmjs.org
+          test "$(npm --version)" = "11.19.0"
+      - name: Publish the tagged package
+        run: |
+          set -euo pipefail
+          if [[ -z "$VERIFIED_TAG" || "$VERIFIED_TAG" != "$GITHUB_REF_NAME" ]]; then
+            echo "::error::Publish request does not match the verified tag"
+            exit 1
+          fi
+          name="$(node -p 'require("./package.json").name')"
+          version="$(node -p 'require("./package.json").version')"
+          if [[ "$name" != "$EXPECTED_NAME" || "v$version" != "$GITHUB_REF_NAME" ]]; then
+            echo "::error::package.json names $name@$version, expected $EXPECTED_NAME at $GITHUB_REF_NAME"
+            exit 1
+          fi
+          probe="$RUNNER_TEMP/npm-view.txt"
+          if ! npm view "$name" name --json --registry=https://registry.npmjs.org >/dev/null 2>"$probe"; then
+            if grep -q E404 "$probe"; then
+              echo "::warning::$name is not on npm yet, so trusted publishing cannot run. CONTRIBUTING.md lists the one-time setup."
+              exit 0
+            fi
+            cat "$probe"
+            echo "::error::Could not read $name from npm"
+            exit 1
+          fi
+          if npm view "$name@$version" version --json --registry=https://registry.npmjs.org >/dev/null 2>"$probe"; then
+            echo "::notice::$name@$version is already on npm"
+            exit 0
+          elif ! grep -q E404 "$probe"; then
+            cat "$probe"
+            echo "::error::Could not check whether $name@$version is on npm"
+            exit 1
+          fi
+          pack="$RUNNER_TEMP/npm-pack"
+          mkdir "$pack"
+          npm pack --ignore-scripts --pack-destination "$pack"
+          npm publish "$pack"/*.tgz --access public --provenance --ignore-scripts --registry=https://registry.npmjs.org
+          for _ in $(seq 1 10); do
+            predicate="$(npm view "$name@$version" dist.attestations.provenance.predicateType --prefer-online --registry=https://registry.npmjs.org 2>/dev/null || true)"
+            if [[ "$predicate" == "https://slsa.dev/provenance/v1" ]]; then
+              echo "Published $name@$version with provenance"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::npm does not report $name@$version with a provenance attestation"
+          exit 1

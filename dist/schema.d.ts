@@ -1,0 +1,1066 @@
+import { z } from "zod";
+/** v1 is an immutable wire contract. Introduce a new version for incompatible changes. */
+export declare const SCENE_VERSION: 1;
+export declare const MAX_SCENE_BYTES = 262144;
+export declare const MAX_MESSAGES = 160;
+export declare const MAX_DURATION = 300;
+export type JsonValue = string | number | boolean | null | JsonValue[] | {
+    [key: string]: JsonValue;
+};
+export declare const ParticipantSchema: z.ZodObject<{
+    id: z.ZodString;
+    name: z.ZodString;
+    avatar: z.ZodOptional<z.ZodString>;
+    color: z.ZodDefault<z.ZodString>;
+    isSelf: z.ZodDefault<z.ZodBoolean>;
+}, z.core.$strict>;
+export type Participant = z.infer<typeof ParticipantSchema>;
+export declare const ReactionSchema: z.ZodObject<{
+    id: z.ZodString;
+    emoji: z.ZodString;
+    participantId: z.ZodString;
+    at: z.ZodDefault<z.ZodNumber>;
+}, z.core.$strict>;
+export type Reaction = z.infer<typeof ReactionSchema>;
+export declare const TextRunEffectSchema: z.ZodEnum<{
+    big: "big";
+    small: "small";
+    none: "none";
+    shake: "shake";
+    nod: "nod";
+    explode: "explode";
+    ripple: "ripple";
+    bloom: "bloom";
+    jitter: "jitter";
+}>;
+export declare const MessageTextRunSchema: z.ZodObject<{
+    id: z.ZodString;
+    text: z.ZodString;
+    bold: z.ZodDefault<z.ZodBoolean>;
+    italic: z.ZodDefault<z.ZodBoolean>;
+    underline: z.ZodDefault<z.ZodBoolean>;
+    strikethrough: z.ZodDefault<z.ZodBoolean>;
+    effect: z.ZodDefault<z.ZodEnum<{
+        big: "big";
+        small: "small";
+        none: "none";
+        shake: "shake";
+        nod: "nod";
+        explode: "explode";
+        ripple: "ripple";
+        bloom: "bloom";
+        jitter: "jitter";
+    }>>;
+}, z.core.$strict>;
+export type MessageTextRun = z.infer<typeof MessageTextRunSchema>;
+export declare const AttachedStickerSchema: z.ZodObject<{
+    id: z.ZodString;
+    emoji: z.ZodDefault<z.ZodString>;
+    url: z.ZodOptional<z.ZodString>;
+    x: z.ZodDefault<z.ZodNumber>;
+    y: z.ZodDefault<z.ZodNumber>;
+    scale: z.ZodDefault<z.ZodNumber>;
+    rotation: z.ZodDefault<z.ZodNumber>;
+    zIndex: z.ZodDefault<z.ZodNumber>;
+    at: z.ZodDefault<z.ZodNumber>;
+    participantId: z.ZodOptional<z.ZodString>;
+}, z.core.$strict>;
+export type AttachedSticker = z.infer<typeof AttachedStickerSchema>;
+export declare const HeaderStateSchema: z.ZodObject<{
+    transport: z.ZodDefault<z.ZodEnum<{
+        imessage: "imessage";
+        sms: "sms";
+        rcs: "rcs";
+    }>>;
+    backCount: z.ZodDefault<z.ZodNumber>;
+    video: z.ZodDefault<z.ZodEnum<{
+        enabled: "enabled";
+        disabled: "disabled";
+        hidden: "hidden";
+    }>>;
+    call: z.ZodDefault<z.ZodEnum<{
+        enabled: "enabled";
+        disabled: "disabled";
+        hidden: "hidden";
+    }>>;
+}, z.core.$strict>;
+export declare const ConversationStateSchema: z.ZodObject<{
+    muted: z.ZodDefault<z.ZodBoolean>;
+    focus: z.ZodOptional<z.ZodObject<{
+        visible: z.ZodDefault<z.ZodBoolean>;
+        name: z.ZodString;
+        notifyAnyway: z.ZodDefault<z.ZodBoolean>;
+    }, z.core.$strict>>;
+    unread: z.ZodOptional<z.ZodObject<{
+        visible: z.ZodDefault<z.ZodBoolean>;
+        messageId: z.ZodString;
+        count: z.ZodDefault<z.ZodNumber>;
+    }, z.core.$strict>>;
+    pinned: z.ZodOptional<z.ZodObject<{
+        visible: z.ZodDefault<z.ZodBoolean>;
+        messageId: z.ZodString;
+        label: z.ZodDefault<z.ZodString>;
+    }, z.core.$strict>>;
+}, z.core.$strict>;
+export declare const ComposerContextSchema: z.ZodObject<{
+    mode: z.ZodDefault<z.ZodEnum<{
+        normal: "normal";
+        reply: "reply";
+        edit: "edit";
+        recording: "recording";
+        scheduled: "scheduled";
+    }>>;
+    messageId: z.ZodOptional<z.ZodString>;
+    scheduledAt: z.ZodDefault<z.ZodString>;
+    recording: z.ZodDefault<z.ZodObject<{
+        duration: z.ZodDefault<z.ZodNumber>;
+        locked: z.ZodDefault<z.ZodBoolean>;
+        paused: z.ZodDefault<z.ZodBoolean>;
+        waveform: z.ZodDefault<z.ZodArray<z.ZodNumber>>;
+    }, z.core.$strict>>;
+}, z.core.$strict>;
+export declare const ComposerSelectionSchema: z.ZodObject<{
+    start: z.ZodNumber;
+    end: z.ZodNumber;
+    showCaret: z.ZodDefault<z.ZodBoolean>;
+    showHandles: z.ZodDefault<z.ZodBoolean>;
+    visible: z.ZodOptional<z.ZodBoolean>;
+}, z.core.$strict>;
+export declare const InteractionStateSchema: z.ZodObject<{
+    attachmentTray: z.ZodOptional<z.ZodObject<{
+        visible: z.ZodDefault<z.ZodBoolean>;
+        kind: z.ZodDefault<z.ZodEnum<{
+            apps: "apps";
+            photos: "photos";
+            stickers: "stickers";
+        }>>;
+        items: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            id: z.ZodString;
+            url: z.ZodOptional<z.ZodString>;
+            emoji: z.ZodOptional<z.ZodString>;
+            label: z.ZodDefault<z.ZodString>;
+        }, z.core.$strict>>>;
+    }, z.core.$strict>>;
+    tapbackPicker: z.ZodOptional<z.ZodObject<{
+        visible: z.ZodDefault<z.ZodBoolean>;
+        messageId: z.ZodString;
+        selectedEmoji: z.ZodDefault<z.ZodString>;
+        emojis: z.ZodDefault<z.ZodArray<z.ZodString>>;
+        showMenu: z.ZodDefault<z.ZodBoolean>;
+    }, z.core.$strict>>;
+    editHistory: z.ZodOptional<z.ZodObject<{
+        visible: z.ZodDefault<z.ZodBoolean>;
+        messageId: z.ZodString;
+    }, z.core.$strict>>;
+}, z.core.$strict>;
+export declare const EditHistorySchema: z.ZodObject<{
+    versions: z.ZodArray<z.ZodObject<{
+        id: z.ZodString;
+        text: z.ZodString;
+        editedAt: z.ZodDefault<z.ZodString>;
+    }, z.core.$strict>>;
+}, z.core.$strict>;
+export declare const MessageSchema: z.ZodObject<{
+    id: z.ZodString;
+    senderId: z.ZodString;
+    at: z.ZodDefault<z.ZodNumber>;
+    kind: z.ZodDefault<z.ZodEnum<{
+        file: "file";
+        link: "link";
+        text: "text";
+        video: "video";
+        image: "image";
+        voice: "voice";
+        location: "location";
+        contact: "contact";
+        sticker: "sticker";
+        poll: "poll";
+        payment: "payment";
+        system: "system";
+    }>>;
+    text: z.ZodDefault<z.ZodString>;
+    textRuns: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        id: z.ZodString;
+        text: z.ZodString;
+        bold: z.ZodDefault<z.ZodBoolean>;
+        italic: z.ZodDefault<z.ZodBoolean>;
+        underline: z.ZodDefault<z.ZodBoolean>;
+        strikethrough: z.ZodDefault<z.ZodBoolean>;
+        effect: z.ZodDefault<z.ZodEnum<{
+            big: "big";
+            small: "small";
+            none: "none";
+            shake: "shake";
+            nod: "nod";
+            explode: "explode";
+            ripple: "ripple";
+            bloom: "bloom";
+            jitter: "jitter";
+        }>>;
+    }, z.core.$strict>>>;
+    stickers: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        id: z.ZodString;
+        emoji: z.ZodDefault<z.ZodString>;
+        url: z.ZodOptional<z.ZodString>;
+        x: z.ZodDefault<z.ZodNumber>;
+        y: z.ZodDefault<z.ZodNumber>;
+        scale: z.ZodDefault<z.ZodNumber>;
+        rotation: z.ZodDefault<z.ZodNumber>;
+        zIndex: z.ZodDefault<z.ZodNumber>;
+        at: z.ZodDefault<z.ZodNumber>;
+        participantId: z.ZodOptional<z.ZodString>;
+    }, z.core.$strict>>>;
+    timestamp: z.ZodDefault<z.ZodString>;
+    dateLabel: z.ZodDefault<z.ZodString>;
+    status: z.ZodDefault<z.ZodEnum<{
+        sending: "sending";
+        sent: "sent";
+        delivered: "delivered";
+        read: "read";
+        failed: "failed";
+    }>>;
+    statusAt: z.ZodOptional<z.ZodNumber>;
+    statusText: z.ZodDefault<z.ZodString>;
+    edited: z.ZodDefault<z.ZodBoolean>;
+    editedAt: z.ZodDefault<z.ZodString>;
+    editHistory: z.ZodOptional<z.ZodObject<{
+        versions: z.ZodArray<z.ZodObject<{
+            id: z.ZodString;
+            text: z.ZodString;
+            editedAt: z.ZodDefault<z.ZodString>;
+        }, z.core.$strict>>;
+    }, z.core.$strict>>;
+    unsent: z.ZodDefault<z.ZodBoolean>;
+    scheduledAt: z.ZodOptional<z.ZodString>;
+    readBy: z.ZodOptional<z.ZodArray<z.ZodString>>;
+    replyTo: z.ZodOptional<z.ZodString>;
+    reactions: z.ZodDefault<z.ZodArray<z.ZodObject<{
+        id: z.ZodString;
+        emoji: z.ZodString;
+        participantId: z.ZodString;
+        at: z.ZodDefault<z.ZodNumber>;
+    }, z.core.$strict>>>;
+    effect: z.ZodDefault<z.ZodEnum<{
+        none: "none";
+        shake: "shake";
+        ripple: "ripple";
+        bloom: "bloom";
+        jitter: "jitter";
+        slam: "slam";
+        loud: "loud";
+        gentle: "gentle";
+        "invisible-ink": "invisible-ink";
+    }>>;
+    presentation: z.ZodDefault<z.ZodObject<{
+        opacity: z.ZodDefault<z.ZodNumber>;
+        scale: z.ZodDefault<z.ZodNumber>;
+        offsetX: z.ZodDefault<z.ZodNumber>;
+        offsetY: z.ZodDefault<z.ZodNumber>;
+    }, z.core.$strict>>;
+    media: z.ZodOptional<z.ZodObject<{
+        url: z.ZodOptional<z.ZodString>;
+        videoUrl: z.ZodOptional<z.ZodString>;
+        alt: z.ZodDefault<z.ZodString>;
+        width: z.ZodDefault<z.ZodNumber>;
+        height: z.ZodDefault<z.ZodNumber>;
+        duration: z.ZodDefault<z.ZodNumber>;
+        poster: z.ZodOptional<z.ZodString>;
+        waveform: z.ZodDefault<z.ZodArray<z.ZodNumber>>;
+        transcript: z.ZodOptional<z.ZodString>;
+        playhead: z.ZodDefault<z.ZodNumber>;
+        playbackRate: z.ZodDefault<z.ZodNumber>;
+        playing: z.ZodDefault<z.ZodBoolean>;
+        keep: z.ZodDefault<z.ZodBoolean>;
+    }, z.core.$strict>>;
+    file: z.ZodOptional<z.ZodObject<{
+        name: z.ZodString;
+        size: z.ZodDefault<z.ZodNumber>;
+        mimeType: z.ZodDefault<z.ZodString>;
+    }, z.core.$strict>>;
+    link: z.ZodOptional<z.ZodObject<{
+        url: z.ZodString;
+        title: z.ZodString;
+        description: z.ZodDefault<z.ZodString>;
+        image: z.ZodOptional<z.ZodString>;
+    }, z.core.$strict>>;
+    location: z.ZodOptional<z.ZodObject<{
+        latitude: z.ZodNumber;
+        longitude: z.ZodNumber;
+        label: z.ZodString;
+        address: z.ZodDefault<z.ZodString>;
+    }, z.core.$strict>>;
+    sharedContact: z.ZodOptional<z.ZodObject<{
+        name: z.ZodString;
+        phone: z.ZodDefault<z.ZodString>;
+        avatar: z.ZodOptional<z.ZodString>;
+    }, z.core.$strict>>;
+    sticker: z.ZodOptional<z.ZodObject<{
+        emoji: z.ZodDefault<z.ZodString>;
+        url: z.ZodOptional<z.ZodString>;
+        alt: z.ZodDefault<z.ZodString>;
+    }, z.core.$strict>>;
+    poll: z.ZodOptional<z.ZodObject<{
+        question: z.ZodString;
+        options: z.ZodArray<z.ZodObject<{
+            id: z.ZodString;
+            text: z.ZodString;
+            votes: z.ZodDefault<z.ZodNumber>;
+        }, z.core.$strict>>;
+        totalVotes: z.ZodDefault<z.ZodNumber>;
+    }, z.core.$strict>>;
+    payment: z.ZodOptional<z.ZodObject<{
+        amount: z.ZodNumber;
+        currency: z.ZodDefault<z.ZodString>;
+        note: z.ZodDefault<z.ZodString>;
+    }, z.core.$strict>>;
+    extensions: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>>>;
+}, z.core.$strict>;
+export type Message = z.infer<typeof MessageSchema>;
+export declare const KeyframeSchema: z.ZodObject<{
+    at: z.ZodNumber;
+    value: z.ZodUnion<readonly [z.ZodString, z.ZodNumber, z.ZodBoolean, z.ZodNull]>;
+    easing: z.ZodDefault<z.ZodEnum<{
+        typewriter: "typewriter";
+        step: "step";
+        linear: "linear";
+        ease: "ease";
+    }>>;
+}, z.core.$strict>;
+export type Keyframe = z.infer<typeof KeyframeSchema>;
+export declare const TrackSchema: z.ZodObject<{
+    id: z.ZodString;
+    path: z.ZodString;
+    keyframes: z.ZodArray<z.ZodObject<{
+        at: z.ZodNumber;
+        value: z.ZodUnion<readonly [z.ZodString, z.ZodNumber, z.ZodBoolean, z.ZodNull]>;
+        easing: z.ZodDefault<z.ZodEnum<{
+            typewriter: "typewriter";
+            step: "step";
+            linear: "linear";
+            ease: "ease";
+        }>>;
+    }, z.core.$strict>>;
+}, z.core.$strict>;
+export type Track = z.infer<typeof TrackSchema>;
+declare const SceneBaseSchema: z.ZodObject<{
+    version: z.ZodLiteral<1>;
+    id: z.ZodString;
+    title: z.ZodDefault<z.ZodString>;
+    rendererVersion: z.ZodDefault<z.ZodLiteral<"2026.1">>;
+    platform: z.ZodDefault<z.ZodEnum<{
+        imessage: "imessage";
+        whatsapp: "whatsapp";
+        telegram: "telegram";
+        instagram: "instagram";
+    }>>;
+    theme: z.ZodDefault<z.ZodEnum<{
+        light: "light";
+        dark: "dark";
+    }>>;
+    device: z.ZodDefault<z.ZodObject<{
+        width: z.ZodDefault<z.ZodNumber>;
+        height: z.ZodDefault<z.ZodNumber>;
+        frame: z.ZodDefault<z.ZodEnum<{
+            none: "none";
+            iphone: "iphone";
+        }>>;
+        scale: z.ZodDefault<z.ZodNumber>;
+    }, z.core.$strict>>;
+    statusBar: z.ZodDefault<z.ZodObject<{
+        time: z.ZodDefault<z.ZodString>;
+        battery: z.ZodDefault<z.ZodNumber>;
+        charging: z.ZodDefault<z.ZodBoolean>;
+        wifi: z.ZodDefault<z.ZodNumber>;
+        cellular: z.ZodDefault<z.ZodNumber>;
+        carrier: z.ZodDefault<z.ZodString>;
+        visible: z.ZodDefault<z.ZodBoolean>;
+    }, z.core.$strict>>;
+    participants: z.ZodArray<z.ZodObject<{
+        id: z.ZodString;
+        name: z.ZodString;
+        avatar: z.ZodOptional<z.ZodString>;
+        color: z.ZodDefault<z.ZodString>;
+        isSelf: z.ZodDefault<z.ZodBoolean>;
+    }, z.core.$strict>>;
+    contact: z.ZodObject<{
+        kind: z.ZodOptional<z.ZodEnum<{
+            direct: "direct";
+            group: "group";
+        }>>;
+        name: z.ZodString;
+        subtitle: z.ZodDefault<z.ZodString>;
+        avatar: z.ZodOptional<z.ZodString>;
+        participantIds: z.ZodArray<z.ZodString>;
+    }, z.core.$strict>;
+    header: z.ZodOptional<z.ZodObject<{
+        transport: z.ZodDefault<z.ZodEnum<{
+            imessage: "imessage";
+            sms: "sms";
+            rcs: "rcs";
+        }>>;
+        backCount: z.ZodDefault<z.ZodNumber>;
+        video: z.ZodDefault<z.ZodEnum<{
+            enabled: "enabled";
+            disabled: "disabled";
+            hidden: "hidden";
+        }>>;
+        call: z.ZodDefault<z.ZodEnum<{
+            enabled: "enabled";
+            disabled: "disabled";
+            hidden: "hidden";
+        }>>;
+    }, z.core.$strict>>;
+    conversation: z.ZodOptional<z.ZodObject<{
+        muted: z.ZodDefault<z.ZodBoolean>;
+        focus: z.ZodOptional<z.ZodObject<{
+            visible: z.ZodDefault<z.ZodBoolean>;
+            name: z.ZodString;
+            notifyAnyway: z.ZodDefault<z.ZodBoolean>;
+        }, z.core.$strict>>;
+        unread: z.ZodOptional<z.ZodObject<{
+            visible: z.ZodDefault<z.ZodBoolean>;
+            messageId: z.ZodString;
+            count: z.ZodDefault<z.ZodNumber>;
+        }, z.core.$strict>>;
+        pinned: z.ZodOptional<z.ZodObject<{
+            visible: z.ZodDefault<z.ZodBoolean>;
+            messageId: z.ZodString;
+            label: z.ZodDefault<z.ZodString>;
+        }, z.core.$strict>>;
+    }, z.core.$strict>>;
+    interactions: z.ZodOptional<z.ZodObject<{
+        attachmentTray: z.ZodOptional<z.ZodObject<{
+            visible: z.ZodDefault<z.ZodBoolean>;
+            kind: z.ZodDefault<z.ZodEnum<{
+                apps: "apps";
+                photos: "photos";
+                stickers: "stickers";
+            }>>;
+            items: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                id: z.ZodString;
+                url: z.ZodOptional<z.ZodString>;
+                emoji: z.ZodOptional<z.ZodString>;
+                label: z.ZodDefault<z.ZodString>;
+            }, z.core.$strict>>>;
+        }, z.core.$strict>>;
+        tapbackPicker: z.ZodOptional<z.ZodObject<{
+            visible: z.ZodDefault<z.ZodBoolean>;
+            messageId: z.ZodString;
+            selectedEmoji: z.ZodDefault<z.ZodString>;
+            emojis: z.ZodDefault<z.ZodArray<z.ZodString>>;
+            showMenu: z.ZodDefault<z.ZodBoolean>;
+        }, z.core.$strict>>;
+        editHistory: z.ZodOptional<z.ZodObject<{
+            visible: z.ZodDefault<z.ZodBoolean>;
+            messageId: z.ZodString;
+        }, z.core.$strict>>;
+    }, z.core.$strict>>;
+    messages: z.ZodDefault<z.ZodArray<z.ZodObject<{
+        id: z.ZodString;
+        senderId: z.ZodString;
+        at: z.ZodDefault<z.ZodNumber>;
+        kind: z.ZodDefault<z.ZodEnum<{
+            file: "file";
+            link: "link";
+            text: "text";
+            video: "video";
+            image: "image";
+            voice: "voice";
+            location: "location";
+            contact: "contact";
+            sticker: "sticker";
+            poll: "poll";
+            payment: "payment";
+            system: "system";
+        }>>;
+        text: z.ZodDefault<z.ZodString>;
+        textRuns: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            id: z.ZodString;
+            text: z.ZodString;
+            bold: z.ZodDefault<z.ZodBoolean>;
+            italic: z.ZodDefault<z.ZodBoolean>;
+            underline: z.ZodDefault<z.ZodBoolean>;
+            strikethrough: z.ZodDefault<z.ZodBoolean>;
+            effect: z.ZodDefault<z.ZodEnum<{
+                big: "big";
+                small: "small";
+                none: "none";
+                shake: "shake";
+                nod: "nod";
+                explode: "explode";
+                ripple: "ripple";
+                bloom: "bloom";
+                jitter: "jitter";
+            }>>;
+        }, z.core.$strict>>>;
+        stickers: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            id: z.ZodString;
+            emoji: z.ZodDefault<z.ZodString>;
+            url: z.ZodOptional<z.ZodString>;
+            x: z.ZodDefault<z.ZodNumber>;
+            y: z.ZodDefault<z.ZodNumber>;
+            scale: z.ZodDefault<z.ZodNumber>;
+            rotation: z.ZodDefault<z.ZodNumber>;
+            zIndex: z.ZodDefault<z.ZodNumber>;
+            at: z.ZodDefault<z.ZodNumber>;
+            participantId: z.ZodOptional<z.ZodString>;
+        }, z.core.$strict>>>;
+        timestamp: z.ZodDefault<z.ZodString>;
+        dateLabel: z.ZodDefault<z.ZodString>;
+        status: z.ZodDefault<z.ZodEnum<{
+            sending: "sending";
+            sent: "sent";
+            delivered: "delivered";
+            read: "read";
+            failed: "failed";
+        }>>;
+        statusAt: z.ZodOptional<z.ZodNumber>;
+        statusText: z.ZodDefault<z.ZodString>;
+        edited: z.ZodDefault<z.ZodBoolean>;
+        editedAt: z.ZodDefault<z.ZodString>;
+        editHistory: z.ZodOptional<z.ZodObject<{
+            versions: z.ZodArray<z.ZodObject<{
+                id: z.ZodString;
+                text: z.ZodString;
+                editedAt: z.ZodDefault<z.ZodString>;
+            }, z.core.$strict>>;
+        }, z.core.$strict>>;
+        unsent: z.ZodDefault<z.ZodBoolean>;
+        scheduledAt: z.ZodOptional<z.ZodString>;
+        readBy: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        replyTo: z.ZodOptional<z.ZodString>;
+        reactions: z.ZodDefault<z.ZodArray<z.ZodObject<{
+            id: z.ZodString;
+            emoji: z.ZodString;
+            participantId: z.ZodString;
+            at: z.ZodDefault<z.ZodNumber>;
+        }, z.core.$strict>>>;
+        effect: z.ZodDefault<z.ZodEnum<{
+            none: "none";
+            shake: "shake";
+            ripple: "ripple";
+            bloom: "bloom";
+            jitter: "jitter";
+            slam: "slam";
+            loud: "loud";
+            gentle: "gentle";
+            "invisible-ink": "invisible-ink";
+        }>>;
+        presentation: z.ZodDefault<z.ZodObject<{
+            opacity: z.ZodDefault<z.ZodNumber>;
+            scale: z.ZodDefault<z.ZodNumber>;
+            offsetX: z.ZodDefault<z.ZodNumber>;
+            offsetY: z.ZodDefault<z.ZodNumber>;
+        }, z.core.$strict>>;
+        media: z.ZodOptional<z.ZodObject<{
+            url: z.ZodOptional<z.ZodString>;
+            videoUrl: z.ZodOptional<z.ZodString>;
+            alt: z.ZodDefault<z.ZodString>;
+            width: z.ZodDefault<z.ZodNumber>;
+            height: z.ZodDefault<z.ZodNumber>;
+            duration: z.ZodDefault<z.ZodNumber>;
+            poster: z.ZodOptional<z.ZodString>;
+            waveform: z.ZodDefault<z.ZodArray<z.ZodNumber>>;
+            transcript: z.ZodOptional<z.ZodString>;
+            playhead: z.ZodDefault<z.ZodNumber>;
+            playbackRate: z.ZodDefault<z.ZodNumber>;
+            playing: z.ZodDefault<z.ZodBoolean>;
+            keep: z.ZodDefault<z.ZodBoolean>;
+        }, z.core.$strict>>;
+        file: z.ZodOptional<z.ZodObject<{
+            name: z.ZodString;
+            size: z.ZodDefault<z.ZodNumber>;
+            mimeType: z.ZodDefault<z.ZodString>;
+        }, z.core.$strict>>;
+        link: z.ZodOptional<z.ZodObject<{
+            url: z.ZodString;
+            title: z.ZodString;
+            description: z.ZodDefault<z.ZodString>;
+            image: z.ZodOptional<z.ZodString>;
+        }, z.core.$strict>>;
+        location: z.ZodOptional<z.ZodObject<{
+            latitude: z.ZodNumber;
+            longitude: z.ZodNumber;
+            label: z.ZodString;
+            address: z.ZodDefault<z.ZodString>;
+        }, z.core.$strict>>;
+        sharedContact: z.ZodOptional<z.ZodObject<{
+            name: z.ZodString;
+            phone: z.ZodDefault<z.ZodString>;
+            avatar: z.ZodOptional<z.ZodString>;
+        }, z.core.$strict>>;
+        sticker: z.ZodOptional<z.ZodObject<{
+            emoji: z.ZodDefault<z.ZodString>;
+            url: z.ZodOptional<z.ZodString>;
+            alt: z.ZodDefault<z.ZodString>;
+        }, z.core.$strict>>;
+        poll: z.ZodOptional<z.ZodObject<{
+            question: z.ZodString;
+            options: z.ZodArray<z.ZodObject<{
+                id: z.ZodString;
+                text: z.ZodString;
+                votes: z.ZodDefault<z.ZodNumber>;
+            }, z.core.$strict>>;
+            totalVotes: z.ZodDefault<z.ZodNumber>;
+        }, z.core.$strict>>;
+        payment: z.ZodOptional<z.ZodObject<{
+            amount: z.ZodNumber;
+            currency: z.ZodDefault<z.ZodString>;
+            note: z.ZodDefault<z.ZodString>;
+        }, z.core.$strict>>;
+        extensions: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>>>;
+    }, z.core.$strict>>>;
+    composer: z.ZodDefault<z.ZodObject<{
+        text: z.ZodDefault<z.ZodString>;
+        placeholder: z.ZodDefault<z.ZodString>;
+        typing: z.ZodDefault<z.ZodObject<{
+            visible: z.ZodDefault<z.ZodBoolean>;
+            participantId: z.ZodOptional<z.ZodString>;
+        }, z.core.$strict>>;
+        keyboard: z.ZodDefault<z.ZodEnum<{
+            emoji: "emoji";
+            hidden: "hidden";
+            alphabetic: "alphabetic";
+        }>>;
+        focused: z.ZodDefault<z.ZodBoolean>;
+        context: z.ZodOptional<z.ZodObject<{
+            mode: z.ZodDefault<z.ZodEnum<{
+                normal: "normal";
+                reply: "reply";
+                edit: "edit";
+                recording: "recording";
+                scheduled: "scheduled";
+            }>>;
+            messageId: z.ZodOptional<z.ZodString>;
+            scheduledAt: z.ZodDefault<z.ZodString>;
+            recording: z.ZodDefault<z.ZodObject<{
+                duration: z.ZodDefault<z.ZodNumber>;
+                locked: z.ZodDefault<z.ZodBoolean>;
+                paused: z.ZodDefault<z.ZodBoolean>;
+                waveform: z.ZodDefault<z.ZodArray<z.ZodNumber>>;
+            }, z.core.$strict>>;
+        }, z.core.$strict>>;
+        selection: z.ZodOptional<z.ZodObject<{
+            start: z.ZodNumber;
+            end: z.ZodNumber;
+            showCaret: z.ZodDefault<z.ZodBoolean>;
+            showHandles: z.ZodDefault<z.ZodBoolean>;
+            visible: z.ZodOptional<z.ZodBoolean>;
+        }, z.core.$strict>>;
+    }, z.core.$strict>>;
+    appearance: z.ZodDefault<z.ZodObject<{
+        wallpaper: z.ZodDefault<z.ZodEnum<{
+            custom: "custom";
+            solid: "solid";
+            gradient: "gradient";
+            paper: "paper";
+        }>>;
+        color: z.ZodDefault<z.ZodString>;
+        showTimestamps: z.ZodDefault<z.ZodBoolean>;
+        showAvatars: z.ZodDefault<z.ZodBoolean>;
+        bubbleRadius: z.ZodDefault<z.ZodNumber>;
+        textSize: z.ZodDefault<z.ZodNumber>;
+        screenEffect: z.ZodDefault<z.ZodEnum<{
+            none: "none";
+            confetti: "confetti";
+            balloons: "balloons";
+            hearts: "hearts";
+            lasers: "lasers";
+            fireworks: "fireworks";
+            echo: "echo";
+            spotlight: "spotlight";
+        }>>;
+    }, z.core.$strict>>;
+    timeline: z.ZodDefault<z.ZodObject<{
+        duration: z.ZodDefault<z.ZodNumber>;
+        loop: z.ZodDefault<z.ZodBoolean>;
+        fps: z.ZodDefault<z.ZodNumber>;
+        tracks: z.ZodDefault<z.ZodArray<z.ZodObject<{
+            id: z.ZodString;
+            path: z.ZodString;
+            keyframes: z.ZodArray<z.ZodObject<{
+                at: z.ZodNumber;
+                value: z.ZodUnion<readonly [z.ZodString, z.ZodNumber, z.ZodBoolean, z.ZodNull]>;
+                easing: z.ZodDefault<z.ZodEnum<{
+                    typewriter: "typewriter";
+                    step: "step";
+                    linear: "linear";
+                    ease: "ease";
+                }>>;
+            }, z.core.$strict>>;
+        }, z.core.$strict>>>;
+    }, z.core.$strict>>;
+    extensions: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>>>;
+}, z.core.$strict>;
+export type Scene = z.infer<typeof SceneBaseSchema>;
+/** Standard RFC 6901 pointers, own-properties only; prototype traversal is never permitted. */
+export declare function pointerSegments(path: string): string[];
+export declare function readPointer(root: unknown, path: string): unknown;
+export declare function writePointer(root: unknown, path: string, next: unknown): void;
+/** Integer animation behavior follows the schema, not a list of field names. */
+export declare function isIntegerPresentationField(path: string): boolean;
+export declare const SceneSchema: z.ZodObject<{
+    version: z.ZodLiteral<1>;
+    id: z.ZodString;
+    title: z.ZodDefault<z.ZodString>;
+    rendererVersion: z.ZodDefault<z.ZodLiteral<"2026.1">>;
+    platform: z.ZodDefault<z.ZodEnum<{
+        imessage: "imessage";
+        whatsapp: "whatsapp";
+        telegram: "telegram";
+        instagram: "instagram";
+    }>>;
+    theme: z.ZodDefault<z.ZodEnum<{
+        light: "light";
+        dark: "dark";
+    }>>;
+    device: z.ZodDefault<z.ZodObject<{
+        width: z.ZodDefault<z.ZodNumber>;
+        height: z.ZodDefault<z.ZodNumber>;
+        frame: z.ZodDefault<z.ZodEnum<{
+            none: "none";
+            iphone: "iphone";
+        }>>;
+        scale: z.ZodDefault<z.ZodNumber>;
+    }, z.core.$strict>>;
+    statusBar: z.ZodDefault<z.ZodObject<{
+        time: z.ZodDefault<z.ZodString>;
+        battery: z.ZodDefault<z.ZodNumber>;
+        charging: z.ZodDefault<z.ZodBoolean>;
+        wifi: z.ZodDefault<z.ZodNumber>;
+        cellular: z.ZodDefault<z.ZodNumber>;
+        carrier: z.ZodDefault<z.ZodString>;
+        visible: z.ZodDefault<z.ZodBoolean>;
+    }, z.core.$strict>>;
+    participants: z.ZodArray<z.ZodObject<{
+        id: z.ZodString;
+        name: z.ZodString;
+        avatar: z.ZodOptional<z.ZodString>;
+        color: z.ZodDefault<z.ZodString>;
+        isSelf: z.ZodDefault<z.ZodBoolean>;
+    }, z.core.$strict>>;
+    contact: z.ZodObject<{
+        kind: z.ZodOptional<z.ZodEnum<{
+            direct: "direct";
+            group: "group";
+        }>>;
+        name: z.ZodString;
+        subtitle: z.ZodDefault<z.ZodString>;
+        avatar: z.ZodOptional<z.ZodString>;
+        participantIds: z.ZodArray<z.ZodString>;
+    }, z.core.$strict>;
+    header: z.ZodOptional<z.ZodObject<{
+        transport: z.ZodDefault<z.ZodEnum<{
+            imessage: "imessage";
+            sms: "sms";
+            rcs: "rcs";
+        }>>;
+        backCount: z.ZodDefault<z.ZodNumber>;
+        video: z.ZodDefault<z.ZodEnum<{
+            enabled: "enabled";
+            disabled: "disabled";
+            hidden: "hidden";
+        }>>;
+        call: z.ZodDefault<z.ZodEnum<{
+            enabled: "enabled";
+            disabled: "disabled";
+            hidden: "hidden";
+        }>>;
+    }, z.core.$strict>>;
+    conversation: z.ZodOptional<z.ZodObject<{
+        muted: z.ZodDefault<z.ZodBoolean>;
+        focus: z.ZodOptional<z.ZodObject<{
+            visible: z.ZodDefault<z.ZodBoolean>;
+            name: z.ZodString;
+            notifyAnyway: z.ZodDefault<z.ZodBoolean>;
+        }, z.core.$strict>>;
+        unread: z.ZodOptional<z.ZodObject<{
+            visible: z.ZodDefault<z.ZodBoolean>;
+            messageId: z.ZodString;
+            count: z.ZodDefault<z.ZodNumber>;
+        }, z.core.$strict>>;
+        pinned: z.ZodOptional<z.ZodObject<{
+            visible: z.ZodDefault<z.ZodBoolean>;
+            messageId: z.ZodString;
+            label: z.ZodDefault<z.ZodString>;
+        }, z.core.$strict>>;
+    }, z.core.$strict>>;
+    interactions: z.ZodOptional<z.ZodObject<{
+        attachmentTray: z.ZodOptional<z.ZodObject<{
+            visible: z.ZodDefault<z.ZodBoolean>;
+            kind: z.ZodDefault<z.ZodEnum<{
+                apps: "apps";
+                photos: "photos";
+                stickers: "stickers";
+            }>>;
+            items: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                id: z.ZodString;
+                url: z.ZodOptional<z.ZodString>;
+                emoji: z.ZodOptional<z.ZodString>;
+                label: z.ZodDefault<z.ZodString>;
+            }, z.core.$strict>>>;
+        }, z.core.$strict>>;
+        tapbackPicker: z.ZodOptional<z.ZodObject<{
+            visible: z.ZodDefault<z.ZodBoolean>;
+            messageId: z.ZodString;
+            selectedEmoji: z.ZodDefault<z.ZodString>;
+            emojis: z.ZodDefault<z.ZodArray<z.ZodString>>;
+            showMenu: z.ZodDefault<z.ZodBoolean>;
+        }, z.core.$strict>>;
+        editHistory: z.ZodOptional<z.ZodObject<{
+            visible: z.ZodDefault<z.ZodBoolean>;
+            messageId: z.ZodString;
+        }, z.core.$strict>>;
+    }, z.core.$strict>>;
+    messages: z.ZodDefault<z.ZodArray<z.ZodObject<{
+        id: z.ZodString;
+        senderId: z.ZodString;
+        at: z.ZodDefault<z.ZodNumber>;
+        kind: z.ZodDefault<z.ZodEnum<{
+            file: "file";
+            link: "link";
+            text: "text";
+            video: "video";
+            image: "image";
+            voice: "voice";
+            location: "location";
+            contact: "contact";
+            sticker: "sticker";
+            poll: "poll";
+            payment: "payment";
+            system: "system";
+        }>>;
+        text: z.ZodDefault<z.ZodString>;
+        textRuns: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            id: z.ZodString;
+            text: z.ZodString;
+            bold: z.ZodDefault<z.ZodBoolean>;
+            italic: z.ZodDefault<z.ZodBoolean>;
+            underline: z.ZodDefault<z.ZodBoolean>;
+            strikethrough: z.ZodDefault<z.ZodBoolean>;
+            effect: z.ZodDefault<z.ZodEnum<{
+                big: "big";
+                small: "small";
+                none: "none";
+                shake: "shake";
+                nod: "nod";
+                explode: "explode";
+                ripple: "ripple";
+                bloom: "bloom";
+                jitter: "jitter";
+            }>>;
+        }, z.core.$strict>>>;
+        stickers: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            id: z.ZodString;
+            emoji: z.ZodDefault<z.ZodString>;
+            url: z.ZodOptional<z.ZodString>;
+            x: z.ZodDefault<z.ZodNumber>;
+            y: z.ZodDefault<z.ZodNumber>;
+            scale: z.ZodDefault<z.ZodNumber>;
+            rotation: z.ZodDefault<z.ZodNumber>;
+            zIndex: z.ZodDefault<z.ZodNumber>;
+            at: z.ZodDefault<z.ZodNumber>;
+            participantId: z.ZodOptional<z.ZodString>;
+        }, z.core.$strict>>>;
+        timestamp: z.ZodDefault<z.ZodString>;
+        dateLabel: z.ZodDefault<z.ZodString>;
+        status: z.ZodDefault<z.ZodEnum<{
+            sending: "sending";
+            sent: "sent";
+            delivered: "delivered";
+            read: "read";
+            failed: "failed";
+        }>>;
+        statusAt: z.ZodOptional<z.ZodNumber>;
+        statusText: z.ZodDefault<z.ZodString>;
+        edited: z.ZodDefault<z.ZodBoolean>;
+        editedAt: z.ZodDefault<z.ZodString>;
+        editHistory: z.ZodOptional<z.ZodObject<{
+            versions: z.ZodArray<z.ZodObject<{
+                id: z.ZodString;
+                text: z.ZodString;
+                editedAt: z.ZodDefault<z.ZodString>;
+            }, z.core.$strict>>;
+        }, z.core.$strict>>;
+        unsent: z.ZodDefault<z.ZodBoolean>;
+        scheduledAt: z.ZodOptional<z.ZodString>;
+        readBy: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        replyTo: z.ZodOptional<z.ZodString>;
+        reactions: z.ZodDefault<z.ZodArray<z.ZodObject<{
+            id: z.ZodString;
+            emoji: z.ZodString;
+            participantId: z.ZodString;
+            at: z.ZodDefault<z.ZodNumber>;
+        }, z.core.$strict>>>;
+        effect: z.ZodDefault<z.ZodEnum<{
+            none: "none";
+            shake: "shake";
+            ripple: "ripple";
+            bloom: "bloom";
+            jitter: "jitter";
+            slam: "slam";
+            loud: "loud";
+            gentle: "gentle";
+            "invisible-ink": "invisible-ink";
+        }>>;
+        presentation: z.ZodDefault<z.ZodObject<{
+            opacity: z.ZodDefault<z.ZodNumber>;
+            scale: z.ZodDefault<z.ZodNumber>;
+            offsetX: z.ZodDefault<z.ZodNumber>;
+            offsetY: z.ZodDefault<z.ZodNumber>;
+        }, z.core.$strict>>;
+        media: z.ZodOptional<z.ZodObject<{
+            url: z.ZodOptional<z.ZodString>;
+            videoUrl: z.ZodOptional<z.ZodString>;
+            alt: z.ZodDefault<z.ZodString>;
+            width: z.ZodDefault<z.ZodNumber>;
+            height: z.ZodDefault<z.ZodNumber>;
+            duration: z.ZodDefault<z.ZodNumber>;
+            poster: z.ZodOptional<z.ZodString>;
+            waveform: z.ZodDefault<z.ZodArray<z.ZodNumber>>;
+            transcript: z.ZodOptional<z.ZodString>;
+            playhead: z.ZodDefault<z.ZodNumber>;
+            playbackRate: z.ZodDefault<z.ZodNumber>;
+            playing: z.ZodDefault<z.ZodBoolean>;
+            keep: z.ZodDefault<z.ZodBoolean>;
+        }, z.core.$strict>>;
+        file: z.ZodOptional<z.ZodObject<{
+            name: z.ZodString;
+            size: z.ZodDefault<z.ZodNumber>;
+            mimeType: z.ZodDefault<z.ZodString>;
+        }, z.core.$strict>>;
+        link: z.ZodOptional<z.ZodObject<{
+            url: z.ZodString;
+            title: z.ZodString;
+            description: z.ZodDefault<z.ZodString>;
+            image: z.ZodOptional<z.ZodString>;
+        }, z.core.$strict>>;
+        location: z.ZodOptional<z.ZodObject<{
+            latitude: z.ZodNumber;
+            longitude: z.ZodNumber;
+            label: z.ZodString;
+            address: z.ZodDefault<z.ZodString>;
+        }, z.core.$strict>>;
+        sharedContact: z.ZodOptional<z.ZodObject<{
+            name: z.ZodString;
+            phone: z.ZodDefault<z.ZodString>;
+            avatar: z.ZodOptional<z.ZodString>;
+        }, z.core.$strict>>;
+        sticker: z.ZodOptional<z.ZodObject<{
+            emoji: z.ZodDefault<z.ZodString>;
+            url: z.ZodOptional<z.ZodString>;
+            alt: z.ZodDefault<z.ZodString>;
+        }, z.core.$strict>>;
+        poll: z.ZodOptional<z.ZodObject<{
+            question: z.ZodString;
+            options: z.ZodArray<z.ZodObject<{
+                id: z.ZodString;
+                text: z.ZodString;
+                votes: z.ZodDefault<z.ZodNumber>;
+            }, z.core.$strict>>;
+            totalVotes: z.ZodDefault<z.ZodNumber>;
+        }, z.core.$strict>>;
+        payment: z.ZodOptional<z.ZodObject<{
+            amount: z.ZodNumber;
+            currency: z.ZodDefault<z.ZodString>;
+            note: z.ZodDefault<z.ZodString>;
+        }, z.core.$strict>>;
+        extensions: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>>>;
+    }, z.core.$strict>>>;
+    composer: z.ZodDefault<z.ZodObject<{
+        text: z.ZodDefault<z.ZodString>;
+        placeholder: z.ZodDefault<z.ZodString>;
+        typing: z.ZodDefault<z.ZodObject<{
+            visible: z.ZodDefault<z.ZodBoolean>;
+            participantId: z.ZodOptional<z.ZodString>;
+        }, z.core.$strict>>;
+        keyboard: z.ZodDefault<z.ZodEnum<{
+            emoji: "emoji";
+            hidden: "hidden";
+            alphabetic: "alphabetic";
+        }>>;
+        focused: z.ZodDefault<z.ZodBoolean>;
+        context: z.ZodOptional<z.ZodObject<{
+            mode: z.ZodDefault<z.ZodEnum<{
+                normal: "normal";
+                reply: "reply";
+                edit: "edit";
+                recording: "recording";
+                scheduled: "scheduled";
+            }>>;
+            messageId: z.ZodOptional<z.ZodString>;
+            scheduledAt: z.ZodDefault<z.ZodString>;
+            recording: z.ZodDefault<z.ZodObject<{
+                duration: z.ZodDefault<z.ZodNumber>;
+                locked: z.ZodDefault<z.ZodBoolean>;
+                paused: z.ZodDefault<z.ZodBoolean>;
+                waveform: z.ZodDefault<z.ZodArray<z.ZodNumber>>;
+            }, z.core.$strict>>;
+        }, z.core.$strict>>;
+        selection: z.ZodOptional<z.ZodObject<{
+            start: z.ZodNumber;
+            end: z.ZodNumber;
+            showCaret: z.ZodDefault<z.ZodBoolean>;
+            showHandles: z.ZodDefault<z.ZodBoolean>;
+            visible: z.ZodOptional<z.ZodBoolean>;
+        }, z.core.$strict>>;
+    }, z.core.$strict>>;
+    appearance: z.ZodDefault<z.ZodObject<{
+        wallpaper: z.ZodDefault<z.ZodEnum<{
+            custom: "custom";
+            solid: "solid";
+            gradient: "gradient";
+            paper: "paper";
+        }>>;
+        color: z.ZodDefault<z.ZodString>;
+        showTimestamps: z.ZodDefault<z.ZodBoolean>;
+        showAvatars: z.ZodDefault<z.ZodBoolean>;
+        bubbleRadius: z.ZodDefault<z.ZodNumber>;
+        textSize: z.ZodDefault<z.ZodNumber>;
+        screenEffect: z.ZodDefault<z.ZodEnum<{
+            none: "none";
+            confetti: "confetti";
+            balloons: "balloons";
+            hearts: "hearts";
+            lasers: "lasers";
+            fireworks: "fireworks";
+            echo: "echo";
+            spotlight: "spotlight";
+        }>>;
+    }, z.core.$strict>>;
+    timeline: z.ZodDefault<z.ZodObject<{
+        duration: z.ZodDefault<z.ZodNumber>;
+        loop: z.ZodDefault<z.ZodBoolean>;
+        fps: z.ZodDefault<z.ZodNumber>;
+        tracks: z.ZodDefault<z.ZodArray<z.ZodObject<{
+            id: z.ZodString;
+            path: z.ZodString;
+            keyframes: z.ZodArray<z.ZodObject<{
+                at: z.ZodNumber;
+                value: z.ZodUnion<readonly [z.ZodString, z.ZodNumber, z.ZodBoolean, z.ZodNull]>;
+                easing: z.ZodDefault<z.ZodEnum<{
+                    typewriter: "typewriter";
+                    step: "step";
+                    linear: "linear";
+                    ease: "ease";
+                }>>;
+            }, z.core.$strict>>;
+        }, z.core.$strict>>>;
+    }, z.core.$strict>>;
+    extensions: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>>>;
+}, z.core.$strict>;
+export declare function parseScene(input: unknown): Scene;
+export type PresentationField = {
+    path: string;
+    value: string | number | boolean | null;
+    type: "text" | "number" | "boolean" | "null";
+    choices?: string[];
+    minimum?: number;
+    maximum?: number;
+    integer?: boolean;
+    maxLength?: number;
+    typewriter: boolean;
+};
+/** The manual motion editor derives its controls from the same target contract as validation. */
+export declare function presentationField(scene: Scene, path: string): PresentationField;
+export {};

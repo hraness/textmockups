@@ -1,0 +1,3087 @@
+/* Textmock 2026.1. All geometry is in logical CSS points; the studio scales the whole device. */
+.tm-phone {
+  --tm-screen: #fff;
+  --tm-ink: #08090c;
+  --tm-muted: #89898e;
+  --tm-in: #e9e9eb;
+  --tm-out: #26a5fa;
+  --tm-out-ink: #fff;
+  --tm-chrome: rgb(255 255 255 / 0.84);
+  --tm-tint: #0085ff;
+  --tm-field: rgb(255 255 255 / 0.8);
+  --tm-line: rgb(60 60 67 / 0.17);
+  --tm-keyboard: #d3d5db;
+  --tm-key: #fff;
+  --tm-key-mod: #aeb3be;
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 2px solid #b3b4b9;
+  border-radius: 58px;
+  background: linear-gradient(
+    125deg,
+    #ececee,
+    #919295 28%,
+    #c9c9ce 46%,
+    #86868c 65%,
+    #e0e0e3
+  );
+  box-shadow:
+    inset 0 0 0 1px #f4f4f7,
+    inset 0 0 0 7px #09090b,
+    0 2px 2px #1712201a,
+    0 28px 65px -23px #28233450,
+    0 7px 18px -10px #14101b30;
+  font:
+    17px/1.3 -apple-system,
+    BlinkMacSystemFont,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.35px;
+  color: var(--tm-ink);
+  text-align: left;
+  isolation: isolate;
+  flex: none;
+}
+.tm-phone *,
+.tm-phone *::before,
+.tm-phone *::after {
+  box-sizing: border-box;
+}
+.tm-phone svg {
+  flex-shrink: 0;
+  display: block;
+}
+.tm-phone i,
+.tm-phone b,
+.tm-phone strong,
+.tm-phone small {
+  font-style: normal;
+}
+.tm-phone[data-theme="dark"] {
+  color-scheme: dark;
+  --tm-screen: #000;
+  --tm-ink: #f7f7f9;
+  --tm-muted: #96969d;
+  --tm-in: #27272a;
+  --tm-out: #0788fa;
+  --tm-chrome: rgb(27 27 29 / 0.9);
+  --tm-tint: #2d9aff;
+  --tm-field: rgb(30 30 32 / 0.84);
+  --tm-line: rgb(160 160 166 / 0.28);
+  --tm-keyboard: #28292d;
+  --tm-key: #606166;
+  --tm-key-mod: #414248;
+  border-color: #696b73;
+  background: linear-gradient(
+    120deg,
+    #6b6c73,
+    #24252a 35%,
+    #595a63 70%,
+    #242529
+  );
+  box-shadow:
+    inset 0 0 0 1px #9899a1,
+    inset 0 0 0 7px #09090b,
+    0 2px 2px #1712201a,
+    0 28px 65px -23px #28233470,
+    0 7px 18px -10px #14101b50;
+}
+.tm-phone[data-frame="none"] {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+.tm-phone[data-frame="none"] .tm-screen {
+  border-radius: 0;
+}
+.tm-phone[data-exporting][data-frame="iphone"] {
+  box-shadow:
+    inset 0 0 0 1px #c2c2c8,
+    inset 0 0 0 7px #09090b;
+}
+.tm-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 46px;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--tm-screen);
+}
+.tm-side-button {
+  position: absolute;
+  left: -4px;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #88898f, #cdced3, #94959a);
+}
+.tm-side-action {
+  top: 111px;
+  height: 29px;
+}
+.tm-side-volume {
+  top: 169px;
+  height: 54px;
+  box-shadow: 0 68px 0 #a1a2a8;
+}
+.tm-side-power {
+  left: auto;
+  right: -4px;
+  top: 200px;
+  height: 89px;
+}
+.tm-wallpaper {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--tm-screen);
+}
+.tm-screen[data-wallpaper="custom"] .tm-wallpaper {
+  background: var(--tm-wall-color);
+}
+.tm-screen[data-wallpaper="gradient"] .tm-wallpaper {
+  background:
+    radial-gradient(ellipse at 14% 20%, #e1d9f099, transparent 66%),
+    radial-gradient(ellipse at 90% 75%, #deeddf, transparent 65%),
+    var(--tm-screen);
+}
+.tm-phone[data-theme="dark"]
+  .tm-screen[data-wallpaper="gradient"]
+  .tm-wallpaper {
+  background:
+    radial-gradient(ellipse at 14% 20%, #302845, transparent 66%),
+    radial-gradient(ellipse at 90% 75%, #142f2f, transparent 65%), #0e121a;
+}
+.tm-screen[data-wallpaper="paper"] .tm-wallpaper {
+  background-color: #f3efe9;
+  background-image: radial-gradient(#a795741c 0.6px, transparent 0.8px);
+  background-size: 6px 6px;
+}
+.tm-island {
+  position: absolute;
+  z-index: 12;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 119px;
+  height: 34px;
+  border-radius: 22px;
+  background: #000;
+  box-shadow: inset 0 0 0 0.5px #ffffff0d;
+}
+.tm-island i {
+  position: absolute;
+  right: 22px;
+  top: 12px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 35%, #172130, #090b10 65%);
+}
+.tm-status-bar {
+  position: absolute;
+  z-index: 11;
+  inset: 0 0 auto;
+  height: 54px;
+  padding: 0 23px 0 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--tm-ink);
+  pointer-events: none;
+}
+.tm-clock {
+  min-width: 49px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.45px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  padding-top: 1px;
+}
+.tm-status-right {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.tm-carrier {
+  font-size: 9px;
+  position: absolute;
+  right: 24px;
+  top: 42px;
+  max-width: 90px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tm-battery {
+  position: relative;
+  width: 25px;
+  height: 12px;
+  border: 1px solid color-mix(in srgb, var(--tm-ink) 32%, transparent);
+  border-radius: 3.5px;
+  padding: 1px;
+  margin-left: 1px;
+}
+.tm-battery::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: 3px;
+  height: 4px;
+  width: 1.5px;
+  border-radius: 0 2px 2px 0;
+  background: var(--tm-ink);
+  opacity: 0.45;
+}
+.tm-battery i {
+  display: block;
+  height: 100%;
+  background: var(--tm-ink);
+  border-radius: 1.8px;
+}
+.tm-battery[data-low] i {
+  background: #ff453a;
+}
+.tm-battery[data-charging] i {
+  background: #34c759;
+}
+.tm-battery b {
+  position: absolute;
+  font-size: 15px;
+  line-height: 13px;
+  left: 9px;
+  top: -1px;
+  color: var(--tm-ink);
+  text-shadow: 0 0 2px var(--tm-screen);
+}
+.tm-phone-header {
+  position: absolute;
+  z-index: 8;
+  inset: 0 0 auto;
+  height: 142px;
+  pointer-events: none;
+  background: linear-gradient(
+    var(--tm-screen) 0 46%,
+    color-mix(in srgb, var(--tm-screen) 87%, transparent) 76%,
+    transparent
+  );
+}
+.tm-nav-back {
+  position: absolute;
+  top: 59px;
+  left: 13px;
+  display: grid;
+  place-items: center;
+  width: 41px;
+  height: 41px;
+  border-radius: 50%;
+  background: var(--tm-chrome);
+  border: 0.5px solid var(--tm-line);
+  box-shadow:
+    inset 0 1px 1px #ffffff70,
+    0 2px 8px #00000004;
+  color: var(--tm-ink);
+}
+.tm-im-contact {
+  position: absolute;
+  top: 56px;
+  left: 64px;
+  right: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.tm-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 45px;
+  height: 45px;
+  overflow: hidden;
+  border-radius: 50%;
+  color: #fff;
+  background: linear-gradient(155deg, #b6b7c1, #9396a3);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+.tm-avatar img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+.tm-im-name {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  max-width: 100%;
+  padding: 3px 9px 4px;
+  border-radius: 18px;
+  background: var(--tm-chrome);
+  border: 0.5px solid var(--tm-line);
+  box-shadow: inset 0 1px 1px #ffffff60;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  line-height: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tm-im-name svg {
+  color: var(--tm-muted);
+  width: 7px;
+}
+.tm-contact-subtitle {
+  font-size: 10px;
+  line-height: 12px;
+  color: var(--tm-muted);
+}
+.tm-im-video {
+  position: absolute;
+  top: 59px;
+  right: 13px;
+  display: grid;
+  place-items: center;
+  width: 41px;
+  height: 41px;
+  border-radius: 50%;
+  background: var(--tm-chrome);
+  border: 0.5px solid var(--tm-line);
+  box-shadow:
+    inset 0 1px 1px #ffffff70,
+    0 2px 8px #00000004;
+  color: var(--tm-ink);
+}
+.tm-thread {
+  position: absolute;
+  top: 144px;
+  left: 0;
+  right: 0;
+  bottom: 82px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: safe flex-end;
+}
+.tm-thread-content {
+  width: 100%;
+  padding: 0 13px 8px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+.tm-message-block {
+  width: 100%;
+  margin-top: 3px;
+}
+.tm-message-block[data-first] {
+  margin-top: 10px;
+}
+.tm-message-block:first-child {
+  margin-top: 0;
+}
+.tm-date {
+  text-align: center;
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--tm-muted);
+  margin: 7px 0 11px;
+  letter-spacing: -0.05px;
+}
+.tm-date span {
+  white-space: pre-wrap;
+}
+.tm-message-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+}
+.tm-message-row[data-side="out"] {
+  justify-content: flex-end;
+}
+.tm-message-stack {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 80%;
+}
+.tm-message-row[data-side="out"] .tm-message-stack {
+  align-items: flex-end;
+}
+.tm-bubble {
+  position: relative;
+  display: block;
+  max-width: 100%;
+  min-width: 30px;
+  border-radius: var(--tm-radius);
+  padding: 7px 12px 8px;
+  background: var(--tm-in);
+  color: var(--tm-ink);
+  font-size: var(--tm-type);
+  line-height: 1.28;
+  letter-spacing: -0.36px;
+  overflow-wrap: anywhere;
+  transform-origin: bottom left;
+  flex: none;
+  outline: 0 solid transparent;
+}
+.tm-bubble[data-side="out"] {
+  background: var(--tm-out);
+  color: var(--tm-out-ink);
+  transform-origin: bottom right;
+}
+.tm-phone[data-platform="imessage"] .tm-bubble[data-side="out"] {
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--tm-out), #fff 7%),
+    var(--tm-out)
+  );
+}
+.tm-bubble-text {
+  position: relative;
+  z-index: 1;
+  white-space: pre-wrap;
+}
+.tm-bubble[data-interactive] {
+  cursor: pointer;
+}
+.tm-bubble[data-selected] {
+  outline: 2px solid #8e77e6;
+  outline-offset: 4px;
+}
+.tm-bubble:focus-visible {
+  outline: 2px solid #8e77e6;
+  outline-offset: 4px;
+}
+.tm-bubble[data-emoji] {
+  padding: 1px 3px;
+  background: none !important;
+  font-size: 47px;
+  line-height: 1.14;
+  letter-spacing: 0;
+}
+.tm-tail {
+  position: absolute;
+  bottom: -0.5px;
+  left: -6px;
+  width: 23px;
+  height: 18px;
+  fill: var(--tm-in);
+  transform: scaleX(-1);
+  overflow: visible;
+}
+.tm-bubble[data-side="out"] .tm-tail {
+  left: auto;
+  right: -6px;
+  transform: none;
+  fill: var(--tm-out);
+}
+.tm-receipt {
+  color: var(--tm-muted);
+  font-size: 10px;
+  line-height: 14px;
+  font-weight: 500;
+  letter-spacing: -0.05px;
+  margin-top: 3px;
+  padding-right: 1px;
+}
+.tm-receipt[data-status="failed"] {
+  color: #ff3b30;
+}
+.tm-receipt span {
+  font-weight: 400;
+}
+.tm-message-time {
+  font-size: 10px;
+  color: var(--tm-muted);
+  padding: 3px 2px;
+}
+.tm-scheduled-label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: center;
+  color: var(--tm-muted);
+  font-size: 11px;
+  line-height: 15px;
+  padding: 10px 0 15px;
+}
+.tm-scheduled-label b {
+  color: var(--tm-tint);
+  font-weight: 400;
+}
+.tm-phone[data-platform="imessage"] .tm-bubble[data-scheduled] {
+  background: transparent;
+  color: var(--tm-ink);
+  border: 1px dashed color-mix(in srgb, var(--tm-out) 55%, transparent);
+}
+.tm-phone[data-platform="imessage"] .tm-bubble[data-scheduled] .tm-tail {
+  fill: var(--tm-screen);
+  stroke: color-mix(in srgb, var(--tm-out) 55%, transparent);
+  stroke-width: 0.7;
+  stroke-dasharray: 4 4;
+}
+.tm-row-avatar {
+  width: 26px;
+  height: 26px;
+  font-size: 11px;
+}
+.tm-sender-name {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0 0 4px 10px;
+}
+.tm-system-message {
+  align-self: center;
+  text-align: center;
+  max-width: 88%;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--tm-muted);
+  padding: 10px 0;
+}
+.tm-reply {
+  border-left: 2px solid currentColor;
+  padding: 2px 8px 3px;
+  margin: 2px 0 7px;
+  background: #00000009;
+  border-radius: 1px 7px 7px 1px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.tm-reply b,
+.tm-reply span {
+  display: block;
+}
+.tm-reply span {
+  opacity: 0.75;
+  max-width: 220px;
+  max-height: 32px;
+  overflow: hidden;
+  white-space: pre-wrap;
+}
+.tm-phone[data-platform="imessage"] .tm-message-row[data-reactions] {
+  padding-top: 22px;
+}
+.tm-reactions {
+  position: absolute;
+  z-index: 3;
+  top: -23px;
+  right: -7px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.tm-bubble[data-side="out"] .tm-reactions {
+  right: auto;
+  left: -7px;
+}
+.tm-reaction {
+  position: relative;
+  min-width: 34px;
+  height: 29px;
+  border-radius: 20px;
+  padding: 3px 7px;
+  background: var(--tm-in);
+  color: var(--tm-ink);
+  box-shadow: 0 0 0 2px var(--tm-screen);
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  line-height: 1;
+}
+.tm-reaction[data-self] {
+  background: var(--tm-out);
+}
+.tm-reaction > span {
+  position: relative;
+  z-index: 2;
+}
+.tm-reaction i {
+  position: absolute;
+  bottom: -4px;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: inherit;
+  box-shadow: 0 0 0 2px var(--tm-screen);
+  z-index: -1;
+}
+.tm-reaction i:last-child {
+  bottom: -9px;
+  right: -5px;
+  width: 5px;
+  height: 5px;
+}
+.tm-bubble[data-side="out"] .tm-reaction i {
+  right: auto;
+  left: 0;
+}
+.tm-bubble[data-side="out"] .tm-reaction i:last-child {
+  left: -5px;
+}
+.tm-typing-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+  color: var(--tm-muted);
+  font-size: 11px;
+}
+.tm-typing {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 56px;
+  height: 34px;
+  gap: 4px;
+  background: var(--tm-in);
+  border-radius: 19px;
+  margin-left: 3px;
+  margin-bottom: 4px;
+}
+.tm-typing i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--tm-muted);
+}
+.tm-typing b {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  left: -1px;
+  bottom: -1px;
+  background: var(--tm-in);
+  border-radius: 50%;
+}
+.tm-typing b:last-child {
+  width: 5px;
+  height: 5px;
+  bottom: -5px;
+  left: -5px;
+}
+.tm-empty-conversation {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 10px;
+  opacity: 0.5;
+  margin-top: 150px;
+  font-size: 13px;
+}
+.tm-input-region {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9;
+}
+.tm-composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 9px;
+  padding: 8px 11px 34px;
+  min-height: 80px;
+  background: linear-gradient(transparent, var(--tm-screen) 12%);
+}
+.tm-add {
+  display: grid;
+  place-items: center;
+  width: 37px;
+  height: 37px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--tm-chrome);
+  border: 0.5px solid var(--tm-line);
+  box-shadow: inset 0 1px 1px #ffffff60;
+}
+.tm-composer-field {
+  min-height: 37px;
+  max-height: 116px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 11px 7px 14px;
+  border: 0.5px solid var(--tm-line);
+  border-radius: 22px;
+  background: var(--tm-field);
+  box-shadow:
+    inset 0 1px 2px #ffffff80,
+    0 1px 7px #00000003;
+  flex: 1;
+  min-width: 0;
+  color: var(--tm-muted);
+}
+.tm-composer-field > .tm-composer-text,
+.tm-composer-placeholder {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 16px;
+  line-height: 21px;
+  letter-spacing: -0.35px;
+}
+.tm-composer-placeholder {
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--tm-muted) 63%, var(--tm-screen));
+}
+.tm-composer-text {
+  color: var(--tm-ink);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.tm-composer-field > svg {
+  opacity: 0.8;
+}
+.tm-caret {
+  display: inline-block;
+  width: 2px;
+  height: 19px;
+  margin-left: 1px;
+  background: var(--tm-tint);
+  vertical-align: -4px;
+  border-radius: 1px;
+}
+.tm-send {
+  display: grid;
+  place-items: center;
+  width: 29px;
+  height: 29px;
+  flex: none;
+  background: var(--tm-tint);
+  color: #fff;
+  border-radius: 50%;
+}
+.tm-composer-field .tm-send {
+  margin: -3px -7px -3px 0;
+}
+.tm-home-indicator {
+  position: absolute;
+  z-index: 12;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 129px;
+  height: 5px;
+  border-radius: 4px;
+  background: var(--tm-ink);
+}
+.tm-watermark {
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  box-sizing: border-box;
+  position: absolute;
+  z-index: 20;
+  top: 141px;
+  left: 9px;
+  width: 99px;
+  height: 35px;
+  padding: 5px 8px 4px;
+  border-radius: 9px;
+  color: #fff;
+  box-shadow:
+    0 2px 9px #11112332,
+    inset 0 0.5px 0 #ffffff25;
+  border: 0.5px solid #ffffff25;
+  letter-spacing: 0;
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+}
+.tm-watermark span {
+  display: block;
+  font-size: 8px;
+  line-height: 10px;
+  font-weight: 400;
+  color: #ffffffe0;
+}
+.tm-watermark strong {
+  font-size: 10.5px;
+  line-height: 12px;
+  font-weight: 600;
+  letter-spacing: -0.15px;
+  display: block;
+}
+.tm-watermark i {
+  font-style: normal;
+  position: absolute;
+  right: 7px;
+  top: 4px;
+  font-size: 10px;
+  opacity: 0.7;
+}
+.tm-phone[data-theme="dark"] .tm-composer-field,
+.tm-phone[data-theme="dark"] .tm-im-name,
+.tm-phone[data-theme="dark"] .tm-add,
+.tm-phone[data-theme="dark"] .tm-nav-back {
+  box-shadow: inset 0 0.5px 0.5px #ffffff15;
+}
+.tm-screen[data-status-hidden] .tm-phone-header {
+  height: 90px;
+}
+.tm-screen[data-status-hidden] .tm-nav-back,
+.tm-screen[data-status-hidden] .tm-im-contact,
+.tm-screen[data-status-hidden] .tm-im-video {
+  top: 9px;
+}
+.tm-screen[data-status-hidden] .tm-thread {
+  top: 93px;
+}
+.tm-screen[data-status-hidden] .tm-watermark {
+  top: 90px;
+}
+
+/* Rich messages share native bubble geometry and preserve authored captions. */
+.tm-bubble[data-kind="image"],
+.tm-bubble[data-kind="video"],
+.tm-bubble[data-kind="link"],
+.tm-bubble[data-kind="location"] {
+  padding: 0;
+  width: 251px;
+}
+.tm-bubble[data-kind="image"] > .tm-bubble-text,
+.tm-bubble[data-kind="video"] > .tm-bubble-text,
+.tm-bubble[data-kind="link"] > .tm-bubble-text,
+.tm-bubble[data-kind="location"] > .tm-bubble-text {
+  display: block;
+  padding: 7px 11px 9px;
+}
+.tm-media {
+  position: relative;
+  width: 100%;
+  min-height: 80px;
+  max-height: 310px;
+  overflow: hidden;
+  border-radius: inherit;
+  background: #bdd1d6;
+}
+.tm-media img,
+.tm-landscape {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.tm-media-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #0006;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  backdrop-filter: blur(8px);
+}
+.tm-media-duration {
+  position: absolute;
+  right: 9px;
+  bottom: 8px;
+  padding: 1px 5px;
+  background: #0006;
+  color: #fff;
+  font-size: 11px;
+  border-radius: 5px;
+}
+.tm-voice {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  width: 235px;
+  min-height: 43px;
+}
+.tm-voice-play {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  flex: none;
+}
+.tm-waveform {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  gap: 2px;
+}
+.tm-waveform i {
+  width: 2.5px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.75;
+  flex: 1;
+}
+.tm-voice-duration {
+  font-size: 11px;
+  letter-spacing: 0;
+  opacity: 0.8;
+}
+.tm-file {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 52px;
+  min-width: 215px;
+  max-width: 260px;
+}
+.tm-file-icon {
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  width: 40px;
+  height: 45px;
+  background: #ffffff50;
+  flex: none;
+}
+.tm-file > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.tm-file strong {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  font-weight: 600;
+}
+.tm-file small {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  opacity: 0.7;
+}
+.tm-link-card {
+  overflow: hidden;
+  border-radius: inherit;
+}
+.tm-link-card > img {
+  display: block;
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+}
+.tm-link-art {
+  height: 125px;
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  background: linear-gradient(135deg, #a09cc7, #e0d9ed);
+  color: #343247;
+}
+.tm-link-art > span:first-child {
+  font-size: 55px;
+  line-height: 1;
+  font-weight: 300;
+}
+.tm-link-art > span:last-child {
+  font-size: 11px;
+  text-align: right;
+  max-width: 150px;
+}
+.tm-link-card > div:last-child {
+  padding: 10px 12px;
+}
+.tm-link-card strong {
+  font-size: 14px;
+  line-height: 1.3;
+  display: block;
+}
+.tm-link-card p {
+  margin: 4px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  opacity: 0.75;
+}
+.tm-link-card small {
+  display: block;
+  font-size: 10px;
+  margin-top: 5px;
+  opacity: 0.65;
+}
+.tm-map {
+  position: relative;
+  height: 130px;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0 25px,
+      #fff 25px 30px,
+      transparent 30px 61px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      #e3e5d9 0 44px,
+      #fff 44px 50px,
+      #e5e7dc 50px 99px
+    );
+  overflow: hidden;
+  border-radius: var(--tm-radius) var(--tm-radius) 0 0;
+}
+.tm-map > i {
+  position: absolute;
+  background: #f8d680;
+  transform: rotate(-32deg);
+  width: 360px;
+  height: 8px;
+  top: 58px;
+  left: -40px;
+  box-shadow: 0 0 0 2px #fff;
+}
+.tm-map > i:nth-child(2) {
+  transform: rotate(29deg);
+  top: 65px;
+  background: #d0e7b2;
+  height: 29px;
+}
+.tm-map > i:nth-child(3) {
+  transform: rotate(-66deg);
+  left: 94px;
+  background: #b1dce8;
+  height: 16px;
+}
+.tm-map > span {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  color: #ed544d;
+  filter: drop-shadow(0 2px 2px #0003);
+}
+.tm-map > span svg {
+  fill: #fff;
+}
+.tm-location > strong,
+.tm-location > small {
+  display: block;
+  padding: 0 12px;
+}
+.tm-location > strong {
+  margin-top: 8px;
+  font-size: 13px;
+}
+.tm-location > small {
+  margin: 3px 0 10px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+.tm-contact-card {
+  display: grid;
+  grid-template-columns: 45px 1fr;
+  gap: 2px 9px;
+  align-items: center;
+  min-width: 225px;
+  padding: 4px 1px;
+}
+.tm-contact-card .tm-avatar {
+  grid-row: 1 / 3;
+}
+.tm-contact-card strong {
+  font-size: 14px;
+}
+.tm-contact-card small {
+  font-size: 12px;
+  opacity: 0.7;
+}
+.tm-contact-card > span:last-child {
+  font-size: 12px;
+  grid-column: 1 / 3;
+  border-top: 1px solid #8883;
+  text-align: center;
+  margin-top: 8px;
+  padding-top: 8px;
+}
+.tm-bubble[data-kind="sticker"] {
+  background: transparent !important;
+  padding: 0;
+}
+.tm-sticker {
+  display: block;
+  width: 130px;
+  height: 130px;
+  object-fit: contain;
+}
+.tm-sticker-emoji {
+  display: block;
+  font-size: 97px;
+  line-height: 1.2;
+  filter: drop-shadow(0 2px 0 #fff) drop-shadow(1px 0 0 #fff)
+    drop-shadow(-1px 0 0 #fff);
+}
+.tm-poll {
+  min-width: 225px;
+  max-width: 260px;
+}
+.tm-poll > strong {
+  display: block;
+  font-size: 15px;
+  line-height: 1.35;
+}
+.tm-poll > small {
+  display: block;
+  font-size: 11px;
+  opacity: 0.65;
+  margin: 5px 0;
+}
+.tm-poll-option {
+  position: relative;
+  display: flex;
+  gap: 7px;
+  justify-content: space-between;
+  padding: 7px 8px;
+  margin: 7px 0;
+  border: 1px solid #8883;
+  border-radius: 7px;
+  overflow: hidden;
+  font-size: 13px;
+}
+.tm-poll-option i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: #8882;
+}
+.tm-poll-option span,
+.tm-poll-option b {
+  position: relative;
+}
+.tm-poll-option b {
+  font-size: 11px;
+  font-weight: 500;
+}
+.tm-payment {
+  min-width: 208px;
+  padding: 8px 8px 10px;
+}
+.tm-payment > span {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+}
+.tm-payment > strong {
+  font-size: 41px;
+  font-weight: 500;
+  letter-spacing: -1px;
+  display: block;
+  margin-top: 8px;
+}
+.tm-payment > small {
+  font-size: 12px;
+  opacity: 0.75;
+}
+.tm-bubble-text[data-ink] {
+  color: transparent;
+  border-radius: 5px;
+  background-image:
+    radial-gradient(currentColor 0.5px, transparent 1px),
+    radial-gradient(#aaa 1px, transparent 1.3px);
+  background-size:
+    5px 5px,
+    7px 7px;
+  text-shadow: 0 0 8px #8889;
+}
+
+/* WhatsApp and Telegram use their own color, grouping, metadata and input language. */
+.tm-phone[data-platform="whatsapp"] {
+  --tm-in: #fff;
+  --tm-out: #d9fdd3;
+  --tm-out-ink: #101b20;
+  --tm-tint: #138858;
+  --tm-screen: #efeae2;
+  --tm-field: #fff;
+  --tm-chrome: #fffffff0;
+  --tm-muted: #667781;
+}
+.tm-phone[data-platform="telegram"] {
+  --tm-in: #fff;
+  --tm-out: #e1ffc7;
+  --tm-out-ink: #111;
+  --tm-tint: #168acd;
+  --tm-screen: #dfebdc;
+  --tm-field: #fffffff2;
+  --tm-chrome: #fffffff2;
+  --tm-muted: #6f8575;
+}
+.tm-phone[data-platform="whatsapp"][data-theme="dark"] {
+  --tm-in: #202c33;
+  --tm-out: #005c4b;
+  --tm-out-ink: #e9edef;
+  --tm-tint: #21c384;
+  --tm-screen: #0b141a;
+  --tm-field: #25333b;
+  --tm-chrome: #172126f2;
+  --tm-muted: #8696a0;
+}
+.tm-phone[data-platform="telegram"][data-theme="dark"] {
+  --tm-in: #182533;
+  --tm-out: #2b5278;
+  --tm-out-ink: #fff;
+  --tm-tint: #79b8ec;
+  --tm-screen: #0e1720;
+  --tm-field: #182534f2;
+  --tm-chrome: #182534f2;
+  --tm-muted: #7a98b0;
+}
+.tm-phone:not([data-platform="imessage"]) .tm-wallpaper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128' fill='none' stroke='%233b5545' stroke-width='1.2' stroke-linejoin='round'%3E%3Cpath d='m14 19 6-7 5 8 8 2-7 6v8l-8-4-8 4 2-9-6-5 8-3ZM70 12c7-8 19 4 1 14-18-10-8-22-1-14ZM102 20l6 9-6 9-6-9zM15 63q15-16 28 0M30 52v22M77 60l7-7 8 7v15H77zM110 63v13M104 69h13M17 106l14-8-4 17-5-5-6 1 1-5ZM65 99a9 9 0 1 0 1 0M98 107c5-11 16-11 21 0'/%3E%3C/svg%3E");
+  background-size: 112px;
+}
+.tm-phone:not([data-platform="imessage"])[data-theme="dark"]
+  .tm-wallpaper::after {
+  filter: invert(1);
+  opacity: 0.08;
+}
+.tm-phone:not([data-platform="imessage"]) .tm-phone-header {
+  height: 108px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 51px 14px 7px 42px;
+  background: var(--tm-chrome);
+  box-shadow: 0 0.5px 0 var(--tm-line);
+}
+.tm-phone:not([data-platform="imessage"]) .tm-nav-back {
+  left: 8px;
+  top: 65px;
+  width: 24px;
+  height: 27px;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  color: var(--tm-tint);
+}
+.tm-phone:not([data-platform="imessage"]) .tm-phone-header > .tm-avatar {
+  width: 37px;
+  height: 37px;
+  font-size: 16px;
+}
+.tm-contact-title {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+.tm-contact-title strong {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tm-contact-title small {
+  font-size: 11px;
+  color: var(--tm-muted);
+  line-height: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tm-nav-actions {
+  display: flex;
+  gap: 19px;
+  align-items: center;
+  color: var(--tm-tint);
+}
+.tm-phone:not([data-platform="imessage"]) .tm-thread {
+  top: 118px;
+  bottom: 79px;
+}
+.tm-phone:not([data-platform="imessage"]) .tm-message-stack {
+  max-width: 84%;
+}
+.tm-phone:not([data-platform="imessage"]) .tm-bubble {
+  padding: 6px 9px 7px;
+  box-shadow: 0 1px 0.5px #0b141a1a;
+  letter-spacing: -0.25px;
+}
+.tm-phone:not([data-platform="imessage"]) .tm-bubble-text {
+  font-size: var(--tm-type);
+  line-height: 1.3;
+}
+.tm-phone:not([data-platform="imessage"])
+  .tm-bubble[data-emoji]
+  .tm-bubble-text {
+  font-size: 45px;
+  line-height: 1.15;
+}
+.tm-phone:not([data-platform="imessage"]) .tm-tail {
+  top: 0;
+  bottom: auto;
+  left: -6px;
+  width: 12px;
+  height: 14px;
+  transform: none;
+}
+.tm-phone:not([data-platform="imessage"]) .tm-bubble[data-side="out"] .tm-tail {
+  left: auto;
+  right: -6px;
+  transform: scaleX(-1);
+}
+.tm-phone[data-platform="telegram"] .tm-tail {
+  top: auto;
+  bottom: 0;
+  transform: scaleY(-1);
+}
+.tm-phone[data-platform="telegram"] .tm-bubble[data-side="out"] .tm-tail {
+  transform: scale(-1, -1);
+}
+.tm-inline-meta {
+  display: inline-flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+  float: right;
+  position: relative;
+  bottom: -4px;
+  margin: 3px 0 0 7px;
+  padding-left: 1px;
+  font-size: 10px;
+  line-height: 13px;
+  color: var(--tm-muted);
+  white-space: nowrap;
+  letter-spacing: -0.1px;
+}
+.tm-inline-meta svg {
+  width: 15px;
+  height: 12px;
+}
+.tm-inline-meta[data-status="read"] svg {
+  color: #49b6e8;
+}
+.tm-phone[data-platform="telegram"] .tm-inline-meta[data-status="read"] svg {
+  color: #58a144;
+}
+.tm-phone[data-platform="telegram"][data-theme="dark"]
+  .tm-inline-meta[data-status="read"]
+  svg {
+  color: #8cbedf;
+}
+.tm-failed {
+  display: grid;
+  place-items: center;
+  font-size: 9px;
+  width: 12px;
+  height: 12px;
+  color: #fff;
+  background: #ff453a;
+  border-radius: 50%;
+}
+.tm-phone:not([data-platform="imessage"]) .tm-date span {
+  background: #fff9;
+  padding: 4px 10px;
+  border-radius: 7px;
+  color: #697b72;
+  font-size: 11px;
+  box-shadow: 0 1px 1px #00000008;
+}
+.tm-phone:not([data-platform="imessage"])[data-theme="dark"] .tm-date span {
+  background: #233446bb;
+  color: #a6b7c8;
+}
+.tm-phone:not([data-platform="imessage"]) .tm-composer {
+  padding: 7px 10px 34px;
+  gap: 10px;
+  background: linear-gradient(transparent, var(--tm-screen) 20%);
+}
+.tm-phone:not([data-platform="imessage"]) .tm-add {
+  color: var(--tm-tint);
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  width: 25px;
+}
+.tm-phone:not([data-platform="imessage"]) .tm-composer-field {
+  border-color: #8882;
+  padding-left: 13px;
+  padding-right: 10px;
+  min-height: 38px;
+}
+.tm-composer-mic {
+  width: 22px;
+  height: 38px;
+  color: var(--tm-tint);
+  display: grid;
+  place-items: center;
+}
+.tm-phone:not([data-platform="imessage"]) .tm-message-row[data-reactions] {
+  padding-bottom: 22px;
+}
+.tm-phone:not([data-platform="imessage"]) .tm-reactions {
+  top: auto;
+  bottom: -20px;
+  left: 5px;
+  right: auto;
+  gap: 3px;
+}
+.tm-phone:not([data-platform="imessage"]) .tm-reaction {
+  border-radius: 15px;
+  min-width: 34px;
+  height: 25px;
+  box-shadow: 0 1px 2px #0002;
+  font-size: 15px;
+  background: var(--tm-in);
+  border: 1.5px solid var(--tm-screen);
+}
+.tm-phone:not([data-platform="imessage"]) .tm-reaction[data-self] {
+  background: color-mix(in srgb, var(--tm-out) 75%, var(--tm-tint) 25%);
+}
+.tm-phone:not([data-platform="imessage"]) .tm-watermark {
+  top: 112px;
+}
+.tm-phone:not([data-platform="imessage"]) .tm-bubble[data-kind="image"],
+.tm-phone:not([data-platform="imessage"]) .tm-bubble[data-kind="video"] {
+  padding: 3px;
+}
+.tm-phone:not([data-platform="imessage"])
+  .tm-bubble[data-kind="image"]
+  .tm-inline-meta,
+.tm-phone:not([data-platform="imessage"])
+  .tm-bubble[data-kind="video"]
+  .tm-inline-meta {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: #0005;
+  color: #fff;
+  padding: 1px 5px;
+  border-radius: 6px;
+}
+.tm-phone:not([data-platform="imessage"]) .tm-bubble[data-kind="link"],
+.tm-phone:not([data-platform="imessage"]) .tm-bubble[data-kind="location"] {
+  padding: 3px;
+}
+.tm-phone:not([data-platform="imessage"])
+  .tm-bubble[data-kind="link"]
+  .tm-inline-meta,
+.tm-phone:not([data-platform="imessage"])
+  .tm-bubble[data-kind="location"]
+  .tm-inline-meta {
+  float: none;
+  display: flex;
+  bottom: 0;
+  padding: 0 6px 3px;
+  margin: 0;
+}
+.tm-phone:not([data-platform="imessage"])
+  .tm-screen[data-status-hidden]
+  .tm-phone-header {
+  padding-top: 7px;
+  height: 59px;
+}
+.tm-phone:not([data-platform="imessage"])
+  .tm-screen[data-status-hidden]
+  .tm-nav-back {
+  top: 17px;
+}
+.tm-phone:not([data-platform="imessage"])
+  .tm-screen[data-status-hidden]
+  .tm-thread {
+  top: 68px;
+}
+.tm-phone:not([data-platform="imessage"])
+  .tm-screen[data-status-hidden]
+  .tm-watermark {
+  top: 67px;
+}
+.tm-phone[data-platform="telegram"] .tm-phone-header {
+  padding-left: 55px;
+  padding-right: 13px;
+  background: linear-gradient(
+    color-mix(in srgb, var(--tm-screen) 65%, transparent),
+    transparent
+  );
+  box-shadow: none;
+}
+.tm-phone[data-platform="telegram"] .tm-contact-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 120px);
+  text-align: center;
+  padding: 4px 15px;
+  border-radius: 24px;
+  background: var(--tm-chrome);
+  border: 0.5px solid var(--tm-line);
+  box-shadow: inset 0 1px 1px #ffffff80;
+}
+.tm-phone[data-platform="telegram"] .tm-phone-header > .tm-avatar {
+  margin-left: auto;
+  box-shadow: 0 0 0 2px var(--tm-chrome);
+}
+.tm-phone[data-platform="whatsapp"] .tm-nav-back,
+.tm-phone[data-platform="whatsapp"] .tm-nav-actions,
+.tm-phone[data-platform="whatsapp"] .tm-add,
+.tm-phone[data-platform="whatsapp"] .tm-composer-mic {
+  color: var(--tm-ink);
+}
+.tm-text-run {
+  text-underline-offset: 2px;
+}
+.tm-effect-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+.tm-effect-letter {
+  display: inline-block;
+  transform-origin: center;
+}
+.tm-attached-sticker {
+  display: grid;
+  place-items: center;
+  position: absolute;
+  pointer-events: none;
+  width: 72px;
+  height: 72px;
+  line-height: 1;
+  font-size: 65px;
+  transform-origin: center;
+  filter: drop-shadow(0 2px 2px #00000018);
+}
+.tm-attached-sticker img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.tm-message-block:has(.tm-attached-sticker) {
+  position: relative;
+  z-index: 3;
+}
+.tm-phone[data-platform="imessage"] .tm-reaction + .tm-reaction {
+  margin-left: -13px;
+}
+.tm-reaction-count {
+  font-size: 11px;
+  font-weight: 600;
+  z-index: 5;
+}
+.tm-voice {
+  position: relative;
+}
+.tm-voice-track {
+  flex: 1;
+  min-width: 0;
+}
+.tm-waveform {
+  position: relative;
+}
+.tm-waveform i[data-played] {
+  opacity: 1;
+}
+.tm-voice-rate {
+  position: absolute;
+  right: 0;
+  bottom: -7px;
+  font-size: 9px;
+  line-height: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 1px 4px;
+  background: #00000012;
+}
+.tm-phone[data-platform="imessage"] .tm-voice-play {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: var(--tm-ink);
+  color: var(--tm-in);
+}
+.tm-phone[data-platform="imessage"] .tm-bubble[data-side="out"] .tm-voice-play {
+  background: #fff;
+  color: var(--tm-out);
+}
+.tm-phone[data-platform="imessage"] .tm-voice-duration {
+  min-width: 34px;
+  text-align: right;
+}
+.tm-voice[data-wa] {
+  width: 237px;
+  gap: 10px;
+  min-height: 49px;
+  padding: 0 1px;
+  align-items: flex-start;
+}
+.tm-voice[data-wa] .tm-voice-play {
+  margin-top: 8px;
+  width: 24px;
+  color: var(--tm-muted);
+}
+.tm-voice[data-wa] .tm-voice-track {
+  padding-top: 3px;
+}
+.tm-voice[data-wa] .tm-waveform {
+  height: 30px;
+  color: #a8aeaf;
+  gap: 2px;
+}
+.tm-voice[data-wa] .tm-waveform i[data-played] {
+  background: var(--tm-tint);
+}
+.tm-voice[data-wa] .tm-voice-duration {
+  display: block;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--tm-muted);
+}
+.tm-voice-thumb {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--tm-tint);
+  transform: translate(-50%, -50%);
+}
+.tm-voice-avatar {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  margin-top: 2px;
+}
+.tm-voice-avatar .tm-avatar {
+  width: 40px;
+  height: 40px;
+  font-size: 15px;
+}
+.tm-voice-avatar > svg {
+  position: absolute;
+  left: -6px;
+  bottom: -2px;
+  color: var(--tm-tint);
+  background: var(--tm-in);
+  border-radius: 50%;
+}
+.tm-bubble[data-side="out"] .tm-voice-avatar > svg {
+  background: var(--tm-out);
+}
+.tm-audio-transcript {
+  display: block;
+  font-size: 12px;
+  line-height: 16px;
+  opacity: 0.78;
+  margin: 10px 1px 2px;
+  white-space: pre-wrap;
+}
+.tm-receipt-row {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-top: 3px;
+}
+.tm-receipt-row .tm-receipt {
+  margin-top: 0;
+}
+.tm-audio-keep {
+  font-size: 10px;
+  line-height: 14px;
+  color: var(--tm-tint);
+}
+.tm-audio-keep[data-kept] {
+  color: var(--tm-muted);
+}
+.tm-phone[data-platform="telegram"] .tm-nav-back {
+  border: 0.5px solid var(--tm-line);
+  background: var(--tm-chrome);
+  box-shadow:
+    inset 0 1px 1px #fff9,
+    0 2px 7px #00000008;
+  width: 36px;
+  height: 36px;
+  top: 60px;
+}
+.tm-phone[data-platform="telegram"] .tm-add,
+.tm-phone[data-platform="telegram"] .tm-composer-mic {
+  border: 0.5px solid var(--tm-line);
+  background: var(--tm-chrome);
+  box-shadow:
+    inset 0 1px 1px #fffa,
+    0 2px 7px #00000008;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: var(--tm-ink);
+}
+.tm-phone[data-platform="telegram"] .tm-composer {
+  gap: 7px;
+}
+.tm-phone[data-platform="telegram"] .tm-composer-field {
+  box-shadow:
+    inset 0 1px 2px #fffa,
+    0 2px 7px #00000008;
+  border-color: var(--tm-line);
+}
+.tm-phone[data-platform="telegram"]
+  .tm-screen[data-status-hidden]
+  .tm-nav-back {
+  top: 12px;
+}
+
+/* Authored keyboard state is rendered, never attached to the user's real keyboard. */
+.tm-screen[data-keyboard] .tm-thread {
+  bottom: calc(var(--tm-keyboard-height, 286px) + 56px);
+}
+.tm-screen[data-keyboard] .tm-composer {
+  min-height: 56px;
+  padding-bottom: 10px;
+}
+.tm-keyboard {
+  height: var(--tm-keyboard-height, 286px);
+  background: var(--tm-keyboard);
+  padding: 0 5px;
+  color: var(--tm-ink);
+  box-shadow: 0 -0.5px 0 #00000006;
+  user-select: none;
+}
+.tm-alphabetic-keyboard {
+  padding-top: 6px;
+}
+.tm-key-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 11px;
+}
+.tm-key {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  height: 39px;
+  min-width: 0;
+  border-radius: 5px;
+  background: var(--tm-key);
+  box-shadow: 0 1px 0 #73767e80;
+  font-size: 23px;
+  line-height: 1;
+}
+.tm-key-row:nth-child(2) {
+  padding: 0 16px;
+}
+.tm-key-row:nth-child(3) {
+  gap: 5px;
+}
+.tm-key-mod {
+  flex: 1.37;
+  background: var(--tm-key-mod);
+  font-size: 15px;
+}
+.tm-key-row:nth-child(3) .tm-key-mod:first-child {
+  margin-right: 7px;
+}
+.tm-key-row:nth-child(3) .tm-key-mod:last-child {
+  margin-left: 7px;
+}
+.tm-key-bottom {
+  margin-top: 0;
+  gap: 6px;
+  margin-bottom: 0;
+}
+.tm-key-space {
+  flex: 4.1;
+  font-size: 15px;
+}
+.tm-key-return {
+  flex: 1.7;
+  background: var(--tm-key-mod);
+  font-size: 15px;
+}
+.tm-keyboard-bottom {
+  display: flex;
+  justify-content: space-between;
+  padding: 13px 18px 0;
+}
+.tm-emoji-keyboard {
+  padding: 10px 11px 0;
+}
+.tm-emoji-search {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: #8882;
+  border-radius: 8px;
+  height: 31px;
+  font-size: 14px;
+  color: var(--tm-muted);
+}
+.tm-emoji-heading {
+  font-size: 9px;
+  letter-spacing: 0.2px;
+  color: var(--tm-muted);
+  display: block;
+  margin: 10px 2px 5px;
+}
+.tm-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  row-gap: 5px;
+  text-align: center;
+  font-size: 29px;
+  line-height: 33px;
+}
+.tm-emoji-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 12px 6px 0;
+  font-size: 19px;
+  color: var(--tm-muted);
+}
+.tm-emoji-footer > span:first-child {
+  font-size: 14px;
+  color: var(--tm-ink);
+}
+
+/* Every effect position comes from the explicit playhead, including export frames. */
+.tm-screen-effect {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 13;
+  pointer-events: none;
+}
+.tm-particle {
+  position: absolute;
+  display: block;
+  width: 7px;
+  height: 12px;
+  background: currentColor;
+  border-radius: 1px;
+}
+.tm-particle-hearts,
+.tm-particle-balloons,
+.tm-particle-fireworks,
+.tm-particle-echo {
+  background: transparent;
+  width: auto;
+  height: auto;
+  font-size: 30px;
+}
+.tm-particle-balloons {
+  font-size: 63px;
+}
+.tm-particle-balloons::after {
+  content: "";
+  position: absolute;
+  height: 90px;
+  width: 1px;
+  background: currentColor;
+  left: 50%;
+  top: 74%;
+}
+.tm-particle-fireworks {
+  font-size: 35px;
+  text-shadow: 0 0 14px currentColor;
+}
+.tm-particle-echo {
+  font-size: 100px;
+}
+.tm-spotlight {
+  background-image: radial-gradient(
+    ellipse 100px 150px at center,
+    transparent 0 70%,
+    #000b 100%
+  );
+  background-size: 150% 150%;
+  mix-blend-mode: multiply;
+}
+.tm-lasers {
+  background: #05071935;
+}
+.tm-lasers i {
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  width: 2px;
+  left: 50%;
+  transform-origin: 50% 80%;
+  box-shadow: 0 0 10px currentColor;
+  opacity: 0.75;
+}
+@media (forced-colors: active) {
+  .tm-bubble,
+  .tm-nav-back,
+  .tm-composer-field {
+    border: 1px solid CanvasText;
+  }
+  .tm-watermark {
+    background: CanvasText !important;
+    color: Canvas;
+  }
+}
+
+/* Optional native conversation states preserve the baseline when absent. */
+.tm-native-icon {
+  flex: none;
+  vertical-align: -2px;
+}
+.tm-contact-title strong > .tm-native-icon {
+  width: 13px;
+  height: 13px;
+  margin-left: 4px;
+  color: var(--tm-muted);
+}
+.tm-im-name > .tm-native-icon {
+  width: 12px;
+  height: 12px;
+}
+.tm-phone [data-disabled] {
+  opacity: 0.3;
+}
+.tm-back-count {
+  position: absolute;
+  left: 30px;
+  top: 12px;
+  font-size: 11px;
+  color: var(--tm-tint);
+  background: var(--tm-screen);
+  border-radius: 9px;
+  padding: 0 3px;
+}
+.tm-phone[data-platform="imessage"][data-transport="sms"],
+.tm-phone[data-platform="imessage"][data-transport="rcs"] {
+  --tm-out: #34c759;
+}
+.tm-phone[data-platform="imessage"][data-transport="sms"] .tm-send,
+.tm-phone[data-platform="imessage"][data-transport="rcs"] .tm-send {
+  background: var(--tm-out);
+}
+.tm-phone .tm-thread {
+  bottom: calc(82px + var(--tm-composer-extra, 0px));
+}
+.tm-phone:not([data-platform="imessage"]) .tm-thread {
+  bottom: calc(79px + var(--tm-composer-extra, 0px));
+}
+.tm-phone .tm-screen[data-keyboard] .tm-thread {
+  bottom: calc(
+    var(--tm-keyboard-height, 286px) + 56px + var(--tm-composer-extra, 0px)
+  );
+}
+.tm-pinned-banner {
+  position: absolute;
+  top: 108px;
+  left: 0;
+  right: 0;
+  min-height: 45px;
+  padding: 7px 13px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: var(--tm-chrome);
+  z-index: 7;
+  box-shadow: 0 0.5px 0 var(--tm-line);
+  font-size: 12px;
+}
+.tm-pinned-banner > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  gap: 2px;
+}
+.tm-pinned-banner strong {
+  color: var(--tm-tint);
+  font-size: 12px;
+}
+.tm-pinned-banner span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tm-pinned-banner img {
+  width: 31px;
+  height: 31px;
+  border-radius: 3px;
+  object-fit: cover;
+}
+.tm-phone[data-platform="telegram"] .tm-pinned-banner > div {
+  border-left: 2px solid var(--tm-tint);
+  padding-left: 7px;
+}
+.tm-phone:not([data-platform="imessage"]) .tm-thread[data-has-pinned] {
+  top: 163px;
+}
+.tm-phone .tm-screen[data-status-hidden] .tm-pinned-banner {
+  top: 59px;
+}
+.tm-phone:not([data-platform="imessage"])
+  .tm-screen[data-status-hidden]
+  .tm-thread[data-has-pinned] {
+  top: 111px;
+}
+.tm-pinned-item {
+  color: #f5a033;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  margin: 0 8px 3px;
+}
+.tm-pinned-item svg {
+  width: 12px;
+  height: 12px;
+}
+.tm-unread-divider {
+  align-self: center;
+  margin: 15px -13px 13px;
+  text-align: center;
+  font-size: 11px;
+  line-height: 27px;
+  font-weight: 500;
+  color: var(--tm-muted);
+  background: color-mix(in srgb, var(--tm-chrome) 75%, transparent);
+}
+.tm-phone[data-platform="whatsapp"] .tm-unread-divider {
+  width: max-content;
+  max-width: 100%;
+  padding: 0 14px;
+  margin: 15px auto;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px #0002;
+}
+.tm-catch-up {
+  position: absolute;
+  bottom: calc(91px + var(--tm-composer-extra, 0px));
+  right: 15px;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  width: 33px;
+  height: 34px;
+  color: var(--tm-tint);
+  background: var(--tm-chrome);
+  border: 0.5px solid var(--tm-line);
+  border-radius: 50%;
+  box-shadow: 0 1px 4px #0002;
+}
+.tm-catch-up > svg {
+  transform: rotate(90deg);
+  height: 12px;
+  margin: -3px 0;
+}
+.tm-catch-up > span {
+  position: absolute;
+  top: -5px;
+  right: -3px;
+  font-size: 9px;
+  background: var(--tm-tint);
+  color: white;
+  min-width: 14px;
+  padding: 1px 3px;
+  border-radius: 10px;
+}
+.tm-screen[data-keyboard] .tm-catch-up {
+  bottom: calc(
+    var(--tm-keyboard-height, 286px) + 64px + var(--tm-composer-extra, 0px)
+  );
+}
+.tm-focus-status {
+  min-height: 38px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 11px;
+  color: #8c74bb;
+  background: var(--tm-screen);
+  padding: 4px 12px;
+}
+.tm-focus-status > span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.tm-focus-status svg {
+  width: 12px;
+  height: 12px;
+}
+.tm-focus-status b {
+  font-weight: 500;
+}
+.tm-compose-context {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 16px 0 52px;
+  background: var(--tm-chrome);
+  color: var(--tm-tint);
+}
+.tm-compose-context > div {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  padding-left: 7px;
+  border-left: 2px solid var(--tm-tint);
+}
+.tm-compose-context strong {
+  font-size: 12px;
+  line-height: 17px;
+}
+.tm-compose-context span {
+  font-size: 12px;
+  color: var(--tm-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tm-composer-field[data-scheduled] {
+  position: relative;
+  padding-top: 39px;
+  min-height: 76px;
+}
+.tm-schedule-chip {
+  position: absolute;
+  top: 5px;
+  left: 7px;
+  right: 7px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px dashed color-mix(in srgb, var(--tm-tint) 40%, transparent);
+  border-radius: 17px;
+  color: var(--tm-tint);
+  font-size: 12px;
+  line-height: 24px;
+  padding: 0 7px;
+}
+.tm-schedule-chip > span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tm-schedule-chip > svg:last-child {
+  margin-left: auto;
+  flex: none;
+}
+.tm-draft-selection {
+  position: relative;
+  color: inherit;
+  background: color-mix(in srgb, var(--tm-tint) 24%, transparent);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.tm-draft-selection[data-handles]::before,
+.tm-draft-selection[data-handles]::after {
+  content: "";
+  position: absolute;
+  width: 2px;
+  background: var(--tm-tint);
+  height: 100%;
+  min-height: 20px;
+  top: 0;
+}
+.tm-draft-selection[data-handles]::before {
+  left: -1px;
+  box-shadow: 0 -5px 0 1.5px var(--tm-tint);
+}
+.tm-draft-selection[data-handles]::after {
+  right: -1px;
+  box-shadow: 0 5px 0 1.5px var(--tm-tint);
+}
+.tm-phone[data-platform="imessage"][data-composer-mode="edit"]
+  .tm-message-block:not([data-editing]),
+.tm-composer[data-native-edit] {
+  opacity: 0.3;
+}
+.tm-message-block[data-editing] .tm-message-stack {
+  max-width: calc(100% - 72px);
+  margin: 0 34px;
+}
+.tm-message-block[data-editing] .tm-bubble {
+  color: var(--tm-ink);
+  background: var(--tm-chrome);
+  min-width: 130px;
+}
+.tm-message-block[data-editing] .tm-tail {
+  display: none;
+}
+.tm-inline-edit-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.tm-edit-cancel,
+.tm-edit-confirm {
+  position: absolute;
+  top: 6px;
+  width: 31px;
+  height: 31px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--tm-chrome);
+  color: var(--tm-ink);
+  border: 0.5px solid var(--tm-line);
+}
+.tm-edit-cancel {
+  left: -39px;
+}
+.tm-edit-confirm {
+  right: -39px;
+  background: var(--tm-tint);
+  color: white;
+  border: none;
+}
+.tm-selection-menu {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  white-space: nowrap;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  padding: 8px 5px;
+  border-radius: 22px;
+  background: var(--tm-chrome);
+  color: var(--tm-ink);
+  box-shadow: 0 2px 18px #0002;
+  font-size: 12px;
+}
+.tm-selection-menu > span {
+  padding: 0 9px;
+  border-right: 0.5px solid var(--tm-line);
+}
+.tm-selection-menu > svg {
+  margin: 0 5px;
+}
+.tm-edit-history {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: inherit;
+  max-width: 100%;
+  margin-bottom: 6px;
+}
+.tm-history-version {
+  display: flex;
+  flex-direction: column;
+  align-items: inherit;
+  gap: 3px;
+  width: 100%;
+}
+.tm-history-version > span {
+  display: block;
+  padding: 7px 12px;
+  border-radius: var(--tm-radius);
+  background: var(--tm-in);
+  color: var(--tm-ink);
+  opacity: 0.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: var(--tm-type);
+  line-height: 1.28;
+}
+.tm-message-row[data-side="out"] .tm-history-version > span {
+  background: var(--tm-out);
+  color: var(--tm-out-ink);
+}
+.tm-history-version > small {
+  font-size: 10px;
+  color: var(--tm-muted);
+}
+.tm-edit-history > small {
+  color: var(--tm-tint);
+  font-size: 10px;
+}
+.tm-recording {
+  min-height: 80px;
+  padding: 10px 12px 33px;
+  background: var(--tm-chrome);
+}
+.tm-recording-meter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  gap: 8px;
+}
+.tm-recording-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ed4a56;
+  flex: none;
+}
+.tm-recording-time {
+  color: var(--tm-ink);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.tm-recording-wave {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 2px;
+  height: 36px;
+  overflow: hidden;
+}
+.tm-recording-wave i {
+  flex: 1;
+  min-width: 1px;
+  max-width: 4px;
+  border-radius: 2px;
+  background: #e24d59;
+}
+.tm-recording-stop {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--tm-tint);
+}
+.tm-recording-stop > i {
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  background: #e64c5a;
+}
+.tm-phone[data-platform="imessage"] .tm-recording-stop {
+  background: var(--tm-field);
+  border: 1px solid var(--tm-line);
+}
+.tm-slide-cancel {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  color: var(--tm-muted);
+}
+.tm-recording-lock {
+  position: absolute;
+  right: 7px;
+  bottom: 53px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 12px;
+  border-radius: 25px;
+  padding: 10px 6px;
+  background: var(--tm-chrome);
+  box-shadow: 0 1px 3px #0002;
+}
+.tm-recording-lock > svg:last-child {
+  transform: rotate(-90deg);
+}
+.tm-recording-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 45px;
+  color: #eb525e;
+  font-size: 13px;
+}
+.tm-recording[data-paused] .tm-recording-dot {
+  opacity: 0.3;
+}
+.tm-native-overlay {
+  position: absolute;
+  inset: 54px 0 0;
+  z-index: 15;
+  color: var(--tm-ink);
+  background: color-mix(in srgb, var(--tm-screen) 65%, transparent);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+.tm-message-context {
+  position: absolute;
+  top: 31%;
+  left: 18px;
+  right: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.tm-message-context[data-side="out"] {
+  align-items: flex-end;
+}
+.tm-message-context > .tm-bubble {
+  max-width: 86%;
+  min-width: 80px;
+}
+.tm-tapback-picker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 35px;
+  background: var(--tm-chrome);
+  box-shadow:
+    0 2px 14px #0002,
+    inset 0 1px 1px #fff8;
+  border: 0.5px solid var(--tm-line);
+  max-width: 100%;
+  overflow: hidden;
+}
+.tm-tapback-picker > span {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  font-size: 25px;
+  border-radius: 50%;
+}
+.tm-tapback-picker > span[data-picked] {
+  background: #21a9f3;
+}
+.tm-tapback-picker > svg {
+  flex: none;
+  margin: 0 3px;
+}
+.tm-message-menu {
+  width: 218px;
+  background: var(--tm-chrome);
+  border-radius: 15px;
+  box-shadow: 0 2px 12px #0002;
+  overflow: hidden;
+}
+.tm-message-menu > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  padding: 11px 14px;
+  border-bottom: 0.5px solid var(--tm-line);
+}
+.tm-message-menu > span:last-child {
+  border: none;
+}
+.tm-reaction-attributions {
+  position: absolute;
+  top: 19px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 30px;
+  padding: 13px 24px;
+  background: var(--tm-chrome);
+  border-radius: 27px;
+  box-shadow: 0 2px 16px #0002;
+}
+.tm-reaction-attributions > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+.tm-reaction-attributions > div > span {
+  font-size: 27px;
+}
+.tm-reaction-attributions > div > div {
+  display: flex;
+  padding-right: 8px;
+}
+.tm-reaction-attributions .tm-avatar {
+  width: 25px;
+  height: 25px;
+  font-size: 9px;
+  margin-right: -8px;
+  border: 1px solid var(--tm-chrome);
+}
+.tm-attachment-overlay {
+  inset: 0;
+}
+.tm-attachment-sheet {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px 35px;
+  min-height: 280px;
+  max-height: 85%;
+  border-radius: 28px 28px 0 0;
+  overflow: hidden;
+  background: var(--tm-chrome);
+}
+.tm-sheet-grabber {
+  height: 4px;
+  width: 36px;
+  border-radius: 5px;
+  margin: 0 auto 17px;
+  background: var(--tm-muted);
+  opacity: 0.4;
+}
+.tm-app-tray {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px 10px;
+}
+.tm-app-tray > div {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12px;
+}
+.tm-app-tray > div > span {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  color: #fff;
+  box-shadow: inset 0 1px 1px #fff7;
+}
+.tm-app-tray b {
+  font-weight: 500;
+}
+.tm-phone[data-platform="imessage"]
+  .tm-attachment-overlay[data-tray-kind="apps"]
+  .tm-attachment-sheet {
+  background: transparent;
+  min-height: 0;
+  max-height: none;
+  padding: 20px 28px 50px;
+}
+.tm-phone[data-platform="imessage"]
+  .tm-attachment-overlay[data-tray-kind="apps"]
+  .tm-sheet-grabber {
+  display: none;
+}
+.tm-phone[data-platform="imessage"] .tm-app-tray {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.tm-phone[data-platform="imessage"] .tm-app-tray > div {
+  flex-direction: row;
+  gap: 19px;
+  font-size: 21px;
+}
+.tm-phone[data-platform="imessage"] .tm-app-tray > div > span {
+  width: 47px;
+  height: 47px;
+  border-radius: 15px;
+}
+.tm-tray-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 3px 17px;
+  font-size: 18px;
+  font-weight: 600;
+}
+.tm-tray-tabs {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  color: var(--tm-muted);
+  font-size: 13px;
+  padding-bottom: 16px;
+}
+.tm-tray-tabs > :first-child {
+  color: var(--tm-tint);
+}
+.tm-asset-tray {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3px;
+  max-height: 295px;
+  overflow: hidden;
+}
+.tm-asset-tray > div {
+  position: relative;
+  aspect-ratio: 1;
+  background: color-mix(in srgb, var(--tm-muted) 12%, transparent);
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.tm-asset-tray img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.tm-asset-tray > div > span {
+  font-size: 55px;
+}
+.tm-asset-tray small {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2px 4px;
+  font-size: 9px;
+  text-align: center;
+  background: #0005;
+  color: white;
+}
+.tm-tray-empty {
+  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  color: var(--tm-muted);
+  font-size: 15px;
+}
+.tm-phone[data-platform="telegram"] .tm-attachment-sheet {
+  border-radius: 24px 24px 0 0;
+}
+.tm-screen[data-status-hidden] .tm-native-overlay:not(.tm-attachment-overlay) {
+  top: 0;
+}
+.tm-device-stage > .tm-watermark {
+  top: 24px;
+  left: -4px;
+  z-index: 80;
+}
+.tm-message-block[data-editing] .tm-bubble {
+  padding: 8px 12px;
+  min-height: 38px;
+  width: auto;
+}
+.tm-focus-status > span {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.tm-reaction > span {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.tm-reaction-attributions > div > span > small {
+  margin-left: 3px;
+  font-size: 12px;
+}
+.tm-reaction-attributions small {
+  font-size: 12px;
+  align-self: center;
+}
+.tm-reaction-attributions > div > div > small {
+  margin-left: 8px;
+}
+.tm-device-stage {
+  position: relative;
+  flex: none;
+  display: block;
+}
+.tm-device-stage > .tm-phone {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  will-change: transform;
+}
+
+/* Group avatars preserve the chat's photo; otherwise the current members form a collage. */
+.tm-group-avatar {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 45px;
+  height: 45px;
+}
+.tm-group-avatar > .tm-avatar {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  font-size: 11px;
+  border: 1.5px solid var(--tm-screen);
+}
+.tm-group-avatar > .tm-avatar:nth-child(1) {
+  left: 0;
+  top: 0;
+}
+.tm-group-avatar > .tm-avatar:nth-child(2) {
+  right: 0;
+  bottom: 0;
+}
+.tm-group-avatar > .tm-avatar:nth-child(3) {
+  left: 0;
+  bottom: 0;
+  width: 23px;
+  height: 23px;
+}
+.tm-group-avatar[data-members="1"] > .tm-avatar {
+  width: 45px;
+  height: 45px;
+  font-size: 18px;
+}
+.tm-phone[data-platform="telegram"] .tm-group-avatar {
+  width: 40px;
+  height: 40px;
+}
+.tm-phone[data-group] .tm-sender-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 240px;
+}
+
+/* Instagram DMs: blue/purple bubbles, no tails or inline tick receipts, compact portrait header. */
+.tm-phone[data-platform="instagram"] {
+  --tm-in: #efefef;
+  --tm-out: #7650f4;
+  --tm-out-ink: #fff;
+  --tm-tint: #327aff;
+  --tm-screen: #fff;
+  --tm-field: #efefef;
+  --tm-chrome: #fffffff5;
+  --tm-muted: #8b8b8b;
+  --tm-ink: #101010;
+  --tm-line: #dedede;
+}
+.tm-phone[data-platform="instagram"][data-theme="dark"] {
+  --tm-in: #262626;
+  --tm-out: #734cff;
+  --tm-out-ink: #fff;
+  --tm-tint: #679dff;
+  --tm-screen: #000;
+  --tm-field: #262626;
+  --tm-chrome: #000000f5;
+  --tm-muted: #a2a2a2;
+  --tm-ink: #f5f5f5;
+  --tm-line: #262626;
+}
+.tm-phone[data-platform="instagram"] .tm-wallpaper::after {
+  display: none;
+}
+.tm-phone[data-platform="instagram"] .tm-phone-header {
+  height: 107px;
+  padding: 52px 15px 8px 43px;
+  gap: 9px;
+}
+.tm-phone[data-platform="instagram"] .tm-phone-header > .tm-avatar,
+.tm-phone[data-platform="instagram"] .tm-group-avatar {
+  width: 34px;
+  height: 34px;
+  font-size: 14px;
+}
+.tm-phone[data-platform="instagram"] .tm-group-avatar > .tm-avatar {
+  width: 23px;
+  height: 23px;
+  font-size: 9px;
+}
+.tm-phone[data-platform="instagram"]
+  .tm-group-avatar
+  > .tm-avatar:nth-child(3) {
+  width: 19px;
+  height: 19px;
+}
+.tm-phone[data-platform="instagram"]
+  .tm-group-avatar[data-members="1"]
+  > .tm-avatar {
+  width: 34px;
+  height: 34px;
+}
+.tm-phone[data-platform="instagram"] .tm-nav-back {
+  color: var(--tm-ink);
+  top: 66px;
+  left: 12px;
+}
+.tm-phone[data-platform="instagram"] .tm-nav-actions {
+  color: var(--tm-ink);
+  gap: 18px;
+}
+.tm-phone[data-platform="instagram"] .tm-contact-title strong {
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 20px;
+}
+.tm-phone[data-platform="instagram"] .tm-contact-title small {
+  font-size: 11px;
+  line-height: 14px;
+}
+.tm-phone[data-platform="instagram"] .tm-thread {
+  top: 116px;
+  bottom: 83px;
+}
+.tm-phone[data-platform="instagram"] .tm-thread-content {
+  padding: 0 10px 12px;
+}
+.tm-phone[data-platform="instagram"] .tm-message-row {
+  gap: 8px;
+}
+.tm-phone[data-platform="instagram"] .tm-row-avatar {
+  width: 27px;
+  height: 27px;
+  font-size: 10px;
+  margin-bottom: 1px;
+}
+.tm-phone[data-platform="instagram"] .tm-message-stack {
+  max-width: 82%;
+}
+.tm-phone[data-platform="instagram"] .tm-message-block[data-first] {
+  margin-top: 14px;
+}
+.tm-phone[data-platform="instagram"] .tm-bubble {
+  border-radius: var(--tm-radius);
+  padding: 9px 13px;
+  box-shadow: none;
+  letter-spacing: -0.2px;
+}
+.tm-phone[data-platform="instagram"] .tm-bubble[data-side="out"] {
+  background: linear-gradient(135deg, #8653fa, #4965fc);
+}
+.tm-phone[data-platform="instagram"][data-theme="dark"]
+  .tm-bubble[data-side="out"] {
+  background: linear-gradient(135deg, #8245f8, #505fff);
+}
+.tm-phone[data-platform="instagram"] .tm-bubble[data-emoji],
+.tm-phone[data-platform="instagram"] .tm-bubble[data-kind="sticker"] {
+  background: transparent;
+}
+.tm-phone[data-platform="instagram"]
+  .tm-bubble[data-first]:not([data-tail])[data-side="in"] {
+  border-bottom-left-radius: 5px;
+}
+.tm-phone[data-platform="instagram"]
+  .tm-bubble[data-first]:not([data-tail])[data-side="out"] {
+  border-bottom-right-radius: 5px;
+}
+.tm-phone[data-platform="instagram"]
+  .tm-bubble:not([data-first]):not([data-tail])[data-side="in"] {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+.tm-phone[data-platform="instagram"]
+  .tm-bubble:not([data-first]):not([data-tail])[data-side="out"] {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+.tm-phone[data-platform="instagram"]
+  .tm-bubble:not([data-first])[data-tail][data-side="in"] {
+  border-top-left-radius: 5px;
+}
+.tm-phone[data-platform="instagram"]
+  .tm-bubble:not([data-first])[data-tail][data-side="out"] {
+  border-top-right-radius: 5px;
+}
+.tm-phone[data-platform="instagram"] .tm-bubble-text {
+  font-size: var(--tm-type);
+  line-height: 1.3;
+}
+.tm-phone[data-platform="instagram"] .tm-sender-name {
+  color: var(--tm-muted) !important;
+  margin: 0 10px 5px;
+  font-size: 11px;
+  line-height: 14px;
+}
+.tm-phone[data-platform="instagram"] .tm-date span {
+  color: var(--tm-muted);
+  background: none;
+  box-shadow: none;
+  font-size: 10px;
+  padding: 0;
+}
+.tm-phone[data-platform="instagram"] .tm-receipt {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--tm-muted);
+}
+.tm-phone[data-platform="instagram"] .tm-receipt-row {
+  padding-top: 4px;
+}
+.tm-phone[data-platform="instagram"] .tm-ig-edited {
+  font-size: 10px;
+  color: var(--tm-muted);
+  padding: 4px 8px 0;
+}
+.tm-phone[data-platform="instagram"]
+  .tm-message-block[data-side="out"]
+  .tm-ig-edited {
+  text-align: right;
+}
+.tm-phone[data-platform="instagram"] .tm-ig-reply {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 3px 0 9px;
+  margin-left: 7px;
+  max-width: 100%;
+}
+.tm-phone[data-platform="instagram"] .tm-ig-reply > small {
+  color: var(--tm-muted);
+  font-size: 11px;
+  line-height: 15px;
+}
+.tm-phone[data-platform="instagram"] .tm-ig-reply > span {
+  color: var(--tm-muted);
+  background: var(--tm-in);
+  border-radius: 19px;
+  padding: 8px 12px;
+  font-size: 14px;
+  line-height: 1.3;
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  position: relative;
+  opacity: 0.65;
+}
+.tm-phone[data-platform="instagram"] .tm-ig-reply > span:before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--tm-line);
+}
+.tm-phone[data-platform="instagram"] .tm-ig-reply > span[data-side="out"] {
+  color: #fff;
+  background: #7468f4;
+}
+.tm-phone[data-platform="instagram"]
+  .tm-message-block[data-side="out"]
+  .tm-ig-reply {
+  align-items: flex-end;
+  margin-right: 7px;
+}
+.tm-phone[data-platform="instagram"]
+  .tm-message-block[data-side="out"]
+  .tm-ig-reply
+  > span:before {
+  right: -7px;
+  left: auto;
+}
+.tm-phone[data-platform="instagram"] .tm-ig-reactions {
+  bottom: -20px;
+  left: 8px;
+  gap: 0;
+}
+.tm-phone[data-platform="instagram"] .tm-ig-reactions .tm-reaction {
+  height: 25px;
+  min-width: 27px;
+  padding: 0 7px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--tm-ink);
+  background: var(--tm-in);
+  border: 2px solid var(--tm-screen);
+  box-shadow: none;
+  font-size: 14px;
+}
+.tm-phone[data-platform="instagram"] .tm-reaction-count {
+  font-size: 10px;
+  margin: 0 1px;
+}
+.tm-phone[data-platform="instagram"] .tm-bubble[data-kind="image"],
+.tm-phone[data-platform="instagram"] .tm-bubble[data-kind="video"] {
+  padding: 0;
+  overflow: visible;
+}
+.tm-phone[data-platform="instagram"] .tm-media {
+  border-radius: 19px;
+  overflow: hidden;
+}
+.tm-phone[data-platform="instagram"] .tm-voice {
+  min-width: 200px;
+}
+.tm-phone[data-platform="instagram"] .tm-composer {
+  padding: 7px 10px 32px;
+  background: linear-gradient(transparent, var(--tm-screen) 20%);
+}
+.tm-phone[data-platform="instagram"] .tm-composer-field {
+  min-height: 42px;
+  padding: 5px 10px 5px 5px;
+  border: 0;
+  border-radius: 24px;
+  gap: 9px;
+  background: var(--tm-field);
+  box-shadow: none;
+}
+.tm-phone[data-platform="instagram"] .tm-ig-camera {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #327aff;
+  color: #fff;
+  flex: none;
+}
+.tm-phone[data-platform="instagram"] .tm-composer-placeholder {
+  font-size: 14px;
+}
+.tm-phone[data-platform="instagram"] .tm-ig-input-actions {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  color: var(--tm-ink);
+}
+.tm-phone[data-platform="instagram"] .tm-ig-send {
+  color: var(--tm-tint);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 4px;
+}
+.tm-phone[data-platform="instagram"] .tm-ig-scheduled {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  color: var(--tm-muted);
+  font-size: 11px;
+}
+.tm-phone[data-platform="instagram"] .tm-compose-context {
+  background: var(--tm-screen);
+  border-color: var(--tm-line);
+}
+.tm-phone[data-platform="instagram"] .tm-unread-divider {
+  color: var(--tm-muted);
+  font-size: 10px;
+  background: var(--tm-screen);
+  border-top: 1px solid var(--tm-line);
+  border-bottom: 0;
+}
+.tm-phone[data-platform="instagram"] .tm-pinned-banner {
+  background: var(--tm-screen);
+  color: var(--tm-ink);
+}
+.tm-phone[data-platform="instagram"]
+  .tm-screen[data-status-hidden]
+  .tm-phone-header {
+  height: 57px;
+  padding-top: 6px;
+}
+.tm-phone[data-platform="instagram"]
+  .tm-screen[data-status-hidden]
+  .tm-nav-back {
+  top: 17px;
+}
+.tm-phone[data-platform="instagram"] .tm-screen[data-status-hidden] .tm-thread {
+  top: 66px;
+}
