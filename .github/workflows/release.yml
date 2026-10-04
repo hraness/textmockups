@@ -21,6 +21,11 @@ jobs:
     timeout-minutes: 30
     outputs:
       verified_tag: ${{ steps.identity.outputs.tag }}
+      verified_sha: ${{ github.sha }}
+      tarball_name: ${{ steps.package.outputs.name }}
+      tarball_sha256: ${{ steps.package.outputs.sha256 }}
+      tarball_integrity: ${{ steps.package.outputs.integrity }}
+      artifact_id: ${{ steps.artifact.outputs.artifact-id }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -35,7 +40,7 @@ jobs:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           set -euo pipefail
-          package_version="$(bun -e 'const value = await Bun.file("package.json").json(); if (typeof value.version !== "string") process.exit(1); process.stdout.write(value.version)')"
+          package_version="$(bun -e 'const value = await Bun.file("package.json").json(); if (value.name !== "@hraness/textmockups" || typeof value.version !== "string") process.exit(1); process.stdout.write(value.version)')"
           if [[ ! "$package_version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
             echo "::error::Package version $package_version is not a stable semantic version"
             exit 1
@@ -45,6 +50,8 @@ jobs:
             echo "::error::Tag $GITHUB_REF_NAME does not match package version $expected_tag"
             exit 1
           fi
+          test "$(git cat-file -t "$GITHUB_REF_NAME")" = tag
+          test "$(git rev-parse "$GITHUB_REF_NAME^{commit}")" = "$GITHUB_SHA"
           if ! git merge-base --is-ancestor "$GITHUB_SHA" "origin/$DEFAULT_BRANCH"; then
             echo "::error::Tag $GITHUB_REF_NAME is not reachable from $DEFAULT_BRANCH"
             exit 1
@@ -63,7 +70,30 @@ jobs:
             printf '%s\n' "$generated_status"
             exit 1
           fi
-      - run: bun pm pack --dry-run --ignore-scripts
+      - name: Pack and install the exact release tarball
+        id: package
+        env:
+          VERIFIED_TAG: ${{ steps.identity.outputs.tag }}
+        run: |
+          set -euo pipefail
+          directory="$RUNNER_TEMP/textmockups-release"
+          mkdir "$directory"
+          tarball="hraness-textmockups-${VERIFIED_TAG#v}.tgz"
+          bun pm pack --ignore-scripts --destination "$directory"
+          test -f "$directory/$tarball"
+          bun scripts/package-smoke.ts "$directory/$tarball"
+          (cd "$directory" && sha256sum "$tarball" > SHA256SUMS)
+          sha256="$(sha256sum "$directory/$tarball" | cut -d ' ' -f 1)"
+          integrity="$(bun -e 'import {createHash} from "node:crypto"; console.log("sha512-" + createHash("sha512").update(await Bun.file(process.argv[1]).bytes()).digest("base64"))' "$directory/$tarball")"
+          printf 'name=%s\nsha256=%s\nintegrity=%s\n' "$tarball" "$sha256" "$integrity" >> "$GITHUB_OUTPUT"
+      - name: Preserve the checked release bytes
+        id: artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: textmockups-release-${{ github.sha }}
+          path: ${{ runner.temp }}/textmockups-release/
+          if-no-files-found: error
+          retention-days: 30
 
   publish:
     name: Publish
@@ -71,39 +101,101 @@ jobs:
     permissions:
       contents: write
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    env:
-      GH_REPO: ${{ github.repository }}
-      GH_TOKEN: ${{ github.token }}
-      VERIFIED_TAG: ${{ needs.verify.outputs.verified_tag }}
+    timeout-minutes: 10
     steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          artifact-ids: ${{ needs.verify.outputs.artifact_id }}
+          path: ${{ runner.temp }}/textmockups-release
+          merge-multiple: true
       - name: Publish verified GitHub Release
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          VERIFIED_TAG: ${{ needs.verify.outputs.verified_tag }}
+          VERIFIED_SHA: ${{ needs.verify.outputs.verified_sha }}
+          TARBALL_NAME: ${{ needs.verify.outputs.tarball_name }}
+          TARBALL_SHA256: ${{ needs.verify.outputs.tarball_sha256 }}
         run: |
           set -euo pipefail
-          if [[ -z "$VERIFIED_TAG" || "$VERIFIED_TAG" != "$GITHUB_REF_NAME" ]]; then
-            echo "::error::Publish request does not match the verified tag"
+          if [[ -z "$VERIFIED_TAG" || "$VERIFIED_TAG" != "$GITHUB_REF_NAME" || "$VERIFIED_SHA" != "$GITHUB_SHA" ]]; then
+            echo "::error::Publish request does not match the verified tag and commit"
             exit 1
           fi
-          if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release create "$GITHUB_REF_NAME" \
-              --verify-tag \
-              --generate-notes \
-              --latest \
-              --title "Textmockups $GITHUB_REF_NAME"
+          directory="$RUNNER_TEMP/textmockups-release"
+          test "$TARBALL_NAME" = "hraness-textmockups-${VERIFIED_TAG#v}.tgz"
+          test "$(sha256sum "$directory/$TARBALL_NAME" | cut -d ' ' -f 1)" = "$TARBALL_SHA256"
+          printf '%s  %s\n' "$TARBALL_SHA256" "$TARBALL_NAME" | cmp - "$directory/SHA256SUMS"
+          test "$(gh api "repos/$GITHUB_REPOSITORY/immutable-releases" --jq '.enabled')" = true
+          notes="$RUNNER_TEMP/release-notes.txt"
+          printf '%s\n' \
+            'Textmockups now ships a compiled package from GitHub Releases. The scene format and phone renderer are unchanged.' \
+            '' '## Changes' '' \
+            '- Install the same checked package in Textmock, TextButler, and other React apps.' \
+            '- Verify package checksums and GitHub’s signed release attestation.' \
+            '- Optional npm publication mirrors the GitHub package without repacking it.' \
+            '' '## Install' '' '```sh' \
+            "bun add https://github.com/$GITHUB_REPOSITORY/releases/download/$VERIFIED_TAG/$TARBALL_NAME" \
+            '```' '' '## Verify' '' '```sh' \
+            "gh release download $VERIFIED_TAG --repo $GITHUB_REPOSITORY --pattern '$TARBALL_NAME' --pattern SHA256SUMS" \
+            'shasum -a 256 -c SHA256SUMS' \
+            "gh release verify-asset $VERIFIED_TAG $TARBALL_NAME --repo $GITHUB_REPOSITORY" \
+            '```' '' "Source commit: $VERIFIED_SHA" "Package SHA-256: $TARBALL_SHA256" > "$notes"
+          if ! gh release view "$VERIFIED_TAG" >/dev/null 2>&1; then
+            gh release create "$VERIFIED_TAG" "$directory/$TARBALL_NAME" "$directory/SHA256SUMS" \
+              --draft --verify-tag --target "$VERIFIED_SHA" \
+              --title "Textmockups $VERIFIED_TAG" --notes-file "$notes"
           fi
-          release_state="$(gh release view "$GITHUB_REF_NAME" \
+          release_state="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" \
+            --jq '[.tag_name, .prerelease, .target_commitish] | @tsv')"
+          test "$release_state" = "$VERIFIED_TAG"$'\tfalse\t'"$VERIFIED_SHA"
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.body')" = "$(cat "$notes")"
+          if [[ "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.draft')" = true ]]; then
+            test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.immutable')" = false
+            test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq 'all(.assets[]; .name == "SHA256SUMS" or .name == env.TARBALL_NAME)')" = true
+            for asset in "$TARBALL_NAME" SHA256SUMS; do
+              expected_digest="sha256:$(sha256sum "$directory/$asset" | cut -d ' ' -f 1)"
+              remote_digest="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" \
+                --jq "[.assets[] | select(.name == \"$asset\") | .digest] | if length == 0 then \"missing\" elif length == 1 then .[0] else \"ambiguous\" end")"
+              if [[ "$remote_digest" = missing ]]; then
+                gh release upload "$VERIFIED_TAG" "$directory/$asset"
+              else
+                test "$remote_digest" = "$expected_digest"
+              fi
+            done
+          else
+            test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.immutable')" = true
+          fi
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.assets | length')" = 2
+          checksum_sha256="$(sha256sum "$directory/SHA256SUMS" | cut -d ' ' -f 1)"
+          asset_state="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" \
+            --jq '.assets | sort_by(.name) | .[] | [.name, .digest] | @tsv')"
+          expected_assets="SHA256SUMS"$'\t'"sha256:$checksum_sha256"$'\n'"$TARBALL_NAME"$'\t'"sha256:$TARBALL_SHA256"
+          test "$asset_state" = "$expected_assets"
+          readback="$RUNNER_TEMP/release-readback"
+          mkdir "$readback"
+          gh release download "$VERIFIED_TAG" --dir "$readback" --pattern "$TARBALL_NAME" --pattern SHA256SUMS
+          cmp "$directory/SHA256SUMS" "$readback/SHA256SUMS"
+          cmp "$directory/$TARBALL_NAME" "$readback/$TARBALL_NAME"
+          if [[ "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.draft')" = true ]]; then
+            gh release edit "$VERIFIED_TAG" --draft=false --latest
+          fi
+          release_state="$(gh release view "$VERIFIED_TAG" \
             --json assets,isDraft,isImmutable,isPrerelease,tagName \
             --jq '[.tagName, .isDraft, .isPrerelease, .isImmutable, (.assets | length)] | @tsv')"
-          expected_state="$GITHUB_REF_NAME"$'\tfalse\tfalse\ttrue\t0'
-          if [[ "$release_state" != "$expected_state" ]]; then
-            echo "::error::Release $GITHUB_REF_NAME is not published and immutable"
-            exit 1
-          fi
-          latest_tag="$(gh api "/repos/$GITHUB_REPOSITORY/releases/latest" --jq '.tag_name')"
-          if [[ "$latest_tag" != "$GITHUB_REF_NAME" ]]; then
-            echo "::error::Latest release is $latest_tag, expected $GITHUB_REF_NAME"
-            exit 1
-          fi
+          test "$release_state" = "$VERIFIED_TAG"$'\tfalse\tfalse\ttrue\t2'
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq '.tag_name')" = "$VERIFIED_TAG"
+          attested=false
+          for attempt in $(seq 1 6); do
+            if gh release verify "$VERIFIED_TAG" \
+              && gh release verify-asset "$VERIFIED_TAG" "$readback/$TARBALL_NAME" \
+              && gh release verify-asset "$VERIFIED_TAG" "$readback/SHA256SUMS"; then
+              attested=true
+              break
+            fi
+            if [[ "$attempt" != 6 ]]; then sleep 10; fi
+          done
+          test "$attested" = true
 
   npm:
     # Publishes the tagged commit to npm through npm trusted publishing: the
@@ -120,10 +212,18 @@ jobs:
     env:
       EXPECTED_NAME: "@hraness/textmockups"
       VERIFIED_TAG: ${{ needs.verify.outputs.verified_tag }}
+      TARBALL_NAME: ${{ needs.verify.outputs.tarball_name }}
+      TARBALL_SHA256: ${{ needs.verify.outputs.tarball_sha256 }}
+      TARBALL_INTEGRITY: ${{ needs.verify.outputs.tarball_integrity }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          artifact-ids: ${{ needs.verify.outputs.artifact_id }}
+          path: ${{ runner.temp }}/textmockups-release
+          merge-multiple: true
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "24"
@@ -147,10 +247,14 @@ jobs:
             echo "::error::package.json names $name@$version, expected $EXPECTED_NAME at $GITHUB_REF_NAME"
             exit 1
           fi
+          tarball="$RUNNER_TEMP/textmockups-release/$TARBALL_NAME"
+          test "$(sha256sum "$tarball" | cut -d ' ' -f 1)" = "$TARBALL_SHA256"
+          integrity="$(node -e 'const fs=require("node:fs"),crypto=require("node:crypto"); console.log("sha512-"+crypto.createHash("sha512").update(fs.readFileSync(process.argv[1])).digest("base64"))' "$tarball")"
+          test "$integrity" = "$TARBALL_INTEGRITY"
           probe="$RUNNER_TEMP/npm-view.txt"
           if ! npm view "$name" name --json --registry=https://registry.npmjs.org >/dev/null 2>"$probe"; then
             if grep -q E404 "$probe"; then
-              echo "::warning::$name is not on npm yet, so trusted publishing cannot run. CONTRIBUTING.md lists the one-time setup."
+              echo "::notice::Optional npm mirror is not configured. Install the immutable GitHub Release package instead. CONTRIBUTING.md lists the one-time npm setup."
               exit 0
             fi
             cat "$probe"
@@ -158,24 +262,22 @@ jobs:
             exit 1
           fi
           if npm view "$name@$version" version --json --registry=https://registry.npmjs.org >/dev/null 2>"$probe"; then
-            echo "::notice::$name@$version is already on npm"
-            exit 0
-          elif ! grep -q E404 "$probe"; then
+            test "$(npm view "$name@$version" dist.integrity --prefer-online --registry=https://registry.npmjs.org)" = "$TARBALL_INTEGRITY"
+          elif grep -q E404 "$probe"; then
+            npm publish "$tarball" --access public --provenance --ignore-scripts --registry=https://registry.npmjs.org
+          else
             cat "$probe"
             echo "::error::Could not check whether $name@$version is on npm"
             exit 1
           fi
-          pack="$RUNNER_TEMP/npm-pack"
-          mkdir "$pack"
-          npm pack --ignore-scripts --pack-destination "$pack"
-          npm publish "$pack"/*.tgz --access public --provenance --ignore-scripts --registry=https://registry.npmjs.org
           for _ in $(seq 1 10); do
             predicate="$(npm view "$name@$version" dist.attestations.provenance.predicateType --prefer-online --registry=https://registry.npmjs.org 2>/dev/null || true)"
-            if [[ "$predicate" == "https://slsa.dev/provenance/v1" ]]; then
-              echo "Published $name@$version with provenance"
+            integrity="$(npm view "$name@$version" dist.integrity --prefer-online --registry=https://registry.npmjs.org 2>/dev/null || true)"
+            if [[ "$predicate" == "https://slsa.dev/provenance/v1" && "$integrity" == "$TARBALL_INTEGRITY" ]]; then
+              echo "Published exact GitHub bytes as $name@$version with provenance"
               exit 0
             fi
             sleep 15
           done
-          echo "::error::npm does not report $name@$version with a provenance attestation"
+          echo "::error::npm does not report the exact package with a provenance attestation"
           exit 1

@@ -20,12 +20,12 @@ It is the renderer behind [textmock.com](https://textmock.com), where you can [m
 
 ## Install
 
-Pin a release tag:
+Install the compiled package from an immutable GitHub Release:
 
 ```json
 {
   "dependencies": {
-    "@hraness/textmockups": "github:hraness/textmockups#v0.3.1"
+    "@hraness/textmockups": "https://github.com/hraness/textmockups/releases/download/v0.3.2/hraness-textmockups-0.3.2.tgz"
   }
 }
 ```
