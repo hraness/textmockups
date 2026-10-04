@@ -23,9 +23,11 @@ Attach the before and after images for the apps and themes you changed. When the
 
 ## Releases
 
-Merging a `package.json` version bump to `main` tags `v<version>` once CI passes. The release workflow checks and packs that commit, installs the exact tarball in a clean consumer, and publishes it with `SHA256SUMS` in an immutable GitHub Release. Consumers pin the release's `hraness-textmockups-<version>.tgz` URL. The scene format and renderer are unchanged in v0.3.2.
+Merging a `package.json` version bump to `main` tags `v<version>` once CI passes. The release workflow checks and packs that commit, installs the exact tarball in a clean consumer, and publishes it with `SHA256SUMS` in an immutable GitHub Release. Consumers pin the release's `hraness-textmockups-<version>.tgz` URL. The scene format and renderer are unchanged in v0.3.3.
 
-GitHub release immutability must be enabled before publication. The workflow uploads both files to a draft, compares the uploaded bytes with the checked artifact, then publishes and verifies GitHub's signed release attestation. It never rewrites an existing tag or replaces release assets.
+GitHub release immutability must be enabled before publication. The workflow uploads both files to a prerelease draft and compares their uploaded bytes with the checked artifact. It publishes that prerelease without changing Latest, checks that the actual release is immutable, and verifies GitHub's signed release and asset attestations. Only then does it promote the release to stable and Latest; npm runs after that promotion.
+
+This checks the actual artifact instead of querying the administrative settings API, which the workflow's contents-only token cannot read. It never widens that token, rewrites an existing tag, or replaces release assets. If the release is not locked or its attestations fail, it remains an unpromoted prerelease and the workflow stops. Resolve the provider configuration before another release; never delete or overwrite artifacts to force a retry.
 
 ## npm
 

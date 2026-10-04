@@ -16,6 +16,22 @@ test("GitHub releases publish the checked package and checksum before locking as
   expect(workflow).not.toContain("true\\t0");
 });
 
+test("only locked, attested prereleases can activate as stable Latest", () => {
+  const publisher = workflow.slice(workflow.indexOf("\n  publish:"), workflow.indexOf("\n  npm:"));
+  expect(publisher.includes("--draft --prerelease")).toBe(true);
+  expect(publisher.includes("/immutable-releases")).toBe(false);
+  const staged = publisher.indexOf('gh release edit "$VERIFIED_TAG" --draft=false --latest=false');
+  const locked = publisher.indexOf('test "$locked_state"');
+  const attested = publisher.indexOf('test "$attested" = true');
+  const promoted = publisher.indexOf('gh release edit "$VERIFIED_TAG" --prerelease=false --latest');
+  expect(staged).toBeGreaterThan(-1);
+  expect(locked).toBeGreaterThan(staged);
+  expect(attested).toBeGreaterThan(locked);
+  expect(promoted).toBeGreaterThan(attested);
+  expect(publisher.slice(promoted).includes('test "$release_state"')).toBe(true);
+  expect(publisher.slice(promoted).includes('/releases/latest')).toBe(true);
+});
+
 test("release jobs hand off one verified tarball rather than repacking for npm", () => {
   expect(workflow).toContain("actions/upload-artifact@");
   expect(workflow).toContain("actions/download-artifact@");
