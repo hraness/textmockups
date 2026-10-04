@@ -25,7 +25,7 @@ Install the compiled package from an immutable GitHub Release:
 ```json
 {
   "dependencies": {
-    "@hraness/textmockups": "https://github.com/hraness/textmockups/releases/download/v0.3.3/hraness-textmockups-0.3.3.tgz"
+    "@hraness/textmockups": "https://github.com/hraness/textmockups/releases/download/v0.3.4/hraness-textmockups-0.3.4.tgz"
   }
 }
 ```

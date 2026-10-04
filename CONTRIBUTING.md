@@ -23,7 +23,7 @@ Attach the before and after images for the apps and themes you changed. When the
 
 ## Releases
 
-Merging a `package.json` version bump to `main` tags `v<version>` once CI passes. The release workflow checks and packs that commit, installs the exact tarball in a clean consumer, and publishes it with `SHA256SUMS` in an immutable GitHub Release. Consumers pin the release's `hraness-textmockups-<version>.tgz` URL. The scene format and renderer are unchanged in v0.3.3.
+Merging a `package.json` version bump to `main` tags `v<version>` once CI passes. The release workflow checks and packs that commit, installs the exact tarball in a clean consumer, and publishes it with `SHA256SUMS` in an immutable GitHub Release. Consumers pin the release's `hraness-textmockups-<version>.tgz` URL. The scene format and renderer are unchanged in v0.3.4. Drafts are resolved through the CLI to an exact numeric release ID because GitHub's published-tag endpoint does not expose them.
 
 GitHub release immutability must be enabled before publication. The workflow uploads both files to a prerelease draft and compares their uploaded bytes with the checked artifact. It publishes that prerelease without changing Latest, checks that the actual release is immutable, and verifies GitHub's signed release and asset attestations. Only then does it promote the release to stable and Latest; npm runs after that promotion.
 
