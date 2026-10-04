@@ -20,5 +20,6 @@ test("the README example scene parses and renders", () => {
 test("the README names only exported functions", () => {
   for (const name of ["Phone", "parseScene", "evaluateScene", "sceneTime", "SceneSchema", "presets", "defaultScene"])
     expect(name in api).toBe(true);
-  expect(readme).toContain(`github:hraness/textmockups#v${JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version}`);
+  const version = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version;
+  expect(readme).toContain(`https://github.com/hraness/textmockups/releases/download/v${version}/hraness-textmockups-${version}.tgz`);
 });

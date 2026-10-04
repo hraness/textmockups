@@ -23,15 +23,18 @@ Attach the before and after images for the apps and themes you changed. When the
 
 ## Releases
 
-Merging a `package.json` version bump to `main` tags `v<version>` once CI passes, and the tag publishes an immutable GitHub Release. Consumers pin `github:hraness/textmockups#v<version>`.
+Merging a `package.json` version bump to `main` tags `v<version>` once CI passes. The release workflow checks and packs that commit, installs the exact tarball in a clean consumer, and publishes it with `SHA256SUMS` in an immutable GitHub Release. Consumers pin the release's `hraness-textmockups-<version>.tgz` URL. The scene format and renderer are unchanged in v0.3.2.
+
+GitHub release immutability must be enabled before publication. The workflow uploads both files to a draft, compares the uploaded bytes with the checked artifact, then publishes and verifies GitHub's signed release attestation. It never rewrites an existing tag or replaces release assets.
 
 ## npm
 
-After the GitHub Release, the release workflow's `npm` job publishes the
-tagged commit to npm as `@hraness/textmockups` with a provenance attestation.
-It uses npm trusted publishing, so GitHub Actions proves the workflow's
-identity to npm and no npm token is stored anywhere. The job skips a version
-that npm already has.
+GitHub Releases are the canonical package distribution. The optional `npm`
+job mirrors the same tarball as `@hraness/textmockups` with a provenance
+attestation. It uses npm trusted publishing, so GitHub Actions proves the
+workflow's identity to npm and no npm token is stored anywhere. An existing
+npm version must have the same package integrity and provenance; it is never
+replaced. npm setup is not required to install the GitHub package.
 
 npm only accepts trusted publishing for a package that already exists, so the
 job warns and skips until a maintainer does this once:

@@ -15,17 +15,19 @@ const run = (cmd: string[], cwd: string) => {
   return result.stdout.toString();
 };
 try {
-  run(["bun", "pm", "pack", "--ignore-scripts", "--destination", work], root);
-  const tarball = run(["ls", work], work).trim().split("\n").find((name) => name.endsWith(".tgz"));
-  if (!tarball) throw new Error("no tarball");
-  const listing = run(["tar", "-tzf", join(work, tarball)], work);
+  const supplied = process.argv[2];
+  if (!supplied) run(["bun", "pm", "pack", "--ignore-scripts", "--destination", work], root);
+  const name = supplied ?? run(["ls", work], work).trim().split("\n").find((name) => name.endsWith(".tgz"));
+  if (!name) throw new Error("no tarball");
+  const tarball = supplied ? resolve(name) : join(work, name);
+  const listing = run(["tar", "-tzf", tarball], work);
   for (const file of ["package/dist/index.js", "package/dist/index.d.ts", "package/dist/phone.css", "package/LICENSE", "package/README.md"])
     if (!listing.includes(file)) throw new Error(`packed tarball is missing ${file}`);
   if (listing.includes("package/src/")) throw new Error("packed tarball includes src/");
   const app = join(work, "app");
   run(["mkdir", "-p", app], work);
   await Bun.write(join(app, "package.json"), JSON.stringify({ name: "smoke", private: true, type: "module" }));
-  run(["bun", "add", "--ignore-scripts", join(work, tarball), `react@${(await import("react")).version}`, `react-dom@${(await import("react")).version}`], app);
+  run(["bun", "add", "--ignore-scripts", tarball, `react@${(await import("react")).version}`, `react-dom@${(await import("react")).version}`], app);
   await Bun.write(
     join(app, "smoke.mjs"),
     `import { createElement } from "react";

@@ -24,4 +24,6 @@
 - Run `bun run check` before handing off a change. For visual changes, compare `bun run gallery --shots` output before and after with the browser provisioned for the pinned `playwright-core`.
 - Deliver changes to `main` through a current-head pull request with the `Required` CI job green. Never force-push or bypass the gate.
 - Treat a `v*` tag as a release request. Keep the tag equal to `v<package.json version>` on `main`. Merging a version bump to `main` creates its annotated tag automatically once CI passes (`.github/workflows/auto-tag.yml`).
+- GitHub Releases are the canonical distribution: pack the checked commit, smoke-test that exact tarball, upload it with `SHA256SUMS` to a draft, verify readback, then publish an immutable release and verify its signed attestation. Never rewrite existing tags or replace assets. npm is an optional exact-byte OIDC mirror.
+- Provision Playwright browsers with `PLAYWRIGHT_SKIP_BROWSER_GC=1` so installation does not remove another checkout's cached browser.
 - Public copy follows `STYLE.md`; internal prose follows `WRITING.md`.
