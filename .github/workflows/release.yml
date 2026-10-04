@@ -145,17 +145,20 @@ jobs:
               --draft --prerelease --verify-tag --target "$VERIFIED_SHA" \
               --title "Textmockups $VERIFIED_TAG" --notes-file "$notes"
           fi
-          release_identity="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" \
+          release_id="$(gh release view "$VERIFIED_TAG" --json databaseId --jq '.databaseId')"
+          [[ "$release_id" =~ ^[1-9][0-9]*$ ]]
+          release_api="repos/$GITHUB_REPOSITORY/releases/$release_id"
+          release_identity="$(gh api "$release_api" \
             --jq '[.tag_name, .target_commitish] | @tsv')"
           test "$release_identity" = "$VERIFIED_TAG"$'\t'"$VERIFIED_SHA"
-          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.body')" = "$(cat "$notes")"
-          if [[ "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.draft')" = true ]]; then
-            test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.prerelease')" = true
-            test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.immutable')" = false
-            test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq 'all(.assets[]; .name == "SHA256SUMS" or .name == env.TARBALL_NAME)')" = true
+          test "$(gh api "$release_api" --jq '.body')" = "$(cat "$notes")"
+          if [[ "$(gh api "$release_api" --jq '.draft')" = true ]]; then
+            test "$(gh api "$release_api" --jq '.prerelease')" = true
+            test "$(gh api "$release_api" --jq '.immutable')" = false
+            test "$(gh api "$release_api" --jq 'all(.assets[]; .name == "SHA256SUMS" or .name == env.TARBALL_NAME)')" = true
             for asset in "$TARBALL_NAME" SHA256SUMS; do
               expected_digest="sha256:$(sha256sum "$directory/$asset" | cut -d ' ' -f 1)"
-              remote_digest="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" \
+              remote_digest="$(gh api "$release_api" \
                 --jq "[.assets[] | select(.name == \"$asset\") | .digest] | if length == 0 then \"missing\" elif length == 1 then .[0] else \"ambiguous\" end")"
               if [[ "$remote_digest" = missing ]]; then
                 gh release upload "$VERIFIED_TAG" "$directory/$asset"
@@ -164,11 +167,11 @@ jobs:
               fi
             done
           else
-            test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.immutable')" = true
+            test "$(gh api "$release_api" --jq '.immutable')" = true
           fi
-          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.assets | length')" = 2
+          test "$(gh api "$release_api" --jq '.assets | length')" = 2
           checksum_sha256="$(sha256sum "$directory/SHA256SUMS" | cut -d ' ' -f 1)"
-          asset_state="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" \
+          asset_state="$(gh api "$release_api" \
             --jq '.assets | sort_by(.name) | .[] | [.name, .digest] | @tsv')"
           expected_assets="SHA256SUMS"$'\t'"sha256:$checksum_sha256"$'\n'"$TARBALL_NAME"$'\t'"sha256:$TARBALL_SHA256"
           test "$asset_state" = "$expected_assets"
@@ -177,7 +180,7 @@ jobs:
           gh release download "$VERIFIED_TAG" --dir "$readback" --pattern "$TARBALL_NAME" --pattern SHA256SUMS
           cmp "$directory/SHA256SUMS" "$readback/SHA256SUMS"
           cmp "$directory/$TARBALL_NAME" "$readback/$TARBALL_NAME"
-          if [[ "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.draft')" = true ]]; then
+          if [[ "$(gh api "$release_api" --jq '.draft')" = true ]]; then
             gh release edit "$VERIFIED_TAG" --draft=false --latest=false
           fi
           locked_state="$(gh release view "$VERIFIED_TAG" \
@@ -195,7 +198,7 @@ jobs:
             if [[ "$attempt" != 6 ]]; then sleep 10; fi
           done
           test "$attested" = true
-          if [[ "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.prerelease')" = true ]]; then
+          if [[ "$(gh api "$release_api" --jq '.prerelease')" = true ]]; then
             gh release edit "$VERIFIED_TAG" --prerelease=false --latest
           fi
           release_state="$(gh release view "$VERIFIED_TAG" \

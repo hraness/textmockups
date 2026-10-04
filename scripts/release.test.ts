@@ -32,6 +32,15 @@ test("only locked, attested prereleases can activate as stable Latest", () => {
   expect(publisher.slice(promoted).includes('/releases/latest')).toBe(true);
 });
 
+test("draft readback uses a validated release ID rather than the published-tag endpoint", () => {
+  const publisher = workflow.slice(workflow.indexOf("\n  publish:"), workflow.indexOf("\n  npm:"));
+  expect(publisher.includes('--json databaseId')).toBe(true);
+  expect(publisher.includes('[[ "$release_id" =~ ^[1-9][0-9]*$ ]]')).toBe(true);
+  expect(publisher.includes('release_api="repos/$GITHUB_REPOSITORY/releases/$release_id"')).toBe(true);
+  expect(publisher.includes('/releases/tags/')).toBe(false);
+  expect(publisher.includes('gh api "$release_api"')).toBe(true);
+});
+
 test("release jobs hand off one verified tarball rather than repacking for npm", () => {
   expect(workflow).toContain("actions/upload-artifact@");
   expect(workflow).toContain("actions/download-artifact@");
