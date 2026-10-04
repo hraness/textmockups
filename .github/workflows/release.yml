@@ -126,7 +126,6 @@ jobs:
           test "$TARBALL_NAME" = "hraness-textmockups-${VERIFIED_TAG#v}.tgz"
           test "$(sha256sum "$directory/$TARBALL_NAME" | cut -d ' ' -f 1)" = "$TARBALL_SHA256"
           printf '%s  %s\n' "$TARBALL_SHA256" "$TARBALL_NAME" | cmp - "$directory/SHA256SUMS"
-          test "$(gh api "repos/$GITHUB_REPOSITORY/immutable-releases" --jq '.enabled')" = true
           notes="$RUNNER_TEMP/release-notes.txt"
           printf '%s\n' \
             'Textmockups now ships a compiled package from GitHub Releases. The scene format and phone renderer are unchanged.' \
@@ -143,14 +142,15 @@ jobs:
             '```' '' "Source commit: $VERIFIED_SHA" "Package SHA-256: $TARBALL_SHA256" > "$notes"
           if ! gh release view "$VERIFIED_TAG" >/dev/null 2>&1; then
             gh release create "$VERIFIED_TAG" "$directory/$TARBALL_NAME" "$directory/SHA256SUMS" \
-              --draft --verify-tag --target "$VERIFIED_SHA" \
+              --draft --prerelease --verify-tag --target "$VERIFIED_SHA" \
               --title "Textmockups $VERIFIED_TAG" --notes-file "$notes"
           fi
-          release_state="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" \
-            --jq '[.tag_name, .prerelease, .target_commitish] | @tsv')"
-          test "$release_state" = "$VERIFIED_TAG"$'\tfalse\t'"$VERIFIED_SHA"
+          release_identity="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" \
+            --jq '[.tag_name, .target_commitish] | @tsv')"
+          test "$release_identity" = "$VERIFIED_TAG"$'\t'"$VERIFIED_SHA"
           test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.body')" = "$(cat "$notes")"
           if [[ "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.draft')" = true ]]; then
+            test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.prerelease')" = true
             test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.immutable')" = false
             test "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq 'all(.assets[]; .name == "SHA256SUMS" or .name == env.TARBALL_NAME)')" = true
             for asset in "$TARBALL_NAME" SHA256SUMS; do
@@ -178,13 +178,12 @@ jobs:
           cmp "$directory/SHA256SUMS" "$readback/SHA256SUMS"
           cmp "$directory/$TARBALL_NAME" "$readback/$TARBALL_NAME"
           if [[ "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.draft')" = true ]]; then
-            gh release edit "$VERIFIED_TAG" --draft=false --latest
+            gh release edit "$VERIFIED_TAG" --draft=false --latest=false
           fi
-          release_state="$(gh release view "$VERIFIED_TAG" \
-            --json assets,isDraft,isImmutable,isPrerelease,tagName \
-            --jq '[.tagName, .isDraft, .isPrerelease, .isImmutable, (.assets | length)] | @tsv')"
-          test "$release_state" = "$VERIFIED_TAG"$'\tfalse\tfalse\ttrue\t2'
-          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq '.tag_name')" = "$VERIFIED_TAG"
+          locked_state="$(gh release view "$VERIFIED_TAG" \
+            --json assets,isDraft,isImmutable,tagName \
+            --jq '[.tagName, .isDraft, .isImmutable, (.assets | length)] | @tsv')"
+          test "$locked_state" = "$VERIFIED_TAG"$'\tfalse\ttrue\t2'
           attested=false
           for attempt in $(seq 1 6); do
             if gh release verify "$VERIFIED_TAG" \
@@ -196,6 +195,17 @@ jobs:
             if [[ "$attempt" != 6 ]]; then sleep 10; fi
           done
           test "$attested" = true
+          if [[ "$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$VERIFIED_TAG" --jq '.prerelease')" = true ]]; then
+            gh release edit "$VERIFIED_TAG" --prerelease=false --latest
+          fi
+          release_state="$(gh release view "$VERIFIED_TAG" \
+            --json assets,isDraft,isImmutable,isPrerelease,tagName \
+            --jq '[.tagName, .isDraft, .isPrerelease, .isImmutable, (.assets | length)] | @tsv')"
+          test "$release_state" = "$VERIFIED_TAG"$'\tfalse\tfalse\ttrue\t2'
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq '.tag_name')" = "$VERIFIED_TAG"
+          gh release verify "$VERIFIED_TAG"
+          gh release verify-asset "$VERIFIED_TAG" "$readback/$TARBALL_NAME"
+          gh release verify-asset "$VERIFIED_TAG" "$readback/SHA256SUMS"
 
   npm:
     # Publishes the tagged commit to npm through npm trusted publishing: the
