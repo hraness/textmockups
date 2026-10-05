@@ -1,7 +1,7 @@
 {
   "name": "@hraness/textmockups",
-  "version": "0.3.4",
-  "description": "React components for realistic iMessage, WhatsApp, Telegram and Instagram chat mockups. The renderer behind textmock.com.",
+  "version": "0.4.0",
+  "description": "React components for realistic iMessage, WhatsApp, Telegram, Instagram and Google Messages chat mockups on iPhone and Android. The renderer behind textmock.com.",
   "license": "MIT",
   "author": "Hraness",
   "type": "module",
