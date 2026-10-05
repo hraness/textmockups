@@ -3824,6 +3824,9 @@
   .tm-bubble[data-first][data-side="out"] {
   border-top-right-radius: 3px;
 }
+.tm-phone[data-os="android"] .tm-tail {
+  display: none;
+}
 .tm-phone[data-platform="whatsapp"][data-os="android"] .tm-composer {
   gap: 8px;
 }
