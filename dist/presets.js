@@ -358,6 +358,11 @@ export const presets = [
         device: { model: "pixel-11-pro" },
         statusBar: { ...defaultScene.statusBar, time: "5:44", battery: 62 },
         header: { transport: "rcs" },
+        appearance: {
+            ...defaultScene.appearance,
+            bubbleRadius: 24,
+            textSize: 16,
+        },
         contact: {
             name: "Riley",
             subtitle: "",
