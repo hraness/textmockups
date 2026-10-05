@@ -23,9 +23,9 @@ export declare const ReactionSchema: z.ZodObject<{
 }, z.core.$strict>;
 export type Reaction = z.infer<typeof ReactionSchema>;
 export declare const TextRunEffectSchema: z.ZodEnum<{
+    none: "none";
     big: "big";
     small: "small";
-    none: "none";
     shake: "shake";
     nod: "nod";
     explode: "explode";
@@ -41,9 +41,9 @@ export declare const MessageTextRunSchema: z.ZodObject<{
     underline: z.ZodDefault<z.ZodBoolean>;
     strikethrough: z.ZodDefault<z.ZodBoolean>;
     effect: z.ZodDefault<z.ZodEnum<{
+        none: "none";
         big: "big";
         small: "small";
-        none: "none";
         shake: "shake";
         nod: "nod";
         explode: "explode";
@@ -187,9 +187,9 @@ export declare const MessageSchema: z.ZodObject<{
         underline: z.ZodDefault<z.ZodBoolean>;
         strikethrough: z.ZodDefault<z.ZodBoolean>;
         effect: z.ZodDefault<z.ZodEnum<{
+            none: "none";
             big: "big";
             small: "small";
-            none: "none";
             shake: "shake";
             nod: "nod";
             explode: "explode";
@@ -342,7 +342,7 @@ export declare const TrackSchema: z.ZodObject<{
     }, z.core.$strict>>;
 }, z.core.$strict>;
 export type Track = z.infer<typeof TrackSchema>;
-declare const SceneBaseSchema: z.ZodObject<{
+declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
     version: z.ZodLiteral<1>;
     id: z.ZodString;
     title: z.ZodDefault<z.ZodString>;
@@ -352,20 +352,44 @@ declare const SceneBaseSchema: z.ZodObject<{
         whatsapp: "whatsapp";
         telegram: "telegram";
         instagram: "instagram";
+        "google-messages": "google-messages";
     }>>;
     theme: z.ZodDefault<z.ZodEnum<{
         light: "light";
         dark: "dark";
     }>>;
-    device: z.ZodDefault<z.ZodObject<{
-        width: z.ZodDefault<z.ZodNumber>;
-        height: z.ZodDefault<z.ZodNumber>;
-        frame: z.ZodDefault<z.ZodEnum<{
+    device: z.ZodPrefault<z.ZodPipe<z.ZodObject<{
+        model: z.ZodOptional<z.ZodEnum<{
+            "iphone-17-pro": "iphone-17-pro";
+            "iphone-17-pro-max": "iphone-17-pro-max";
+            "pixel-11": "pixel-11";
+            "pixel-11-pro": "pixel-11-pro";
+            "pixel-11-pro-xl": "pixel-11-pro-xl";
+            "galaxy-s26": "galaxy-s26";
+            "galaxy-s26-plus": "galaxy-s26-plus";
+            "galaxy-s26-ultra": "galaxy-s26-ultra";
+        }>>;
+        width: z.ZodOptional<z.ZodNumber>;
+        height: z.ZodOptional<z.ZodNumber>;
+        frame: z.ZodOptional<z.ZodEnum<{
             none: "none";
             iphone: "iphone";
+            device: "device";
         }>>;
-        scale: z.ZodDefault<z.ZodNumber>;
-    }, z.core.$strict>>;
+        scale: z.ZodOptional<z.ZodNumber>;
+    }, z.core.$strict>, z.ZodTransform<{
+        width: number;
+        height: number;
+        frame: "none" | "iphone" | "device";
+        scale: number;
+        model?: "iphone-17-pro" | "iphone-17-pro-max" | "pixel-11" | "pixel-11-pro" | "pixel-11-pro-xl" | "galaxy-s26" | "galaxy-s26-plus" | "galaxy-s26-ultra" | undefined;
+    }, {
+        model?: "iphone-17-pro" | "iphone-17-pro-max" | "pixel-11" | "pixel-11-pro" | "pixel-11-pro-xl" | "galaxy-s26" | "galaxy-s26-plus" | "galaxy-s26-ultra" | undefined;
+        width?: number | undefined;
+        height?: number | undefined;
+        frame?: "none" | "iphone" | "device" | undefined;
+        scale?: number | undefined;
+    }>>>;
     statusBar: z.ZodDefault<z.ZodObject<{
         time: z.ZodDefault<z.ZodString>;
         battery: z.ZodDefault<z.ZodNumber>;
@@ -482,9 +506,9 @@ declare const SceneBaseSchema: z.ZodObject<{
             underline: z.ZodDefault<z.ZodBoolean>;
             strikethrough: z.ZodDefault<z.ZodBoolean>;
             effect: z.ZodDefault<z.ZodEnum<{
+                none: "none";
                 big: "big";
                 small: "small";
-                none: "none";
                 shake: "shake";
                 nod: "nod";
                 explode: "explode";
@@ -648,7 +672,7 @@ declare const SceneBaseSchema: z.ZodObject<{
             visible: z.ZodOptional<z.ZodBoolean>;
         }, z.core.$strict>>;
     }, z.core.$strict>>;
-    appearance: z.ZodDefault<z.ZodObject<{
+    appearance: z.ZodPrefault<z.ZodObject<{
         wallpaper: z.ZodDefault<z.ZodEnum<{
             custom: "custom";
             solid: "solid";
@@ -658,8 +682,8 @@ declare const SceneBaseSchema: z.ZodObject<{
         color: z.ZodDefault<z.ZodString>;
         showTimestamps: z.ZodDefault<z.ZodBoolean>;
         showAvatars: z.ZodDefault<z.ZodBoolean>;
-        bubbleRadius: z.ZodDefault<z.ZodNumber>;
-        textSize: z.ZodDefault<z.ZodNumber>;
+        bubbleRadius: z.ZodOptional<z.ZodNumber>;
+        textSize: z.ZodOptional<z.ZodNumber>;
         screenEffect: z.ZodDefault<z.ZodEnum<{
             none: "none";
             confetti: "confetti";
@@ -691,11 +715,515 @@ declare const SceneBaseSchema: z.ZodObject<{
         }, z.core.$strict>>>;
     }, z.core.$strict>>;
     extensions: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>>>;
-}, z.core.$strict>;
+}, z.core.$strict>, z.ZodTransform<{
+    appearance: {
+        bubbleRadius: number;
+        textSize: number;
+        wallpaper: "custom" | "solid" | "gradient" | "paper";
+        color: string;
+        showTimestamps: boolean;
+        showAvatars: boolean;
+        screenEffect: "none" | "confetti" | "balloons" | "hearts" | "lasers" | "fireworks" | "echo" | "spotlight";
+    };
+    version: 1;
+    id: string;
+    title: string;
+    rendererVersion: "2026.1";
+    platform: "imessage" | "whatsapp" | "telegram" | "instagram" | "google-messages";
+    theme: "light" | "dark";
+    device: {
+        width: number;
+        height: number;
+        frame: "none" | "iphone" | "device";
+        scale: number;
+        model?: "iphone-17-pro" | "iphone-17-pro-max" | "pixel-11" | "pixel-11-pro" | "pixel-11-pro-xl" | "galaxy-s26" | "galaxy-s26-plus" | "galaxy-s26-ultra" | undefined;
+    };
+    statusBar: {
+        time: string;
+        battery: number;
+        charging: boolean;
+        wifi: number;
+        cellular: number;
+        carrier: string;
+        visible: boolean;
+    };
+    participants: {
+        id: string;
+        name: string;
+        color: string;
+        isSelf: boolean;
+        avatar?: string | undefined;
+    }[];
+    contact: {
+        name: string;
+        subtitle: string;
+        participantIds: string[];
+        kind?: "direct" | "group" | undefined;
+        avatar?: string | undefined;
+    };
+    messages: {
+        id: string;
+        senderId: string;
+        at: number;
+        kind: "file" | "link" | "text" | "video" | "image" | "voice" | "location" | "contact" | "sticker" | "poll" | "payment" | "system";
+        text: string;
+        timestamp: string;
+        dateLabel: string;
+        status: "sending" | "sent" | "delivered" | "read" | "failed";
+        statusText: string;
+        edited: boolean;
+        editedAt: string;
+        unsent: boolean;
+        reactions: {
+            id: string;
+            emoji: string;
+            participantId: string;
+            at: number;
+        }[];
+        effect: "none" | "shake" | "ripple" | "bloom" | "jitter" | "slam" | "loud" | "gentle" | "invisible-ink";
+        presentation: {
+            opacity: number;
+            scale: number;
+            offsetX: number;
+            offsetY: number;
+        };
+        extensions: Record<string, JsonValue>;
+        textRuns?: {
+            id: string;
+            text: string;
+            bold: boolean;
+            italic: boolean;
+            underline: boolean;
+            strikethrough: boolean;
+            effect: "none" | "big" | "small" | "shake" | "nod" | "explode" | "ripple" | "bloom" | "jitter";
+        }[] | undefined;
+        stickers?: {
+            id: string;
+            emoji: string;
+            x: number;
+            y: number;
+            scale: number;
+            rotation: number;
+            zIndex: number;
+            at: number;
+            url?: string | undefined;
+            participantId?: string | undefined;
+        }[] | undefined;
+        statusAt?: number | undefined;
+        editHistory?: {
+            versions: {
+                id: string;
+                text: string;
+                editedAt: string;
+            }[];
+        } | undefined;
+        scheduledAt?: string | undefined;
+        readBy?: string[] | undefined;
+        replyTo?: string | undefined;
+        media?: {
+            alt: string;
+            width: number;
+            height: number;
+            duration: number;
+            waveform: number[];
+            playhead: number;
+            playbackRate: number;
+            playing: boolean;
+            keep: boolean;
+            url?: string | undefined;
+            videoUrl?: string | undefined;
+            poster?: string | undefined;
+            transcript?: string | undefined;
+        } | undefined;
+        file?: {
+            name: string;
+            size: number;
+            mimeType: string;
+        } | undefined;
+        link?: {
+            url: string;
+            title: string;
+            description: string;
+            image?: string | undefined;
+        } | undefined;
+        location?: {
+            latitude: number;
+            longitude: number;
+            label: string;
+            address: string;
+        } | undefined;
+        sharedContact?: {
+            name: string;
+            phone: string;
+            avatar?: string | undefined;
+        } | undefined;
+        sticker?: {
+            emoji: string;
+            alt: string;
+            url?: string | undefined;
+        } | undefined;
+        poll?: {
+            question: string;
+            options: {
+                id: string;
+                text: string;
+                votes: number;
+            }[];
+            totalVotes: number;
+        } | undefined;
+        payment?: {
+            amount: number;
+            currency: string;
+            note: string;
+        } | undefined;
+    }[];
+    composer: {
+        text: string;
+        placeholder: string;
+        typing: {
+            visible: boolean;
+            participantId?: string | undefined;
+        };
+        keyboard: "emoji" | "hidden" | "alphabetic";
+        focused: boolean;
+        context?: {
+            mode: "normal" | "reply" | "edit" | "recording" | "scheduled";
+            scheduledAt: string;
+            recording: {
+                duration: number;
+                locked: boolean;
+                paused: boolean;
+                waveform: number[];
+            };
+            messageId?: string | undefined;
+        } | undefined;
+        selection?: {
+            start: number;
+            end: number;
+            showCaret: boolean;
+            showHandles: boolean;
+            visible?: boolean | undefined;
+        } | undefined;
+    };
+    timeline: {
+        duration: number;
+        loop: boolean;
+        fps: number;
+        tracks: {
+            id: string;
+            path: string;
+            keyframes: {
+                at: number;
+                value: string | number | boolean | null;
+                easing: "typewriter" | "step" | "linear" | "ease";
+            }[];
+        }[];
+    };
+    extensions: Record<string, JsonValue>;
+    header?: {
+        transport: "imessage" | "sms" | "rcs";
+        backCount: number;
+        video: "enabled" | "disabled" | "hidden";
+        call: "enabled" | "disabled" | "hidden";
+    } | undefined;
+    conversation?: {
+        muted: boolean;
+        focus?: {
+            visible: boolean;
+            name: string;
+            notifyAnyway: boolean;
+        } | undefined;
+        unread?: {
+            visible: boolean;
+            messageId: string;
+            count: number;
+        } | undefined;
+        pinned?: {
+            visible: boolean;
+            messageId: string;
+            label: string;
+        } | undefined;
+    } | undefined;
+    interactions?: {
+        attachmentTray?: {
+            visible: boolean;
+            kind: "apps" | "photos" | "stickers";
+            items?: {
+                id: string;
+                label: string;
+                url?: string | undefined;
+                emoji?: string | undefined;
+            }[] | undefined;
+        } | undefined;
+        tapbackPicker?: {
+            visible: boolean;
+            messageId: string;
+            selectedEmoji: string;
+            emojis: string[];
+            showMenu: boolean;
+        } | undefined;
+        editHistory?: {
+            visible: boolean;
+            messageId: string;
+        } | undefined;
+    } | undefined;
+}, {
+    version: 1;
+    id: string;
+    title: string;
+    rendererVersion: "2026.1";
+    platform: "imessage" | "whatsapp" | "telegram" | "instagram" | "google-messages";
+    theme: "light" | "dark";
+    device: {
+        width: number;
+        height: number;
+        frame: "none" | "iphone" | "device";
+        scale: number;
+        model?: "iphone-17-pro" | "iphone-17-pro-max" | "pixel-11" | "pixel-11-pro" | "pixel-11-pro-xl" | "galaxy-s26" | "galaxy-s26-plus" | "galaxy-s26-ultra" | undefined;
+    };
+    statusBar: {
+        time: string;
+        battery: number;
+        charging: boolean;
+        wifi: number;
+        cellular: number;
+        carrier: string;
+        visible: boolean;
+    };
+    participants: {
+        id: string;
+        name: string;
+        color: string;
+        isSelf: boolean;
+        avatar?: string | undefined;
+    }[];
+    contact: {
+        name: string;
+        subtitle: string;
+        participantIds: string[];
+        kind?: "direct" | "group" | undefined;
+        avatar?: string | undefined;
+    };
+    messages: {
+        id: string;
+        senderId: string;
+        at: number;
+        kind: "file" | "link" | "text" | "video" | "image" | "voice" | "location" | "contact" | "sticker" | "poll" | "payment" | "system";
+        text: string;
+        timestamp: string;
+        dateLabel: string;
+        status: "sending" | "sent" | "delivered" | "read" | "failed";
+        statusText: string;
+        edited: boolean;
+        editedAt: string;
+        unsent: boolean;
+        reactions: {
+            id: string;
+            emoji: string;
+            participantId: string;
+            at: number;
+        }[];
+        effect: "none" | "shake" | "ripple" | "bloom" | "jitter" | "slam" | "loud" | "gentle" | "invisible-ink";
+        presentation: {
+            opacity: number;
+            scale: number;
+            offsetX: number;
+            offsetY: number;
+        };
+        extensions: Record<string, JsonValue>;
+        textRuns?: {
+            id: string;
+            text: string;
+            bold: boolean;
+            italic: boolean;
+            underline: boolean;
+            strikethrough: boolean;
+            effect: "none" | "big" | "small" | "shake" | "nod" | "explode" | "ripple" | "bloom" | "jitter";
+        }[] | undefined;
+        stickers?: {
+            id: string;
+            emoji: string;
+            x: number;
+            y: number;
+            scale: number;
+            rotation: number;
+            zIndex: number;
+            at: number;
+            url?: string | undefined;
+            participantId?: string | undefined;
+        }[] | undefined;
+        statusAt?: number | undefined;
+        editHistory?: {
+            versions: {
+                id: string;
+                text: string;
+                editedAt: string;
+            }[];
+        } | undefined;
+        scheduledAt?: string | undefined;
+        readBy?: string[] | undefined;
+        replyTo?: string | undefined;
+        media?: {
+            alt: string;
+            width: number;
+            height: number;
+            duration: number;
+            waveform: number[];
+            playhead: number;
+            playbackRate: number;
+            playing: boolean;
+            keep: boolean;
+            url?: string | undefined;
+            videoUrl?: string | undefined;
+            poster?: string | undefined;
+            transcript?: string | undefined;
+        } | undefined;
+        file?: {
+            name: string;
+            size: number;
+            mimeType: string;
+        } | undefined;
+        link?: {
+            url: string;
+            title: string;
+            description: string;
+            image?: string | undefined;
+        } | undefined;
+        location?: {
+            latitude: number;
+            longitude: number;
+            label: string;
+            address: string;
+        } | undefined;
+        sharedContact?: {
+            name: string;
+            phone: string;
+            avatar?: string | undefined;
+        } | undefined;
+        sticker?: {
+            emoji: string;
+            alt: string;
+            url?: string | undefined;
+        } | undefined;
+        poll?: {
+            question: string;
+            options: {
+                id: string;
+                text: string;
+                votes: number;
+            }[];
+            totalVotes: number;
+        } | undefined;
+        payment?: {
+            amount: number;
+            currency: string;
+            note: string;
+        } | undefined;
+    }[];
+    composer: {
+        text: string;
+        placeholder: string;
+        typing: {
+            visible: boolean;
+            participantId?: string | undefined;
+        };
+        keyboard: "emoji" | "hidden" | "alphabetic";
+        focused: boolean;
+        context?: {
+            mode: "normal" | "reply" | "edit" | "recording" | "scheduled";
+            scheduledAt: string;
+            recording: {
+                duration: number;
+                locked: boolean;
+                paused: boolean;
+                waveform: number[];
+            };
+            messageId?: string | undefined;
+        } | undefined;
+        selection?: {
+            start: number;
+            end: number;
+            showCaret: boolean;
+            showHandles: boolean;
+            visible?: boolean | undefined;
+        } | undefined;
+    };
+    appearance: {
+        wallpaper: "custom" | "solid" | "gradient" | "paper";
+        color: string;
+        showTimestamps: boolean;
+        showAvatars: boolean;
+        screenEffect: "none" | "confetti" | "balloons" | "hearts" | "lasers" | "fireworks" | "echo" | "spotlight";
+        bubbleRadius?: number | undefined;
+        textSize?: number | undefined;
+    };
+    timeline: {
+        duration: number;
+        loop: boolean;
+        fps: number;
+        tracks: {
+            id: string;
+            path: string;
+            keyframes: {
+                at: number;
+                value: string | number | boolean | null;
+                easing: "typewriter" | "step" | "linear" | "ease";
+            }[];
+        }[];
+    };
+    extensions: Record<string, JsonValue>;
+    header?: {
+        transport: "imessage" | "sms" | "rcs";
+        backCount: number;
+        video: "enabled" | "disabled" | "hidden";
+        call: "enabled" | "disabled" | "hidden";
+    } | undefined;
+    conversation?: {
+        muted: boolean;
+        focus?: {
+            visible: boolean;
+            name: string;
+            notifyAnyway: boolean;
+        } | undefined;
+        unread?: {
+            visible: boolean;
+            messageId: string;
+            count: number;
+        } | undefined;
+        pinned?: {
+            visible: boolean;
+            messageId: string;
+            label: string;
+        } | undefined;
+    } | undefined;
+    interactions?: {
+        attachmentTray?: {
+            visible: boolean;
+            kind: "apps" | "photos" | "stickers";
+            items?: {
+                id: string;
+                label: string;
+                url?: string | undefined;
+                emoji?: string | undefined;
+            }[] | undefined;
+        } | undefined;
+        tapbackPicker?: {
+            visible: boolean;
+            messageId: string;
+            selectedEmoji: string;
+            emojis: string[];
+            showMenu: boolean;
+        } | undefined;
+        editHistory?: {
+            visible: boolean;
+            messageId: string;
+        } | undefined;
+    } | undefined;
+}>>;
 export type Scene = z.infer<typeof SceneBaseSchema>;
 /** Integer animation behavior follows the schema, not a list of field names. */
 export declare function isIntegerPresentationField(path: string): boolean;
-export declare const SceneSchema: z.ZodObject<{
+export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
     version: z.ZodLiteral<1>;
     id: z.ZodString;
     title: z.ZodDefault<z.ZodString>;
@@ -705,20 +1233,44 @@ export declare const SceneSchema: z.ZodObject<{
         whatsapp: "whatsapp";
         telegram: "telegram";
         instagram: "instagram";
+        "google-messages": "google-messages";
     }>>;
     theme: z.ZodDefault<z.ZodEnum<{
         light: "light";
         dark: "dark";
     }>>;
-    device: z.ZodDefault<z.ZodObject<{
-        width: z.ZodDefault<z.ZodNumber>;
-        height: z.ZodDefault<z.ZodNumber>;
-        frame: z.ZodDefault<z.ZodEnum<{
+    device: z.ZodPrefault<z.ZodPipe<z.ZodObject<{
+        model: z.ZodOptional<z.ZodEnum<{
+            "iphone-17-pro": "iphone-17-pro";
+            "iphone-17-pro-max": "iphone-17-pro-max";
+            "pixel-11": "pixel-11";
+            "pixel-11-pro": "pixel-11-pro";
+            "pixel-11-pro-xl": "pixel-11-pro-xl";
+            "galaxy-s26": "galaxy-s26";
+            "galaxy-s26-plus": "galaxy-s26-plus";
+            "galaxy-s26-ultra": "galaxy-s26-ultra";
+        }>>;
+        width: z.ZodOptional<z.ZodNumber>;
+        height: z.ZodOptional<z.ZodNumber>;
+        frame: z.ZodOptional<z.ZodEnum<{
             none: "none";
             iphone: "iphone";
+            device: "device";
         }>>;
-        scale: z.ZodDefault<z.ZodNumber>;
-    }, z.core.$strict>>;
+        scale: z.ZodOptional<z.ZodNumber>;
+    }, z.core.$strict>, z.ZodTransform<{
+        width: number;
+        height: number;
+        frame: "none" | "iphone" | "device";
+        scale: number;
+        model?: "iphone-17-pro" | "iphone-17-pro-max" | "pixel-11" | "pixel-11-pro" | "pixel-11-pro-xl" | "galaxy-s26" | "galaxy-s26-plus" | "galaxy-s26-ultra" | undefined;
+    }, {
+        model?: "iphone-17-pro" | "iphone-17-pro-max" | "pixel-11" | "pixel-11-pro" | "pixel-11-pro-xl" | "galaxy-s26" | "galaxy-s26-plus" | "galaxy-s26-ultra" | undefined;
+        width?: number | undefined;
+        height?: number | undefined;
+        frame?: "none" | "iphone" | "device" | undefined;
+        scale?: number | undefined;
+    }>>>;
     statusBar: z.ZodDefault<z.ZodObject<{
         time: z.ZodDefault<z.ZodString>;
         battery: z.ZodDefault<z.ZodNumber>;
@@ -835,9 +1387,9 @@ export declare const SceneSchema: z.ZodObject<{
             underline: z.ZodDefault<z.ZodBoolean>;
             strikethrough: z.ZodDefault<z.ZodBoolean>;
             effect: z.ZodDefault<z.ZodEnum<{
+                none: "none";
                 big: "big";
                 small: "small";
-                none: "none";
                 shake: "shake";
                 nod: "nod";
                 explode: "explode";
@@ -1001,7 +1553,7 @@ export declare const SceneSchema: z.ZodObject<{
             visible: z.ZodOptional<z.ZodBoolean>;
         }, z.core.$strict>>;
     }, z.core.$strict>>;
-    appearance: z.ZodDefault<z.ZodObject<{
+    appearance: z.ZodPrefault<z.ZodObject<{
         wallpaper: z.ZodDefault<z.ZodEnum<{
             custom: "custom";
             solid: "solid";
@@ -1011,8 +1563,8 @@ export declare const SceneSchema: z.ZodObject<{
         color: z.ZodDefault<z.ZodString>;
         showTimestamps: z.ZodDefault<z.ZodBoolean>;
         showAvatars: z.ZodDefault<z.ZodBoolean>;
-        bubbleRadius: z.ZodDefault<z.ZodNumber>;
-        textSize: z.ZodDefault<z.ZodNumber>;
+        bubbleRadius: z.ZodOptional<z.ZodNumber>;
+        textSize: z.ZodOptional<z.ZodNumber>;
         screenEffect: z.ZodDefault<z.ZodEnum<{
             none: "none";
             confetti: "confetti";
@@ -1044,7 +1596,511 @@ export declare const SceneSchema: z.ZodObject<{
         }, z.core.$strict>>>;
     }, z.core.$strict>>;
     extensions: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodType<JsonValue, unknown, z.core.$ZodTypeInternals<JsonValue, unknown>>>>;
-}, z.core.$strict>;
+}, z.core.$strict>, z.ZodTransform<{
+    appearance: {
+        bubbleRadius: number;
+        textSize: number;
+        wallpaper: "custom" | "solid" | "gradient" | "paper";
+        color: string;
+        showTimestamps: boolean;
+        showAvatars: boolean;
+        screenEffect: "none" | "confetti" | "balloons" | "hearts" | "lasers" | "fireworks" | "echo" | "spotlight";
+    };
+    version: 1;
+    id: string;
+    title: string;
+    rendererVersion: "2026.1";
+    platform: "imessage" | "whatsapp" | "telegram" | "instagram" | "google-messages";
+    theme: "light" | "dark";
+    device: {
+        width: number;
+        height: number;
+        frame: "none" | "iphone" | "device";
+        scale: number;
+        model?: "iphone-17-pro" | "iphone-17-pro-max" | "pixel-11" | "pixel-11-pro" | "pixel-11-pro-xl" | "galaxy-s26" | "galaxy-s26-plus" | "galaxy-s26-ultra" | undefined;
+    };
+    statusBar: {
+        time: string;
+        battery: number;
+        charging: boolean;
+        wifi: number;
+        cellular: number;
+        carrier: string;
+        visible: boolean;
+    };
+    participants: {
+        id: string;
+        name: string;
+        color: string;
+        isSelf: boolean;
+        avatar?: string | undefined;
+    }[];
+    contact: {
+        name: string;
+        subtitle: string;
+        participantIds: string[];
+        kind?: "direct" | "group" | undefined;
+        avatar?: string | undefined;
+    };
+    messages: {
+        id: string;
+        senderId: string;
+        at: number;
+        kind: "file" | "link" | "text" | "video" | "image" | "voice" | "location" | "contact" | "sticker" | "poll" | "payment" | "system";
+        text: string;
+        timestamp: string;
+        dateLabel: string;
+        status: "sending" | "sent" | "delivered" | "read" | "failed";
+        statusText: string;
+        edited: boolean;
+        editedAt: string;
+        unsent: boolean;
+        reactions: {
+            id: string;
+            emoji: string;
+            participantId: string;
+            at: number;
+        }[];
+        effect: "none" | "shake" | "ripple" | "bloom" | "jitter" | "slam" | "loud" | "gentle" | "invisible-ink";
+        presentation: {
+            opacity: number;
+            scale: number;
+            offsetX: number;
+            offsetY: number;
+        };
+        extensions: Record<string, JsonValue>;
+        textRuns?: {
+            id: string;
+            text: string;
+            bold: boolean;
+            italic: boolean;
+            underline: boolean;
+            strikethrough: boolean;
+            effect: "none" | "big" | "small" | "shake" | "nod" | "explode" | "ripple" | "bloom" | "jitter";
+        }[] | undefined;
+        stickers?: {
+            id: string;
+            emoji: string;
+            x: number;
+            y: number;
+            scale: number;
+            rotation: number;
+            zIndex: number;
+            at: number;
+            url?: string | undefined;
+            participantId?: string | undefined;
+        }[] | undefined;
+        statusAt?: number | undefined;
+        editHistory?: {
+            versions: {
+                id: string;
+                text: string;
+                editedAt: string;
+            }[];
+        } | undefined;
+        scheduledAt?: string | undefined;
+        readBy?: string[] | undefined;
+        replyTo?: string | undefined;
+        media?: {
+            alt: string;
+            width: number;
+            height: number;
+            duration: number;
+            waveform: number[];
+            playhead: number;
+            playbackRate: number;
+            playing: boolean;
+            keep: boolean;
+            url?: string | undefined;
+            videoUrl?: string | undefined;
+            poster?: string | undefined;
+            transcript?: string | undefined;
+        } | undefined;
+        file?: {
+            name: string;
+            size: number;
+            mimeType: string;
+        } | undefined;
+        link?: {
+            url: string;
+            title: string;
+            description: string;
+            image?: string | undefined;
+        } | undefined;
+        location?: {
+            latitude: number;
+            longitude: number;
+            label: string;
+            address: string;
+        } | undefined;
+        sharedContact?: {
+            name: string;
+            phone: string;
+            avatar?: string | undefined;
+        } | undefined;
+        sticker?: {
+            emoji: string;
+            alt: string;
+            url?: string | undefined;
+        } | undefined;
+        poll?: {
+            question: string;
+            options: {
+                id: string;
+                text: string;
+                votes: number;
+            }[];
+            totalVotes: number;
+        } | undefined;
+        payment?: {
+            amount: number;
+            currency: string;
+            note: string;
+        } | undefined;
+    }[];
+    composer: {
+        text: string;
+        placeholder: string;
+        typing: {
+            visible: boolean;
+            participantId?: string | undefined;
+        };
+        keyboard: "emoji" | "hidden" | "alphabetic";
+        focused: boolean;
+        context?: {
+            mode: "normal" | "reply" | "edit" | "recording" | "scheduled";
+            scheduledAt: string;
+            recording: {
+                duration: number;
+                locked: boolean;
+                paused: boolean;
+                waveform: number[];
+            };
+            messageId?: string | undefined;
+        } | undefined;
+        selection?: {
+            start: number;
+            end: number;
+            showCaret: boolean;
+            showHandles: boolean;
+            visible?: boolean | undefined;
+        } | undefined;
+    };
+    timeline: {
+        duration: number;
+        loop: boolean;
+        fps: number;
+        tracks: {
+            id: string;
+            path: string;
+            keyframes: {
+                at: number;
+                value: string | number | boolean | null;
+                easing: "typewriter" | "step" | "linear" | "ease";
+            }[];
+        }[];
+    };
+    extensions: Record<string, JsonValue>;
+    header?: {
+        transport: "imessage" | "sms" | "rcs";
+        backCount: number;
+        video: "enabled" | "disabled" | "hidden";
+        call: "enabled" | "disabled" | "hidden";
+    } | undefined;
+    conversation?: {
+        muted: boolean;
+        focus?: {
+            visible: boolean;
+            name: string;
+            notifyAnyway: boolean;
+        } | undefined;
+        unread?: {
+            visible: boolean;
+            messageId: string;
+            count: number;
+        } | undefined;
+        pinned?: {
+            visible: boolean;
+            messageId: string;
+            label: string;
+        } | undefined;
+    } | undefined;
+    interactions?: {
+        attachmentTray?: {
+            visible: boolean;
+            kind: "apps" | "photos" | "stickers";
+            items?: {
+                id: string;
+                label: string;
+                url?: string | undefined;
+                emoji?: string | undefined;
+            }[] | undefined;
+        } | undefined;
+        tapbackPicker?: {
+            visible: boolean;
+            messageId: string;
+            selectedEmoji: string;
+            emojis: string[];
+            showMenu: boolean;
+        } | undefined;
+        editHistory?: {
+            visible: boolean;
+            messageId: string;
+        } | undefined;
+    } | undefined;
+}, {
+    version: 1;
+    id: string;
+    title: string;
+    rendererVersion: "2026.1";
+    platform: "imessage" | "whatsapp" | "telegram" | "instagram" | "google-messages";
+    theme: "light" | "dark";
+    device: {
+        width: number;
+        height: number;
+        frame: "none" | "iphone" | "device";
+        scale: number;
+        model?: "iphone-17-pro" | "iphone-17-pro-max" | "pixel-11" | "pixel-11-pro" | "pixel-11-pro-xl" | "galaxy-s26" | "galaxy-s26-plus" | "galaxy-s26-ultra" | undefined;
+    };
+    statusBar: {
+        time: string;
+        battery: number;
+        charging: boolean;
+        wifi: number;
+        cellular: number;
+        carrier: string;
+        visible: boolean;
+    };
+    participants: {
+        id: string;
+        name: string;
+        color: string;
+        isSelf: boolean;
+        avatar?: string | undefined;
+    }[];
+    contact: {
+        name: string;
+        subtitle: string;
+        participantIds: string[];
+        kind?: "direct" | "group" | undefined;
+        avatar?: string | undefined;
+    };
+    messages: {
+        id: string;
+        senderId: string;
+        at: number;
+        kind: "file" | "link" | "text" | "video" | "image" | "voice" | "location" | "contact" | "sticker" | "poll" | "payment" | "system";
+        text: string;
+        timestamp: string;
+        dateLabel: string;
+        status: "sending" | "sent" | "delivered" | "read" | "failed";
+        statusText: string;
+        edited: boolean;
+        editedAt: string;
+        unsent: boolean;
+        reactions: {
+            id: string;
+            emoji: string;
+            participantId: string;
+            at: number;
+        }[];
+        effect: "none" | "shake" | "ripple" | "bloom" | "jitter" | "slam" | "loud" | "gentle" | "invisible-ink";
+        presentation: {
+            opacity: number;
+            scale: number;
+            offsetX: number;
+            offsetY: number;
+        };
+        extensions: Record<string, JsonValue>;
+        textRuns?: {
+            id: string;
+            text: string;
+            bold: boolean;
+            italic: boolean;
+            underline: boolean;
+            strikethrough: boolean;
+            effect: "none" | "big" | "small" | "shake" | "nod" | "explode" | "ripple" | "bloom" | "jitter";
+        }[] | undefined;
+        stickers?: {
+            id: string;
+            emoji: string;
+            x: number;
+            y: number;
+            scale: number;
+            rotation: number;
+            zIndex: number;
+            at: number;
+            url?: string | undefined;
+            participantId?: string | undefined;
+        }[] | undefined;
+        statusAt?: number | undefined;
+        editHistory?: {
+            versions: {
+                id: string;
+                text: string;
+                editedAt: string;
+            }[];
+        } | undefined;
+        scheduledAt?: string | undefined;
+        readBy?: string[] | undefined;
+        replyTo?: string | undefined;
+        media?: {
+            alt: string;
+            width: number;
+            height: number;
+            duration: number;
+            waveform: number[];
+            playhead: number;
+            playbackRate: number;
+            playing: boolean;
+            keep: boolean;
+            url?: string | undefined;
+            videoUrl?: string | undefined;
+            poster?: string | undefined;
+            transcript?: string | undefined;
+        } | undefined;
+        file?: {
+            name: string;
+            size: number;
+            mimeType: string;
+        } | undefined;
+        link?: {
+            url: string;
+            title: string;
+            description: string;
+            image?: string | undefined;
+        } | undefined;
+        location?: {
+            latitude: number;
+            longitude: number;
+            label: string;
+            address: string;
+        } | undefined;
+        sharedContact?: {
+            name: string;
+            phone: string;
+            avatar?: string | undefined;
+        } | undefined;
+        sticker?: {
+            emoji: string;
+            alt: string;
+            url?: string | undefined;
+        } | undefined;
+        poll?: {
+            question: string;
+            options: {
+                id: string;
+                text: string;
+                votes: number;
+            }[];
+            totalVotes: number;
+        } | undefined;
+        payment?: {
+            amount: number;
+            currency: string;
+            note: string;
+        } | undefined;
+    }[];
+    composer: {
+        text: string;
+        placeholder: string;
+        typing: {
+            visible: boolean;
+            participantId?: string | undefined;
+        };
+        keyboard: "emoji" | "hidden" | "alphabetic";
+        focused: boolean;
+        context?: {
+            mode: "normal" | "reply" | "edit" | "recording" | "scheduled";
+            scheduledAt: string;
+            recording: {
+                duration: number;
+                locked: boolean;
+                paused: boolean;
+                waveform: number[];
+            };
+            messageId?: string | undefined;
+        } | undefined;
+        selection?: {
+            start: number;
+            end: number;
+            showCaret: boolean;
+            showHandles: boolean;
+            visible?: boolean | undefined;
+        } | undefined;
+    };
+    appearance: {
+        wallpaper: "custom" | "solid" | "gradient" | "paper";
+        color: string;
+        showTimestamps: boolean;
+        showAvatars: boolean;
+        screenEffect: "none" | "confetti" | "balloons" | "hearts" | "lasers" | "fireworks" | "echo" | "spotlight";
+        bubbleRadius?: number | undefined;
+        textSize?: number | undefined;
+    };
+    timeline: {
+        duration: number;
+        loop: boolean;
+        fps: number;
+        tracks: {
+            id: string;
+            path: string;
+            keyframes: {
+                at: number;
+                value: string | number | boolean | null;
+                easing: "typewriter" | "step" | "linear" | "ease";
+            }[];
+        }[];
+    };
+    extensions: Record<string, JsonValue>;
+    header?: {
+        transport: "imessage" | "sms" | "rcs";
+        backCount: number;
+        video: "enabled" | "disabled" | "hidden";
+        call: "enabled" | "disabled" | "hidden";
+    } | undefined;
+    conversation?: {
+        muted: boolean;
+        focus?: {
+            visible: boolean;
+            name: string;
+            notifyAnyway: boolean;
+        } | undefined;
+        unread?: {
+            visible: boolean;
+            messageId: string;
+            count: number;
+        } | undefined;
+        pinned?: {
+            visible: boolean;
+            messageId: string;
+            label: string;
+        } | undefined;
+    } | undefined;
+    interactions?: {
+        attachmentTray?: {
+            visible: boolean;
+            kind: "apps" | "photos" | "stickers";
+            items?: {
+                id: string;
+                label: string;
+                url?: string | undefined;
+                emoji?: string | undefined;
+            }[] | undefined;
+        } | undefined;
+        tapbackPicker?: {
+            visible: boolean;
+            messageId: string;
+            selectedEmoji: string;
+            emojis: string[];
+            showMenu: boolean;
+        } | undefined;
+        editHistory?: {
+            visible: boolean;
+            messageId: string;
+        } | undefined;
+    } | undefined;
+}>>;
 export declare function parseScene(input: unknown): Scene;
 export type PresentationField = {
     path: string;

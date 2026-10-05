@@ -1,4 +1,20 @@
 /* Textmock 2026.1. All geometry is in logical CSS points; the studio scales the whole device. */
+/* Android surfaces use the real Roboto Flex and Google Sans Flex (OFL-1.1);
+   dist/fonts/ ships alongside this stylesheet. */
+@font-face {
+  font-family: "Roboto Flex";
+  src: url("./fonts/roboto-flex-latin.woff2") format("woff2");
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Google Sans Flex";
+  src: url("./fonts/google-sans-flex-latin.woff2") format("woff2");
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+}
 .tm-phone {
   --tm-screen: #fff;
   --tm-ink: #08090c;
@@ -3116,4 +3132,1022 @@
 }
 .tm-phone[data-platform="instagram"] .tm-screen[data-status-hidden] .tm-thread {
   top: 66px;
+}
+
+/* ===== Phone models ======================================================
+   A scene with device.model draws that phone: a frame sized by the model's
+   bezel and screen radius, side keys, a camera cutout or Dynamic Island, and
+   the status bar and navigation its operating system ships. Geometry arrives
+   as --tm-* custom properties on .tm-phone. */
+
+.tm-phone[data-model] {
+  padding: var(--tm-bezel);
+  border: 0;
+  border-radius: calc(var(--tm-screen-radius) + var(--tm-bezel));
+}
+.tm-phone[data-model] .tm-screen {
+  border-radius: var(--tm-screen-radius);
+}
+.tm-phone[data-model][data-frame="none"] {
+  padding: 0;
+  border-radius: 0;
+}
+.tm-phone[data-model][data-frame="none"] .tm-screen {
+  border-radius: 0;
+}
+
+/* Aluminum rails, tuned per model family and theme. */
+.tm-phone[data-model^="iphone"] {
+  background: linear-gradient(130deg, #eceded, #98999e 30%, #cfcfd3 55%, #83848a 72%, #e4e4e8);
+  box-shadow:
+    inset 0 0 0 1px #f5f5f8,
+    inset 0 0 0 calc(var(--tm-bezel) - 5px) #0a0a0c,
+    0 2px 2px #1712201a,
+    0 28px 65px -23px #28233450,
+    0 7px 18px -10px #14101b30;
+}
+.tm-phone[data-model^="iphone"][data-theme="dark"] {
+  background: linear-gradient(125deg, #6d6e75, #26272c 40%, #585961 68%, #232428);
+  box-shadow:
+    inset 0 0 0 1px #9a9ba3,
+    inset 0 0 0 calc(var(--tm-bezel) - 5px) #0a0a0c,
+    0 2px 2px #1712201a,
+    0 28px 65px -23px #28233470,
+    0 7px 18px -10px #14101b50;
+}
+.tm-phone[data-model^="pixel"] {
+  background: linear-gradient(135deg, #e8e9eb, #b7b9bd 38%, #dbdcde 60%, #a9abb0);
+  box-shadow:
+    inset 0 0 0 1px #ffffff90,
+    inset 0 0 0 calc(var(--tm-bezel) - 6px) #101114,
+    0 2px 2px #1712201a,
+    0 28px 65px -23px #28233450,
+    0 7px 18px -10px #14101b30;
+}
+.tm-phone[data-model^="pixel"][data-theme="dark"] {
+  background: linear-gradient(135deg, #55565b, #232427 45%, #46474c 72%, #1d1e21);
+  box-shadow:
+    inset 0 0 0 1px #7d7e8480,
+    inset 0 0 0 calc(var(--tm-bezel) - 6px) #101114,
+    0 2px 2px #1712201a,
+    0 28px 65px -23px #28233470,
+    0 7px 18px -10px #14101b50;
+}
+.tm-phone[data-model^="galaxy"] {
+  background: linear-gradient(140deg, #d7d8dc, #a2a4a9 35%, #cdced2 58%, #8f9196 78%, #dedfe3);
+  box-shadow:
+    inset 0 0 0 1px #f2f3f6,
+    inset 0 0 0 calc(var(--tm-bezel) - 4px) #0b0c0f,
+    0 2px 2px #1712201a,
+    0 28px 65px -23px #28233450,
+    0 7px 18px -10px #14101b30;
+}
+.tm-phone[data-model^="galaxy"][data-theme="dark"] {
+  background: linear-gradient(140deg, #62636a, #26272b 42%, #54555b 70%, #222327);
+  box-shadow:
+    inset 0 0 0 1px #8e8f9690,
+    inset 0 0 0 calc(var(--tm-bezel) - 4px) #0b0c0f,
+    0 2px 2px #1712201a,
+    0 28px 65px -23px #28233470,
+    0 7px 18px -10px #14101b50;
+}
+.tm-phone[data-model="galaxy-s26-ultra"] {
+  background: linear-gradient(140deg, #c3c4c9, #8e9096 35%, #b7b8bd 58%, #7e8086 78%, #cacbd0);
+}
+
+/* Flush keys on the right rail for Android phones; left keys for iPhone. */
+.tm-side-key {
+  position: absolute;
+  right: -3.5px;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #83848a, #c4c5c9, #8f9096);
+  z-index: -1;
+}
+.tm-phone[data-model^="pixel"] .tm-key-power {
+  top: 21%;
+  height: 11%;
+}
+.tm-phone[data-model^="pixel"] .tm-key-volume {
+  top: 34.5%;
+  height: 19%;
+}
+.tm-phone[data-model^="galaxy"] .tm-key-volume {
+  top: 23%;
+  height: 17%;
+}
+.tm-phone[data-model^="galaxy"] .tm-key-power {
+  top: 42.5%;
+  height: 13%;
+}
+.tm-phone[data-model^="iphone"] .tm-side-key {
+  background: linear-gradient(90deg, #88898f, #cdced3, #94959a);
+}
+.tm-phone[data-model^="iphone"] .tm-key-volume {
+  left: -3.5px;
+  right: auto;
+  top: 19%;
+  height: 11%;
+  box-shadow: 0 -66px 0 #a1a2a8;
+}
+.tm-phone[data-model^="iphone"] .tm-key-power {
+  right: -3.5px;
+  top: 24%;
+  height: 15.5%;
+}
+.tm-phone[data-exporting][data-frame="device"] {
+  box-shadow:
+    inset 0 0 0 1px #ffffff70,
+    inset 0 0 0 calc(var(--tm-bezel, 12px) - 5px) #0b0c0f;
+}
+
+/* The front camera: a punch hole on Android, the Dynamic Island on iPhone. */
+.tm-cutout {
+  position: absolute;
+  z-index: 12;
+  top: var(--tm-cutout-top);
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--tm-cutout-w);
+  height: var(--tm-cutout-h);
+  border-radius: 50%;
+  background: radial-gradient(circle at 42% 40%, #131a26, #04050a 62%);
+  box-shadow: inset 0 0 0 1.5px #00000040;
+}
+.tm-cutout::after {
+  content: "";
+  position: absolute;
+  left: 32%;
+  top: 30%;
+  width: 34%;
+  height: 34%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #1e2a3d, #0a0e18 70%);
+}
+.tm-phone[data-model^="iphone"] .tm-island {
+  top: var(--tm-cutout-top);
+  width: var(--tm-cutout-w);
+  height: var(--tm-cutout-h);
+}
+
+/* ===== Android system chrome ============================================ */
+.tm-phone[data-os="android"] {
+  font-family:
+    "Roboto Flex",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  letter-spacing: 0;
+  --tm-header-h: 64px;
+  --tm-composer-h: 64px;
+}
+.tm-status-android {
+  height: var(--tm-status-h);
+  padding: 0 20px;
+  align-items: flex-start;
+}
+.tm-status-android .tm-clock {
+  min-width: 0;
+  margin: calc(var(--tm-status-c) - 12px) 0 0 14px;
+  padding: 0;
+  font-family: "Google Sans Flex", "Roboto Flex", sans-serif;
+  font-size: 15px;
+  font-weight: 550;
+  letter-spacing: 0;
+  line-height: 24px;
+  text-align: left;
+}
+.tm-phone[data-system="one-ui"] .tm-status-android .tm-clock {
+  font-family: "Roboto Flex", Roboto, sans-serif;
+  font-weight: 450;
+}
+.tm-status-android .tm-status-right {
+  gap: 7px;
+  margin: calc(var(--tm-status-c) - 9px) 10px 0 0;
+  align-items: center;
+}
+.tm-status-android .tm-carrier {
+  position: static;
+  font-size: 13px;
+  font-weight: 500;
+  margin-right: 2px;
+}
+.tm-battery-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 11.5px;
+  margin-left: 3px;
+  border: 1.4px solid color-mix(in srgb, var(--tm-ink) 40%, transparent);
+  border-radius: 3.6px;
+  padding: 1.5px;
+}
+.tm-battery-pill::after {
+  content: "";
+  position: absolute;
+  right: -3.8px;
+  top: 3.4px;
+  width: 1.6px;
+  height: 4px;
+  border-radius: 0 1.5px 1.5px 0;
+  background: color-mix(in srgb, var(--tm-ink) 40%, transparent);
+}
+.tm-battery-pill i {
+  display: block;
+  height: 100%;
+  background: var(--tm-ink);
+  border-radius: 1.6px;
+}
+.tm-battery-pill[data-low] i {
+  background: #eb6a5e;
+}
+.tm-battery-pill[data-charging] i {
+  background: #39d98a;
+}
+.tm-battery-pill b {
+  position: absolute;
+  left: -4px;
+  top: -3px;
+  font-size: 11px;
+}
+.tm-battery-pill em {
+  display: none;
+}
+.tm-phone[data-system="one-ui"] .tm-battery-pill {
+  width: 41px;
+  height: 15px;
+  border-radius: 5.5px;
+  border-color: transparent;
+  background: color-mix(in srgb, var(--tm-ink) 9%, transparent);
+  padding: 0;
+}
+.tm-phone[data-system="one-ui"] .tm-battery-pill::after {
+  display: none;
+}
+.tm-phone[data-system="one-ui"] .tm-battery-pill em {
+  display: block;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 15px;
+  text-align: center;
+  color: var(--tm-ink);
+}
+.tm-phone[data-system="one-ui"] .tm-battery-pill i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  opacity: 0.22;
+}
+
+.tm-nav-bar {
+  position: absolute;
+  z-index: 12;
+  inset: auto 0 0;
+  height: var(--tm-nav-h);
+  pointer-events: none;
+}
+.tm-nav-handle {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  width: var(--tm-handle-w, 104px);
+  height: 4px;
+  border-radius: 2px;
+  background: var(--tm-ink);
+  opacity: 0.85;
+}
+.tm-nav-bar[data-system="one-ui"] {
+  display: flex;
+  align-items: center;
+  background: color-mix(in srgb, var(--tm-screen) 82%, transparent);
+}
+.tm-nav-btn {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  color: color-mix(in srgb, var(--tm-ink) 80%, transparent);
+}
+.tm-nav-recents {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+}
+.tm-nav-recents i {
+  width: 2.4px;
+  height: 15px;
+  border-radius: 1.2px;
+  background: currentColor;
+}
+.tm-nav-home {
+  width: 15px;
+  height: 15px;
+  justify-self: center;
+  margin: 0 auto;
+  border: 2.2px solid currentColor;
+  border-radius: 4.5px;
+}
+
+/* ===== Android app bars =================================================== */
+.tm-phone[data-os="android"] .tm-phone-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: calc(var(--tm-status-h) + var(--tm-header-h));
+  padding: var(--tm-status-h) 8px 0 6px;
+  background: var(--tm-chrome);
+  box-shadow: none;
+}
+.tm-phone[data-os="android"] .tm-nav-back {
+  position: static;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+  color: var(--tm-ink);
+}
+.tm-phone[data-os="android"] .tm-nav-back .tm-back-count {
+  position: absolute;
+  top: calc(var(--tm-status-h) + 4px);
+  left: 34px;
+}
+.tm-phone[data-os="android"] .tm-phone-header > .tm-avatar,
+.tm-phone[data-os="android"] .tm-phone-header > .tm-group-avatar {
+  width: 40px;
+  height: 40px;
+  font-size: 17px;
+}
+.tm-phone[data-os="android"] .tm-contact-title strong {
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.tm-phone[data-os="android"] .tm-contact-title small {
+  font-size: 13px;
+  line-height: 17px;
+}
+.tm-phone[data-os="android"] .tm-nav-actions {
+  gap: 2px;
+  color: var(--tm-ink);
+  margin-right: 4px;
+}
+.tm-nav-action {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+}
+.tm-nav-action[data-disabled] {
+  opacity: 0.38;
+}
+.tm-phone[data-os="android"] .tm-thread {
+  top: calc(var(--tm-status-h) + var(--tm-header-h));
+  bottom: calc(
+    var(--tm-nav-h) + var(--tm-composer-h) + var(--tm-composer-extra, 0px)
+  );
+}
+.tm-phone[data-os="android"] .tm-thread[data-has-pinned] {
+  top: calc(var(--tm-status-h) + var(--tm-header-h) + 45px);
+}
+.tm-phone[data-os="android"] .tm-pinned-banner {
+  top: calc(var(--tm-status-h) + var(--tm-header-h));
+}
+.tm-phone[data-os="android"] .tm-screen[data-status-hidden] {
+  --tm-status-h: 0px;
+}
+.tm-phone[data-os="android"] .tm-screen[data-keyboard] .tm-thread {
+  bottom: calc(
+    var(--tm-keyboard-height, 272px) + 58px + var(--tm-composer-extra, 0px)
+  );
+}
+.tm-phone[data-os="android"] .tm-screen[data-keyboard] .tm-composer {
+  padding-bottom: 10px;
+  min-height: 58px;
+}
+.tm-phone[data-os="android"] .tm-input-region {
+  bottom: 0;
+}
+.tm-phone[data-os="android"] .tm-composer {
+  gap: 8px;
+  padding: 5px 12px calc(var(--tm-nav-h) + 10px);
+  min-height: calc(var(--tm-composer-h) + var(--tm-nav-h));
+  align-items: center;
+  background: var(--tm-screen);
+}
+.tm-phone[data-os="android"] .tm-composer-field {
+  min-height: 48px;
+  padding: 6px 14px;
+  gap: 12px;
+  align-items: center;
+  border: 0;
+  border-radius: 26px;
+  background: var(--tm-field);
+  box-shadow: 0 1px 2px #00000012;
+}
+.tm-phone[data-os="android"] .tm-field-icon {
+  color: var(--tm-muted);
+  flex: none;
+}
+.tm-phone[data-os="android"] .tm-composer-placeholder,
+.tm-phone[data-os="android"] .tm-composer-text {
+  font-size: 16px;
+  letter-spacing: 0;
+}
+.tm-phone[data-os="android"] .tm-composer-mic,
+.tm-phone[data-os="android"] .tm-composer > .tm-send {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  color: var(--tm-fab-ink, #fff);
+  background: var(--tm-tint);
+}
+.tm-phone[data-os="android"] .tm-compose-context {
+  margin: 0 10px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: var(--tm-field);
+  border: 0;
+  box-shadow: 0 1px 3px #00000018;
+}
+.tm-phone[data-os="android"] .tm-compose-context svg {
+  color: var(--tm-tint);
+}
+.tm-phone[data-os="android"] .tm-catch-up {
+  bottom: calc(
+    var(--tm-nav-h) + var(--tm-composer-h) + 12px + var(--tm-composer-extra, 0px)
+  );
+  border: 0;
+  box-shadow: 0 1px 3px #00000029;
+}
+.tm-phone[data-os="android"] .tm-screen[data-keyboard] .tm-catch-up {
+  bottom: calc(
+    var(--tm-keyboard-height, 272px) + 66px + var(--tm-composer-extra, 0px)
+  );
+}
+.tm-phone[data-os="android"] .tm-schedule-chip svg {
+  color: var(--tm-tint);
+}
+.tm-phone[data-os="android"] .tm-recording {
+  padding-bottom: var(--tm-nav-h);
+}
+
+/* ===== Android bubbles ==================================================== */
+.tm-phone[data-os="android"] .tm-bubble {
+  border-radius: var(--tm-radius);
+  padding: 6px 10px 7px;
+  letter-spacing: 0;
+}
+.tm-phone[data-os="android"] .tm-bubble-text {
+  font-size: var(--tm-type);
+  line-height: 1.36;
+}
+.tm-phone[data-os="android"] .tm-message-block[data-first] {
+  margin-top: 8px;
+}
+.tm-phone[data-os="android"] .tm-row-avatar {
+  width: 24px;
+  height: 24px;
+  font-size: 11px;
+  border-radius: 50%;
+}
+.tm-phone[data-os="android"] .tm-date span {
+  padding: 5px 12px;
+  border-radius: 9px;
+  font-size: 12px;
+}
+.tm-phone[data-os="android"] .tm-sender-name {
+  font-size: 12.5px;
+  margin-bottom: 3px;
+}
+.tm-phone[data-os="android"] .tm-system-message {
+  font-size: 12.5px;
+  letter-spacing: 0;
+}
+.tm-phone[data-os="android"] .tm-typing-row {
+  padding: 4px 14px;
+}
+.tm-phone[data-os="android"] .tm-reactions {
+  font-size: 14px;
+}
+.tm-phone[data-os="android"] .tm-empty-conversation {
+  margin-top: 40%;
+}
+
+/* ===== Google Messages (Material 3) =======================================
+   Current stable: RCS circles at the bubble corner, a bold pill field with
+   leading +, and a primary voice/send FAB. Dark values follow the app's
+   navy Material theme. */
+.tm-phone[data-platform="google-messages"] {
+  font-family:
+    "Google Sans Flex",
+    "Roboto Flex",
+    Roboto,
+    sans-serif;
+  --tm-screen: #f6f8fe;
+  --tm-ink: #1a1c21;
+  --tm-muted: #5d6470;
+  --tm-in: #e8ecfb;
+  --tm-out: #0b57d0;
+  --tm-out-ink: #fff;
+  --tm-field: #e3e9fa;
+  --tm-chrome: #f6f8fe;
+  --tm-tint: #0b57d0;
+  --tm-fab-ink: #fff;
+  --tm-line: #d7dcec;
+  --tm-keyboard: #eef0f6;
+  --tm-key: #fff;
+  --tm-key-mod: transparent;
+}
+.tm-phone[data-platform="google-messages"][data-theme="dark"] {
+  --tm-screen: #111419;
+  --tm-ink: #e2e6ee;
+  --tm-muted: #9aa3b2;
+  --tm-in: #3a3f4d;
+  --tm-out: #a8c7fa;
+  --tm-out-ink: #0a2e6e;
+  --tm-field: #272b35;
+  --tm-chrome: #111419;
+  --tm-tint: #a8c7fa;
+  --tm-fab-ink: #0a2e6e;
+  --tm-line: #2c313c;
+  --tm-keyboard: #1c1f26;
+  --tm-key: #363a45;
+  --tm-key-mod: transparent;
+}
+.tm-phone[data-platform="google-messages"] .tm-wallpaper::after {
+  display: none;
+}
+.tm-phone[data-platform="google-messages"] {
+  --tm-header-h: 66px;
+  --tm-composer-h: 62px;
+}
+.tm-phone[data-platform="google-messages"] .tm-contact-title strong {
+  font-size: 20px;
+  font-weight: 500;
+}
+.tm-phone[data-platform="google-messages"] .tm-message-stack {
+  max-width: 82%;
+}
+.tm-phone[data-platform="google-messages"] .tm-bubble {
+  padding: 9px 15px;
+  box-shadow: none;
+}
+.tm-phone[data-platform="google-messages"] .tm-bubble[data-side="in"] {
+  border-radius: var(--tm-radius, 24px) var(--tm-radius, 24px)
+    var(--tm-radius, 24px) 7px;
+}
+.tm-phone[data-platform="google-messages"] .tm-bubble[data-side="out"] {
+  border-radius: var(--tm-radius, 24px) var(--tm-radius, 24px) 7px
+    var(--tm-radius, 24px);
+}
+.tm-phone[data-platform="google-messages"]
+  .tm-bubble[data-side="in"]:not([data-first]) {
+  border-top-left-radius: 7px;
+}
+.tm-phone[data-platform="google-messages"]
+  .tm-bubble[data-side="in"]:not([data-tail]) {
+  border-bottom-left-radius: 7px;
+}
+.tm-phone[data-platform="google-messages"]
+  .tm-bubble[data-side="out"]:not([data-first]) {
+  border-top-right-radius: 7px;
+}
+.tm-phone[data-platform="google-messages"]
+  .tm-bubble[data-side="out"]:not([data-tail]) {
+  border-bottom-right-radius: 7px;
+}
+.tm-phone[data-platform="google-messages"] .tm-bubble-text {
+  font-size: 16px;
+}
+.tm-phone[data-platform="google-messages"] .tm-date span {
+  background: none;
+  box-shadow: none;
+  padding: 0;
+  color: var(--tm-muted);
+  font-size: 13px;
+}
+.tm-phone[data-platform="google-messages"] .tm-date {
+  margin: 14px 0 10px;
+}
+.tm-phone[data-platform="google-messages"] .tm-unread-divider {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tm-tint);
+  background: none;
+}
+.tm-phone[data-platform="google-messages"] .tm-receipt {
+  font-size: 12px;
+  color: var(--tm-muted);
+  margin-top: 2px;
+}
+.tm-gm-receipt {
+  position: absolute;
+  right: -2px;
+  bottom: -3px;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  color: var(--tm-muted);
+  background: var(--tm-screen);
+  border: 1.6px solid currentColor;
+}
+.tm-gm-receipt svg {
+  width: 11px;
+  height: 11px;
+}
+.tm-gm-receipt[data-status="read"] {
+  color: var(--tm-out-ink);
+  background: var(--tm-tint);
+  border-color: var(--tm-tint);
+}
+.tm-gm-receipt[data-status="delivered"] {
+  color: var(--tm-muted);
+}
+.tm-gm-receipt[data-status="failed"] {
+  color: #fff;
+  background: #e46962;
+  border-color: #e46962;
+  font-size: 10px;
+  font-weight: 700;
+}
+.tm-phone[data-platform="google-messages"] .tm-composer-field {
+  border-radius: 27px;
+}
+.tm-phone[data-platform="google-messages"] .tm-bubble[data-kind="image"],
+.tm-phone[data-platform="google-messages"] .tm-bubble[data-kind="video"] {
+  padding: 0;
+}
+
+/* ===== WhatsApp on Android ================================================ */
+.tm-phone[data-platform="whatsapp"][data-os="android"] {
+  --tm-header-h: 62px;
+  --tm-composer-h: 64px;
+}
+.tm-phone[data-platform="whatsapp"][data-os="android"]
+  .tm-phone-header > .tm-avatar {
+  width: 37px;
+  height: 37px;
+  font-size: 15px;
+}
+.tm-phone[data-platform="whatsapp"][data-os="android"]
+  .tm-contact-title strong {
+  font-size: 17px;
+  font-weight: 550;
+}
+.tm-phone[data-platform="whatsapp"][data-os="android"] .tm-nav-actions {
+  gap: 1px;
+}
+.tm-phone[data-platform="whatsapp"][data-os="android"] .tm-bubble {
+  border-radius: var(--tm-radius, 12px);
+}
+.tm-phone[data-platform="whatsapp"][data-os="android"]
+  .tm-bubble[data-first][data-side="in"] {
+  border-top-left-radius: 3px;
+}
+.tm-phone[data-platform="whatsapp"][data-os="android"]
+  .tm-bubble[data-first][data-side="out"] {
+  border-top-right-radius: 3px;
+}
+.tm-phone[data-os="android"] .tm-tail {
+  display: none;
+}
+.tm-phone[data-platform="whatsapp"][data-os="android"] .tm-composer {
+  gap: 8px;
+}
+.tm-phone[data-platform="whatsapp"][data-os="android"] .tm-composer-field {
+  border-radius: 26px;
+  box-shadow: 0 1px 2px #0000001c;
+}
+.tm-phone[data-platform="whatsapp"][data-os="android"] .tm-composer-mic,
+.tm-phone[data-platform="whatsapp"][data-os="android"] .tm-composer > .tm-send {
+  width: 46px;
+  height: 46px;
+  background: #0aa362;
+}
+.tm-phone[data-platform="whatsapp"][data-os="android"][data-theme="dark"]
+  .tm-composer-mic,
+.tm-phone[data-platform="whatsapp"][data-os="android"][data-theme="dark"]
+  .tm-composer > .tm-send {
+  background: #21c063;
+  color: #0b141a;
+}
+.tm-phone[data-platform="whatsapp"][data-os="android"] .tm-unread-divider {
+  background: var(--tm-field);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px #00000020;
+}
+
+/* ===== Telegram on Android (12.x) ========================================= */
+.tm-phone[data-platform="telegram"][data-os="android"] {
+  --tm-header-h: 62px;
+  --tm-composer-h: 60px;
+  --tm-screen: #e5ebf0;
+  --tm-in: #ffffff;
+  --tm-out: #d2f8c6;
+  --tm-out-ink: #111;
+  --tm-tint: #50a2e9;
+  --tm-field: #ffffff;
+  --tm-chrome: #f6f8fa;
+  --tm-muted: #6d7885;
+}
+.tm-phone[data-platform="telegram"][data-os="android"][data-theme="dark"] {
+  --tm-screen: #0e1621;
+  --tm-in: #182533;
+  --tm-out: #766ac8;
+  --tm-out-ink: #fff;
+  --tm-tint: #71b4f0;
+  --tm-field: #182533;
+  --tm-chrome: #17212b;
+  --tm-muted: #708499;
+}
+.tm-phone[data-platform="telegram"][data-os="android"] .tm-phone-header {
+  background: var(--tm-chrome);
+  box-shadow: none;
+}
+.tm-phone[data-platform="telegram"][data-os="android"]
+  .tm-phone-header > .tm-avatar {
+  width: 40px;
+  height: 40px;
+  font-size: 16px;
+  box-shadow: none;
+  margin-left: 0;
+}
+.tm-phone[data-platform="telegram"][data-os="android"] .tm-contact-title {
+  position: static;
+  transform: none;
+  width: auto;
+  max-width: none;
+  flex: 1;
+  text-align: left;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+.tm-phone[data-platform="telegram"][data-os="android"] .tm-contact-title strong {
+  font-size: 17px;
+  font-weight: 550;
+}
+.tm-phone[data-platform="telegram"][data-os="android"] .tm-wallpaper::after {
+  display: none;
+}
+.tm-phone[data-platform="telegram"][data-os="android"] .tm-bubble {
+  border-radius: var(--tm-radius, 14px);
+  box-shadow: 0 1px 2px #00000014;
+}
+.tm-phone[data-platform="telegram"][data-os="android"]
+  .tm-bubble[data-side="in"] {
+  border-bottom-left-radius: 5px;
+}
+.tm-phone[data-platform="telegram"][data-os="android"]
+  .tm-bubble[data-side="out"] {
+  border-bottom-right-radius: 5px;
+}
+.tm-phone[data-platform="telegram"][data-os="android"] .tm-tail {
+  display: none;
+}
+.tm-phone[data-platform="telegram"][data-os="android"] .tm-inline-meta svg {
+  width: 17px;
+}
+.tm-phone[data-platform="telegram"][data-os="android"][data-theme="dark"]
+  .tm-inline-meta {
+  color: #9fb4c8;
+}
+.tm-phone[data-platform="telegram"][data-os="android"] .tm-composer-field {
+  border-radius: 22px;
+  min-height: 46px;
+}
+.tm-phone[data-platform="telegram"][data-os="android"] .tm-composer-mic,
+.tm-phone[data-platform="telegram"][data-os="android"] .tm-composer > .tm-send {
+  width: 46px;
+  height: 46px;
+  background: var(--tm-tint);
+}
+.tm-phone[data-platform="telegram"][data-os="android"] .tm-pinned-banner {
+  background: var(--tm-chrome);
+  box-shadow: 0 1px 2px #00000014;
+}
+
+/* ===== Instagram on Android =============================================== */
+.tm-phone[data-platform="instagram"][data-os="android"] {
+  --tm-header-h: 62px;
+  --tm-composer-h: 68px;
+}
+.tm-phone[data-platform="instagram"][data-os="android"] .tm-phone-header {
+  gap: 10px;
+}
+.tm-phone[data-platform="instagram"][data-os="android"]
+  .tm-phone-header > .tm-avatar,
+.tm-phone[data-platform="instagram"][data-os="android"] .tm-group-avatar {
+  width: 36px;
+  height: 36px;
+  font-size: 15px;
+}
+.tm-phone[data-platform="instagram"][data-os="android"] .tm-contact-title strong {
+  font-size: 16px;
+  font-weight: 600;
+}
+.tm-phone[data-platform="instagram"][data-os="android"] .tm-nav-actions {
+  gap: 14px;
+  margin-right: 6px;
+}
+.tm-phone[data-platform="instagram"][data-os="android"] .tm-composer-field {
+  min-height: 46px;
+}
+.tm-phone[data-platform="instagram"][data-os="android"] .tm-ig-camera {
+  margin-left: -6px;
+}
+.tm-phone[data-platform="instagram"][data-os="android"] .tm-ig-input-actions {
+  gap: 16px;
+}
+
+/* ===== Android keyboards =================================================== */
+.tm-phone[data-os="android"] .tm-keyboard {
+  box-shadow: none;
+}
+.tm-gboard {
+  padding: 0 8px 16px;
+  font-family: "Google Sans Flex", "Roboto Flex", sans-serif;
+}
+.tm-gboard-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 6px;
+  color: var(--tm-muted);
+}
+.tm-gboard-strip svg {
+  opacity: 0.9;
+}
+.tm-gb-mic {
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 32px;
+  color: var(--tm-tint);
+}
+.tm-gb-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+.tm-gb-row:nth-child(3) {
+  padding: 0 14px;
+}
+.tm-gb-key {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  height: 44px;
+  min-width: 0;
+  border-radius: 8px;
+  background: var(--tm-key);
+  font-size: 20px;
+  line-height: 1;
+  box-shadow: 0 1px 1px #00000014;
+}
+.tm-gb-mod {
+  flex: 1.45;
+  background: var(--tm-key-mod);
+  box-shadow: none;
+  color: var(--tm-muted);
+}
+.tm-gb-space {
+  flex: 5.2;
+}
+.tm-gb-bottom {
+  margin-bottom: 0;
+}
+.tm-gb-bottom .tm-gb-key:not(.tm-gb-mod) {
+  font-size: 17px;
+}
+.tm-gb-enter {
+  color: var(--tm-tint);
+}
+.tm-skboard {
+  padding: 0 6px 10px;
+}
+.tm-sk-strip {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  height: 40px;
+  padding: 0 18px;
+  color: var(--tm-muted);
+}
+.tm-sk-mic {
+  margin-left: auto;
+  color: var(--tm-ink);
+}
+.tm-sk-row {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 7px;
+}
+.tm-sk-row:nth-child(4) {
+  padding: 0 18px;
+}
+.tm-sk-key {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  height: 40px;
+  min-width: 0;
+  border-radius: 7px;
+  background: var(--tm-key);
+  box-shadow: 0 1px 0 #0000001f;
+  font-size: 19px;
+  line-height: 1;
+}
+.tm-sk-numbers .tm-sk-key {
+  height: 34px;
+  font-size: 14px;
+  margin-bottom: 0;
+}
+.tm-sk-mod {
+  flex: 1.5;
+  background: var(--tm-key-mod);
+  box-shadow: none;
+  color: var(--tm-muted);
+}
+.tm-sk-space {
+  flex: 5;
+}
+.tm-sk-enter {
+  color: var(--tm-tint);
+}
+.tm-ge-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 4px 0;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 19px;
+  background: var(--tm-field);
+  color: var(--tm-muted);
+  font-size: 14px;
+}
+.tm-ge-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 10px 4px 4px;
+  color: var(--tm-muted);
+}
+.tm-ge-tabs span {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 32px;
+  border-radius: 16px;
+}
+.tm-ge-tabs span[data-active] {
+  background: var(--tm-field);
+  color: var(--tm-ink);
+}
+.tm-ge-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  row-gap: 2px;
+  padding: 6px 2px 0;
+  font-size: 24px;
+  text-align: center;
+}
+.tm-ge-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px 0;
+  color: var(--tm-muted);
+}
+.tm-ge-abc {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* ===== One UI geometry tweaks ============================================= */
+.tm-phone[data-system="one-ui"] .tm-composer {
+  padding-left: 10px;
+  padding-right: 10px;
 }

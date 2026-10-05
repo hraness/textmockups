@@ -1,6 +1,8 @@
 import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
 import { evaluateScene, sceneTime } from "./timeline.js";
 import { Glyph } from "./glyph.js";
+import { AndroidKeyboard, AndroidNavBar, AndroidStatusBar, MatIcon, } from "./android.js";
+import { deviceProfile, deviceStage, sceneOs, } from "./devices.js";
 import { conversationMembers, isGroupConversation, receiptReaders, } from "./conversation.js";
 const LOCAL_REFERENCE = /^local:/;
 /** Plain image slot. Browser-local `local:` references have no URL here, so they render empty. */
@@ -43,7 +45,7 @@ export function watermarkStyle(sceneId, seconds) {
  * for responsive pages; use `Phone` when you size the device yourself.
  */
 export function PhoneFit({ className, style, ...props }) {
-    const { width, height } = props.scene.device;
+    const { width, height } = deviceStage(props.scene);
     return (_jsx("div", { className: className ? `tm-fit ${className}` : "tm-fit", style: {
             aspectRatio: `${width} / ${height}`,
             ...{ "--tm-fit-width": `${width}px` },
@@ -71,6 +73,19 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
     const focusHeight = scene.platform === "imessage" && scene.conversation?.focus?.visible
         ? 38
         : 0;
+    const model = deviceProfile(scene.device.model);
+    const os = model?.os ?? "ios";
+    const framed = scene.device.frame !== "none";
+    const stage = deviceStage(source);
+    const keyboardHeight = os === "android"
+        ? scene.composer.keyboard === "alphabetic"
+            ? model?.system === "one-ui"
+                ? 306
+                : 272
+            : 300
+        : scene.composer.keyboard === "alphabetic"
+            ? 252
+            : 286;
     const threadMessages = scene.platform === "imessage" && mode === "reply"
         ? scene.messages.filter((message) => message.id === scene.composer.context?.messageId ||
             message.replyTo === scene.composer.context?.messageId)
@@ -78,16 +93,39 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
     const lastOutgoing = threadMessages.findLastIndex((message) => message.senderId === self.id &&
         !message.unsent &&
         message.kind !== "system");
-    return (_jsxs("div", { className: "tm-device-stage", style: { width: source.device.width, height: source.device.height }, children: [_jsxs("div", { className: "tm-phone", "data-textmock-phone": true, "data-platform": scene.platform, "data-theme": scene.theme, "data-frame": scene.device.frame, "data-group": group || undefined, "data-exporting": exporting || undefined, "data-renderer": scene.rendererVersion, "data-transport": scene.header?.transport ?? "imessage", "data-composer-mode": mode, style: css({
-                    width: scene.device.width,
-                    height: scene.device.height,
+    return (_jsxs("div", { className: "tm-device-stage", style: { width: stage.width, height: stage.height }, children: [_jsxs("div", { className: "tm-phone", "data-textmock-phone": true, "data-platform": scene.platform, "data-theme": scene.theme, "data-frame": scene.device.frame, "data-os": os, "data-system": model?.system, "data-model": model?.model, "data-group": group || undefined, "data-exporting": exporting || undefined, "data-renderer": scene.rendererVersion, "data-transport": scene.header?.transport ??
+                    (scene.platform === "google-messages" ? "rcs" : "imessage"), "data-composer-mode": mode, style: css({
+                    width: framed && model ? scene.device.width + model.bezel * 2 : scene.device.width,
+                    height: framed && model
+                        ? scene.device.height + model.bezel * 2
+                        : scene.device.height,
                     transform: `scale(${scene.device.scale})`,
                     transformOrigin: "50% 50%",
                     "--tm-type": `${scene.appearance.textSize}px`,
                     "--tm-radius": `${scene.appearance.bubbleRadius}px`,
                     "--tm-composer-extra": `${extraComposerHeight + focusHeight}px`,
-                    "--tm-keyboard-height": scene.composer.keyboard === "alphabetic" ? "252px" : "286px",
-                }), "aria-label": `${scene.platform === "imessage" ? "iMessage" : scene.platform === "whatsapp" ? "WhatsApp" : scene.platform === "instagram" ? "Instagram" : "Telegram"} conversation with ${scene.contact.name}`, children: [scene.device.frame === "iphone" && (_jsxs(_Fragment, { children: [_jsx("i", { className: "tm-side-button tm-side-action" }), _jsx("i", { className: "tm-side-button tm-side-volume" }), _jsx("i", { className: "tm-side-button tm-side-power" })] })), _jsxs("div", { className: "tm-screen", "data-textmock-screen": true, "data-keyboard": keyboard || undefined, "data-status-hidden": !scene.statusBar.visible || undefined, "data-wallpaper": scene.appearance.wallpaper, style: css({ "--tm-wall-color": scene.appearance.color }), children: [_jsx("div", { className: "tm-wallpaper", "aria-hidden": "true" }), scene.statusBar.visible && _jsx(StatusBar, { scene: scene }), scene.device.frame === "iphone" && scene.statusBar.visible && (_jsx("div", { className: "tm-island", "aria-hidden": "true", children: _jsx("i", {}) })), _jsx(PhoneHeader, { slots: slots, scene: scene, person: other }), scene.platform !== "imessage" && pinned?.visible && (_jsx(PinnedBanner, { slots: slots, scene: scene })), _jsx("div", { className: "tm-thread", "data-textmock-thread": true, "data-has-pinned": (scene.platform !== "imessage" && pinned?.visible) || undefined, children: _jsxs("div", { className: "tm-thread-content", children: [threadMessages.map((message, index) => {
+                    "--tm-keyboard-height": `${keyboardHeight}px`,
+                    "--tm-bezel": model ? `${model.bezel}px` : undefined,
+                    "--tm-screen-radius": model ? `${model.radius}px` : undefined,
+                    "--tm-cutout-w": model ? `${model.cutout.width}px` : undefined,
+                    "--tm-cutout-h": model ? `${model.cutout.height}px` : undefined,
+                    "--tm-cutout-top": model ? `${model.cutout.top}px` : undefined,
+                    "--tm-status-h": model ? `${model.statusBar.height}px` : undefined,
+                    "--tm-status-c": model ? `${model.statusBar.center}px` : undefined,
+                    "--tm-nav-h": model ? `${model.navigation}px` : undefined,
+                    "--tm-handle-w": model ? `${model.gestureHandle}px` : undefined,
+                }), "aria-label": `${scene.platform === "imessage"
+                    ? "iMessage"
+                    : scene.platform === "whatsapp"
+                        ? "WhatsApp"
+                        : scene.platform === "instagram"
+                            ? "Instagram"
+                            : scene.platform === "google-messages"
+                                ? "Google Messages"
+                                : "Telegram"} conversation with ${scene.contact.name}`, children: [scene.device.frame === "iphone" && !model && (_jsxs(_Fragment, { children: [_jsx("i", { className: "tm-side-button tm-side-action" }), _jsx("i", { className: "tm-side-button tm-side-volume" }), _jsx("i", { className: "tm-side-button tm-side-power" })] })), model && framed && (_jsxs(_Fragment, { children: [_jsx("i", { className: "tm-side-key tm-key-volume" }), _jsx("i", { className: "tm-side-key tm-key-power" })] })), _jsxs("div", { className: "tm-screen", "data-textmock-screen": true, "data-keyboard": keyboard || undefined, "data-status-hidden": !scene.statusBar.visible || undefined, "data-wallpaper": scene.appearance.wallpaper, style: css({ "--tm-wall-color": scene.appearance.color }), children: [_jsx("div", { className: "tm-wallpaper", "aria-hidden": "true" }), scene.statusBar.visible &&
+                                (os === "android" ? (_jsx(AndroidStatusBar, { scene: scene })) : (_jsx(StatusBar, { scene: scene }))), scene.statusBar.visible &&
+                                (model ? (framed &&
+                                    (os === "android" ? (_jsx("div", { className: "tm-cutout", "aria-hidden": "true" })) : (_jsx("div", { className: "tm-island", "aria-hidden": "true", children: _jsx("i", {}) })))) : (scene.device.frame === "iphone" && (_jsx("div", { className: "tm-island", "aria-hidden": "true", children: _jsx("i", {}) })))), _jsx(PhoneHeader, { slots: slots, scene: scene, person: other }), scene.platform !== "imessage" && pinned?.visible && (_jsx(PinnedBanner, { slots: slots, scene: scene })), _jsx("div", { className: "tm-thread", "data-textmock-thread": true, "data-has-pinned": (scene.platform !== "imessage" && pinned?.visible) || undefined, children: _jsxs("div", { className: "tm-thread-content", children: [threadMessages.map((message, index) => {
                                             const person = scene.participants.find((participant) => participant.id === message.senderId);
                                             const outgoing = person.isSelf;
                                             const previous = threadMessages[index - 1];
@@ -110,7 +148,8 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                 : undefined;
                                             const receipt = outgoing &&
                                                 (scene.platform === "imessage" ||
-                                                    scene.platform === "instagram") &&
+                                                    scene.platform === "instagram" ||
+                                                    scene.platform === "google-messages") &&
                                                 !message.scheduledAt &&
                                                 (index === lastOutgoing ||
                                                     message.status === "failed" ||
@@ -145,17 +184,21 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                                                 }
                                                                             }
                                                                             : undefined, children: [scene.platform !== "instagram" &&
+                                                                                scene.platform !== "google-messages" &&
                                                                                 (scene.platform === "whatsapp" ? first : last) &&
                                                                                 message.kind !== "sticker" &&
                                                                                 !emojiOnly(message.text) && (_jsx(BubbleTail, { platform: scene.platform })), reply && scene.platform !== "instagram" && (_jsxs("div", { className: "tm-reply", children: [_jsx("b", { children: scene.participants.find((p) => p.id === reply.senderId)?.name }), _jsx("span", { children: reply.text ||
                                                                                             `${reply.kind[0]?.toUpperCase()}${reply.kind.slice(1)}` })] })), editing ? (_jsxs(_Fragment, { children: [_jsx("span", { className: "tm-inline-edit-text", children: _jsx(ComposerText, { scene: scene, time: playhead }) }), _jsx("span", { className: "tm-edit-cancel", children: _jsx(Glyph, { name: "close", size: 20 }) }), _jsx("span", { className: "tm-edit-confirm", children: _jsx(Glyph, { name: "check", size: 21 }) }), scene.composer.selection &&
                                                                                         scene.composer.selection.visible !== false &&
                                                                                         scene.composer.selection.end >
-                                                                                            scene.composer.selection.start && (_jsxs("div", { className: "tm-selection-menu", children: [_jsx("span", { children: "Cut" }), _jsx("span", { children: "Copy" }), _jsx("span", { children: "Paste" }), _jsx("span", { children: "Replace\u2026" }), _jsx(Glyph, { name: "chevron", size: 15 })] }))] })) : (_jsx(MessageContent, { slots: slots, message: message, scene: scene, time: playhead })), scene.platform !== "imessage" &&
-                                                                                scene.platform !== "instagram" && (_jsxs("span", { className: "tm-inline-meta", "data-status": message.status, children: [message.edited && _jsx("span", { children: "edited " }), message.timestamp ||
+                                                                                            scene.composer.selection.start && (_jsxs("div", { className: "tm-selection-menu", children: [_jsx("span", { children: "Cut" }), _jsx("span", { children: "Copy" }), _jsx("span", { children: "Paste" }), _jsx("span", { children: "Replace\u2026" }), _jsx(Glyph, { name: "chevron", size: 15 })] }))] })) : (_jsx(MessageContent, { slots: slots, message: message, scene: scene, time: playhead })), (scene.platform === "whatsapp" ||
+                                                                                scene.platform === "telegram") && (_jsxs("span", { className: "tm-inline-meta", "data-status": message.status, children: [message.edited && _jsx("span", { children: "edited " }), message.timestamp ||
                                                                                         (scene.appearance.showTimestamps
                                                                                             ? scene.statusBar.time
-                                                                                            : ""), outgoing && (_jsx(DeliveryGlyph, { status: message.status }))] })), message.reactions.length > 0 && (_jsx(ReactionBadges, { slots: slots, message: message, scene: scene })), message.stickers?.map((sticker) => (_jsx("span", { className: "tm-attached-sticker", "data-sticker-id": sticker.id, style: {
+                                                                                            : ""), outgoing && (_jsx(DeliveryGlyph, { status: message.status }))] })), scene.platform === "google-messages" &&
+                                                                                outgoing &&
+                                                                                message.kind !== "sticker" &&
+                                                                                !emojiOnly(message.text) && (_jsx(GoogleReceipt, { status: message.status })), message.reactions.length > 0 && (_jsx(ReactionBadges, { slots: slots, message: message, scene: scene })), message.stickers?.map((sticker) => (_jsx("span", { className: "tm-attached-sticker", "data-sticker-id": sticker.id, style: {
                                                                                     left: `${sticker.x * 100}%`,
                                                                                     top: `${sticker.y * 100}%`,
                                                                                     zIndex: 5 + sticker.zIndex,
@@ -173,17 +216,11 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                                         scene.appearance.showTimestamps &&
                                                                         message.timestamp && (_jsx("div", { className: "tm-message-time", children: message.timestamp }))] })] })] }, message.id));
                                         }), scene.composer.typing.visible && (_jsxs("div", { className: "tm-typing-row", children: [_jsx(TypingDots, { time: playhead }), scene.platform !== "imessage" && (_jsxs("span", { children: [scene.participants.find((p) => p.id === scene.composer.typing.participantId)?.name ?? scene.contact.name, " ", "is typing"] }))] })), scene.messages.length === 0 && (_jsxs("div", { className: "tm-empty-conversation", children: [_jsx(Avatar, { slots: slots, name: scene.contact.name, url: scene.contact.avatar ?? other?.avatar, color: other?.color }), _jsx("span", { children: scene.contact.name })] }))] }) }), scene.platform === "imessage" &&
-                                scene.conversation?.unread?.visible && (_jsxs("div", { className: "tm-catch-up", children: [_jsx(Glyph, { name: "chevron", size: 16 }), _jsx(Glyph, { name: "chevron", size: 16 }), _jsx("span", { children: scene.conversation.unread.count })] })), _jsxs("div", { className: "tm-input-region", children: [_jsx(FocusStatus, { scene: scene }), _jsx(Composer, { scene: scene, time: playhead }), keyboard && mode !== "recording" && _jsx(Keyboard, { scene: scene })] }), _jsx(NativeInteraction, { slots: slots, scene: scene, time: playhead }), _jsx("div", { className: "tm-home-indicator", "aria-hidden": "true" }), scene.appearance.screenEffect !== "none" && (_jsx(ScreenEffect, { effect: scene.appearance.screenEffect, time: playhead }))] })] }), watermark && (_jsxs("div", { className: "tm-watermark", "data-textmock-watermark": true, style: {
+                                scene.conversation?.unread?.visible && (_jsxs("div", { className: "tm-catch-up", children: [_jsx(Glyph, { name: "chevron", size: 16 }), _jsx(Glyph, { name: "chevron", size: 16 }), _jsx("span", { children: scene.conversation.unread.count })] })), _jsxs("div", { className: "tm-input-region", children: [_jsx(FocusStatus, { scene: scene }), _jsx(Composer, { scene: scene, time: playhead }), keyboard && mode !== "recording" && _jsx(Keyboard, { scene: scene })] }), _jsx(NativeInteraction, { slots: slots, scene: scene, time: playhead }), os === "android" ? (_jsx(AndroidNavBar, { scene: scene })) : (_jsx("div", { className: "tm-home-indicator", "aria-hidden": "true" })), scene.appearance.screenEffect !== "none" && (_jsx(ScreenEffect, { effect: scene.appearance.screenEffect, time: playhead }))] })] }), watermark && (_jsxs("div", { className: "tm-watermark", "data-textmock-watermark": true, style: {
                     ...watermarkStyle(scene.id, time === undefined ? 0 : playhead),
                     // Follow the phone when it shrinks, and stay inside the output when it zooms.
-                    left: Math.min(source.device.width - 107, Math.max(-4, (source.device.width -
-                        scene.device.width * scene.device.scale) /
-                        2 -
-                        4)),
-                    top: Math.min(source.device.height - 43, Math.max(24, (source.device.height -
-                        scene.device.height * scene.device.scale) /
-                        2 +
-                        24)),
+                    left: Math.min(stage.width - 107, Math.max(-4, (stage.width - stage.width * scene.device.scale) / 2 - 4)),
+                    top: Math.min(stage.height - 43, Math.max(24, (stage.height - stage.height * scene.device.scale) / 2 + 24)),
                 }, children: [_jsx("span", { children: "made with" }), _jsx("strong", { children: "textmock.com" }), _jsx("i", { "aria-hidden": "true", children: "\u2726" })] }))] }));
 }
 function Avatar({ slots, name, url, color, className = "", hidden = false, }) {
@@ -205,6 +242,16 @@ function ConversationAvatar({ slots, scene, person, }) {
     return (_jsx("span", { className: "tm-group-avatar", "data-members": members.length, "aria-hidden": "true", children: members.map((person) => (_jsx(Avatar, { slots: slots, name: person.name, url: person.avatar, color: person.color }, person.id))) }));
 }
 function nativeReceipt(scene, message) {
+    if (scene.platform === "google-messages") {
+        const stamp = message.timestamp ? `${message.timestamp} · ` : "";
+        if (message.status === "read")
+            return `${stamp}Read`;
+        if (message.status === "failed")
+            return "Not sent";
+        if (message.status === "sending")
+            return "Sending…";
+        return `${stamp}${message.status === "delivered" ? "Delivered" : "Sent"}`;
+    }
     if (message.status === "read") {
         const readers = isGroupConversation(scene) && scene.platform === "instagram"
             ? receiptReaders(scene, message)
@@ -237,6 +284,8 @@ function PhoneHeader({ slots, scene, person, }) {
             : group && platform === "whatsapp"
                 ? members.map((p) => (p.isSelf ? "You" : p.name)).join(", ")
                 : "");
+    if (sceneOs(scene) === "android")
+        return _jsx(AndroidHeader, { slots: slots, scene: scene, person: person });
     const avatar = _jsx(ConversationAvatar, { slots: slots, scene: scene, person: person });
     const reply = platform === "imessage" && scene.composer.context?.mode === "reply";
     const control = (kind) => scene.header?.[kind] ?? "enabled";
@@ -249,6 +298,44 @@ function PhoneHeader({ slots, scene, person, }) {
     if (platform === "telegram")
         return (_jsxs("div", { className: "tm-phone-header", "aria-hidden": "true", children: [back, _jsxs("span", { className: "tm-contact-title", children: [_jsxs("strong", { children: [scene.contact.name, mute] }), subtitle && _jsx("small", { children: subtitle })] }), avatar] }));
     return (_jsxs("div", { className: "tm-phone-header", "aria-hidden": "true", children: [back, platform === "imessage" ? (_jsxs(_Fragment, { children: [_jsxs("div", { className: "tm-im-contact", children: [avatar, _jsxs("span", { className: "tm-im-name", children: [scene.contact.name, mute, _jsx(Glyph, { name: "chevron", size: 10 })] }), subtitle && (_jsx("span", { className: "tm-contact-subtitle", children: subtitle }))] }), reply ? (_jsx("span", { className: "tm-im-video", children: _jsx(Glyph, { name: "close", size: 23 }) })) : (control("video") !== "hidden" && (_jsx("span", { className: "tm-im-video", "data-disabled": disabled("video") || undefined, children: _jsx(Glyph, { name: "video", size: 23 }) })))] })) : (_jsxs(_Fragment, { children: [avatar, _jsxs("span", { className: "tm-contact-title", children: [_jsxs("strong", { children: [scene.contact.name, mute] }), subtitle && _jsx("small", { children: subtitle })] }), _jsxs("span", { className: "tm-nav-actions", children: [control("video") !== "hidden" && (_jsx("span", { "data-disabled": disabled("video") || undefined, children: _jsx(Glyph, { name: "video", size: 25 }) })), control("call") !== "hidden" && (_jsx("span", { "data-disabled": disabled("call") || undefined, children: _jsx(Glyph, { name: "phone", size: 22 }) }))] })] }))] }));
+}
+/**
+ * Android app bars: back arrow, avatar, name and subtitle, then Material action
+ * icons. Each app keeps its own action order.
+ */
+function AndroidHeader({ slots, scene, person, }) {
+    const platform = scene.platform;
+    const group = isGroupConversation(scene);
+    const members = conversationMembers(scene);
+    const subtitle = scene.contact.subtitle ||
+        (group && platform === "telegram"
+            ? `${members.length} members`
+            : group && platform === "whatsapp"
+                ? members.map((p) => (p.isSelf ? "You" : p.name)).join(", ")
+                : "");
+    const control = (kind) => scene.header?.[kind] ?? "enabled";
+    const disabled = (kind) => control(kind) === "disabled" ||
+        scene.composer.context?.mode === "recording";
+    const mute = scene.conversation?.muted ? (_jsx(MatIcon, { name: "notifications_off", size: 17 })) : null;
+    const action = (name) => {
+        if (name === "menu")
+            return (_jsx("span", { className: "tm-nav-action", children: _jsx(MatIcon, { name: "more_vert", size: 22 }) }, "menu"));
+        if (control(name) === "hidden")
+            return null;
+        return (_jsx("span", { className: "tm-nav-action", "data-disabled": disabled(name) || undefined, children: _jsx(MatIcon, { name: name === "call" ? "call" : "videocam", size: 23 }) }, name));
+    };
+    const actions = platform === "google-messages"
+        ? [action("call"), action("video"), action("menu")]
+        : platform === "whatsapp"
+            ? [action("video"), action("call"), action("menu")]
+            : platform === "telegram"
+                ? [action("call"), action("menu")]
+                : [action("call"), action("video")];
+    return (_jsxs("div", { className: "tm-phone-header", "aria-hidden": "true", children: [_jsxs("span", { className: "tm-nav-back", children: [_jsx(MatIcon, { name: "arrow_back", size: 24 }), !!scene.header?.backCount && (_jsx("small", { className: "tm-back-count", children: scene.header.backCount > 999 ? "999+" : scene.header.backCount }))] }), _jsx(ConversationAvatar, { slots: slots, scene: scene, person: person }), _jsxs("span", { className: "tm-contact-title", children: [_jsxs("strong", { children: [scene.contact.name, mute] }), subtitle && _jsx("small", { children: subtitle })] }), _jsx("span", { className: "tm-nav-actions", children: actions })] }));
+}
+/** Google Messages delivery: a circular indicator at the bubble's corner. */
+function GoogleReceipt({ status }) {
+    return (_jsx("span", { className: "tm-gm-receipt", "data-status": status, "aria-hidden": "true", children: status === "failed" ? (_jsx("b", { children: "!" })) : (_jsx(MatIcon, { name: status === "sending" ? "schedule" : status === "sent" ? "check" : "done_all", size: 11 })) }));
 }
 /** iMessage sets the day in semibold before the time: "**Today** 9:41 AM". */
 function DateLabel({ label, platform, }) {
@@ -536,6 +623,8 @@ function Composer({ scene, time }) {
                                         : `Replying to ${person?.isSelf ? "yourself" : (person?.name ?? "message")}` }), _jsx("span", { children: referenced?.text || referenced?.kind })] }), _jsx(Glyph, { name: "close", size: 18 })] })), mode === "scheduled" && (_jsxs("div", { className: "tm-ig-scheduled", children: [_jsx(Glyph, { name: "clock", size: 14 }), context?.scheduledAt] })), _jsx("div", { className: "tm-composer", children: _jsxs("div", { className: "tm-composer-field", children: [_jsx("span", { className: "tm-ig-camera", children: _jsx(Glyph, { name: "camera", size: 22 }) }), _jsx("span", { className: hasText ? "tm-composer-text" : "tm-composer-placeholder", children: hasText ? (_jsx(ComposerText, { scene: scene, time: time })) : (_jsxs(_Fragment, { children: [placeholder === "iMessage" || placeholder === "Message"
                                             ? "Message…"
                                             : placeholder, scene.composer.focused && _jsx("i", { className: "tm-caret" })] })) }), hasText ? (_jsx("span", { className: "tm-ig-send", children: mode === "edit" ? "Done" : "Send" })) : (_jsxs("span", { className: "tm-ig-input-actions", children: [_jsx(Glyph, { name: "mic", size: 22 }), _jsxs("svg", { width: "23", height: "23", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", children: [_jsx("rect", { x: "3", y: "3", width: "18", height: "18", rx: "4" }), _jsx("circle", { cx: "8", cy: "8", r: "1.5" }), _jsx("path", { d: "m4 17 5-6 4 4 3-3 5 5" })] }), _jsx(Glyph, { name: "sticker", size: 23 })] }))] }) })] }));
+    if (sceneOs(scene) === "android")
+        return _jsx(AndroidComposer, { scene: scene, time: time });
     return (_jsxs("div", { className: "tm-composer-wrap", "data-mode": mode, "aria-hidden": "true", children: [scene.platform !== "imessage" &&
                 (mode === "reply" || mode === "edit") && (_jsxs("div", { className: "tm-compose-context", children: [_jsx(NativeIcon, { name: mode === "edit" ? "edit" : "reply" }), _jsxs("div", { children: [_jsx("strong", { children: mode === "edit" ? "Edit Message" : (person?.name ?? "Reply") }), _jsx("span", { children: referenced?.text || referenced?.kind })] }), _jsx(Glyph, { name: "close", size: 18 })] })), _jsxs("div", { className: "tm-composer", "data-native-edit": nativeEdit || undefined, children: [_jsx("span", { className: "tm-add", children: _jsx(Glyph, { name: scene.platform === "telegram" ? "paperclip" : "plus", size: 24 }) }), _jsxs("div", { className: "tm-composer-field", "data-scheduled": mode === "scheduled" || undefined, children: [mode === "scheduled" && (_jsxs("div", { className: "tm-schedule-chip", children: [_jsx(Glyph, { name: "clock", size: 13 }), _jsx("span", { children: context?.scheduledAt }), _jsx(Glyph, { name: "chevron", size: 12 }), _jsx(Glyph, { name: "close", size: 15 })] })), _jsx("span", { className: hasText ? "tm-composer-text" : "tm-composer-placeholder", children: hasText ? (_jsx(ComposerText, { scene: scene, time: time })) : (_jsxs(_Fragment, { children: [placeholder, !nativeEdit && scene.composer.focused && (_jsx("i", { className: "tm-caret" }))] })) }), !hasText && scene.platform === "telegram" && (_jsx(Glyph, { name: "gift", size: 20 })), " ", !hasText && (_jsx(Glyph, { name: scene.platform === "imessage"
                                     ? "wave"
@@ -548,7 +637,34 @@ function Composer({ scene, time }) {
                                         : "arrow-up"
                                 : "mic", size: 22 }) }))] })] }));
 }
+/**
+ * Android composers share a pill field plus a circular voice/send button;
+ * each app arranges its own icons inside the field.
+ */
+function AndroidComposer({ scene, time }) {
+    const context = scene.composer.context;
+    const mode = context?.mode ?? "normal";
+    const platform = scene.platform;
+    const hasText = scene.composer.text.length > 0;
+    const referenced = scene.messages.find((message) => message.id === context?.messageId);
+    const person = scene.participants.find((participant) => participant.id === referenced?.senderId);
+    const placeholder = platform === "google-messages"
+        ? scene.header?.transport === "sms"
+            ? "Text message"
+            : scene.composer.placeholder === "iMessage" ||
+                scene.header?.transport === "rcs"
+                ? "RCS message"
+                : scene.composer.placeholder
+        : scene.composer.placeholder === "iMessage"
+            ? "Message"
+            : scene.composer.placeholder;
+    return (_jsxs("div", { className: "tm-composer-wrap", "data-mode": mode, "aria-hidden": "true", children: [(mode === "reply" || mode === "edit") && (_jsxs("div", { className: "tm-compose-context", children: [_jsx(MatIcon, { name: mode === "edit" ? "close" : "reply", size: 20 }), _jsxs("div", { children: [_jsx("strong", { children: mode === "edit"
+                                    ? "Edit message"
+                                    : (person?.name ?? "Reply") }), _jsx("span", { children: referenced?.text || referenced?.kind })] }), _jsx(MatIcon, { name: "close", size: 20 })] })), _jsxs("div", { className: "tm-composer", children: [_jsxs("div", { className: "tm-composer-field", "data-scheduled": mode === "scheduled" || undefined, children: [mode === "scheduled" && (_jsxs("div", { className: "tm-schedule-chip", children: [_jsx(MatIcon, { name: "schedule", size: 14 }), _jsx("span", { children: context?.scheduledAt }), _jsx(MatIcon, { name: "close", size: 16 })] })), platform === "google-messages" && mode !== "scheduled" && (_jsx(MatIcon, { name: "add", size: 24, className: "tm-field-icon" })), (platform === "whatsapp" || platform === "telegram") && (_jsx(MatIcon, { name: "mood", size: 24, className: "tm-field-icon" })), _jsx("span", { className: hasText ? "tm-composer-text" : "tm-composer-placeholder", children: hasText ? (_jsx(ComposerText, { scene: scene, time: time })) : (_jsxs(_Fragment, { children: [placeholder, scene.composer.focused && _jsx("i", { className: "tm-caret" })] })) }), platform === "google-messages" && (_jsxs(_Fragment, { children: [_jsx(MatIcon, { name: "mood", size: 24, className: "tm-field-icon" }), !hasText && (_jsx(MatIcon, { name: "photo_library", size: 24, className: "tm-field-icon" }))] })), platform === "whatsapp" && !hasText && (_jsxs(_Fragment, { children: [_jsx(MatIcon, { name: "attach_file", size: 23, className: "tm-field-icon" }), _jsx(MatIcon, { name: "photo_camera", size: 23, className: "tm-field-icon" })] })), platform === "whatsapp" && hasText && (_jsx(MatIcon, { name: "photo_camera", size: 23, className: "tm-field-icon" })), platform === "telegram" && !hasText && (_jsx(MatIcon, { name: "attach_file", size: 23, className: "tm-field-icon" }))] }), _jsx("span", { className: hasText ? "tm-send" : "tm-composer-mic", children: _jsx(MatIcon, { name: hasText ? (mode === "edit" ? "check" : "send-fill") : "mic-fill", size: hasText ? 19 : 24 }) })] })] }));
+}
 function Keyboard({ scene }) {
+    if (sceneOs(scene) === "android")
+        return _jsx(AndroidKeyboard, { scene: scene });
     if (scene.composer.keyboard === "emoji")
         return (_jsxs("div", { className: "tm-keyboard tm-emoji-keyboard", "aria-hidden": "true", children: [_jsxs("div", { className: "tm-emoji-search", children: [_jsx(Glyph, { name: "smile", size: 17 }), _jsx("span", { children: "Search Emoji" })] }), _jsx("span", { className: "tm-emoji-heading", children: "SMILEYS & PEOPLE" }), _jsx("div", { className: "tm-emoji-grid", children: [
                         "😀",

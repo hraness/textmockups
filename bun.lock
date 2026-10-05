@@ -8,6 +8,9 @@
         "zod": "^4.4.3",
       },
       "devDependencies": {
+        "@fontsource-variable/google-sans-flex": "5.3.1",
+        "@fontsource-variable/roboto": "5.3.0",
+        "@material-symbols/svg-400": "0.47.4",
         "@types/bun": "1.3.14",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
@@ -22,6 +25,12 @@
     },
   },
   "packages": {
+    "@fontsource-variable/google-sans-flex": ["@fontsource-variable/google-sans-flex@5.3.1", "", {}, "sha512-ItkWlFvW61+BmwOMJQfPY81KpvvslqbiTyfYKceOx+0kEFBzTcPbbMVcL9BKrmqhhqnq36kNs7YRbxonovOmNg=="],
+
+    "@fontsource-variable/roboto": ["@fontsource-variable/roboto@5.3.0", "", {}, "sha512-BoaaZiQf8fgtxv07KXkTwx1bKz/EoqIlTXq2OOKKXINxp6qXWdnlChqV+hSaDANS49yyUASFl3OVBMMDTCIHFA=="],
+
+    "@material-symbols/svg-400": ["@material-symbols/svg-400@0.47.4", "", {}, "sha512-o6vhGUH7Lk6epJkDJevmjRF2vQz2ognSlJujHW5O10S/2CTwVD+CRxCePfgj3tF0GVwhJMkd8qCMYUCfAEhXkg=="],
+
     "@types/bun": ["@types/bun@1.3.14", "", { "dependencies": { "bun-types": "1.3.14" } }, "sha512-h1hFqFVcvAvD9j9K7ZW7vd82aSA+rTdznZa+5bwvCwqSB1jmmfLcbIWhOLx1/+boy/xmjgCs/OMUL8hRJSmnPw=="],
 
     "@types/node": ["@types/node@26.6.4", "", { "dependencies": { "undici-types": "~8.9.0" } }, "sha512-ldVPDCzj7fsaGZrLB0NuHuTvJcsNasysBAqMolr/cgxrLd1xbqxIr3XJiPnHHJUCxj5sNF1vnRj9aWnrVh5Jcg=="],

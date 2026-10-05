@@ -8,6 +8,18 @@ import type { Message, MessageTextRun, Participant, Scene } from "./schema.js";
 import { evaluateScene, sceneTime } from "./timeline.js";
 import { Glyph } from "./glyph.js";
 import {
+  AndroidKeyboard,
+  AndroidNavBar,
+  AndroidStatusBar,
+  MatIcon,
+} from "./android.js";
+import {
+  deviceProfile,
+  deviceStage,
+  sceneOs,
+  type DeviceOs,
+} from "./devices.js";
+import {
   conversationMembers,
   isGroupConversation,
   receiptReaders,
@@ -117,7 +129,7 @@ export type PhoneFitProps = PhoneProps & {
  * for responsive pages; use `Phone` when you size the device yourself.
  */
 export function PhoneFit({ className, style, ...props }: PhoneFitProps) {
-  const { width, height } = props.scene.device;
+  const { width, height } = deviceStage(props.scene);
   return (
     <div
       className={className ? `tm-fit ${className}` : "tm-fit"}
@@ -168,6 +180,20 @@ export function Phone({
     scene.platform === "imessage" && scene.conversation?.focus?.visible
       ? 38
       : 0;
+  const model = deviceProfile(scene.device.model);
+  const os: DeviceOs = model?.os ?? "ios";
+  const framed = scene.device.frame !== "none";
+  const stage = deviceStage(source);
+  const keyboardHeight =
+    os === "android"
+      ? scene.composer.keyboard === "alphabetic"
+        ? model?.system === "one-ui"
+          ? 306
+          : 272
+        : 300
+      : scene.composer.keyboard === "alphabetic"
+        ? 252
+        : 286;
   const threadMessages =
     scene.platform === "imessage" && mode === "reply"
       ? scene.messages.filter(
@@ -185,7 +211,7 @@ export function Phone({
   return (
     <div
       className="tm-device-stage"
-      style={{ width: source.device.width, height: source.device.height }}
+      style={{ width: stage.width, height: stage.height }}
     >
       <div
         className="tm-phone"
@@ -193,29 +219,62 @@ export function Phone({
         data-platform={scene.platform}
         data-theme={scene.theme}
         data-frame={scene.device.frame}
+        data-os={os}
+        data-system={model?.system}
+        data-model={model?.model}
         data-group={group || undefined}
         data-exporting={exporting || undefined}
         data-renderer={scene.rendererVersion}
-        data-transport={scene.header?.transport ?? "imessage"}
+        data-transport={
+          scene.header?.transport ??
+          (scene.platform === "google-messages" ? "rcs" : "imessage")
+        }
         data-composer-mode={mode}
         style={css({
-          width: scene.device.width,
-          height: scene.device.height,
+          width: framed && model ? scene.device.width + model.bezel * 2 : scene.device.width,
+          height:
+            framed && model
+              ? scene.device.height + model.bezel * 2
+              : scene.device.height,
           transform: `scale(${scene.device.scale})`,
           transformOrigin: "50% 50%",
           "--tm-type": `${scene.appearance.textSize}px`,
           "--tm-radius": `${scene.appearance.bubbleRadius}px`,
           "--tm-composer-extra": `${extraComposerHeight + focusHeight}px`,
-          "--tm-keyboard-height":
-            scene.composer.keyboard === "alphabetic" ? "252px" : "286px",
+          "--tm-keyboard-height": `${keyboardHeight}px`,
+          "--tm-bezel": model ? `${model.bezel}px` : undefined,
+          "--tm-screen-radius": model ? `${model.radius}px` : undefined,
+          "--tm-cutout-w": model ? `${model.cutout.width}px` : undefined,
+          "--tm-cutout-h": model ? `${model.cutout.height}px` : undefined,
+          "--tm-cutout-top": model ? `${model.cutout.top}px` : undefined,
+          "--tm-status-h": model ? `${model.statusBar.height}px` : undefined,
+          "--tm-status-c": model ? `${model.statusBar.center}px` : undefined,
+          "--tm-nav-h": model ? `${model.navigation}px` : undefined,
+          "--tm-handle-w": model ? `${model.gestureHandle}px` : undefined,
         })}
-        aria-label={`${scene.platform === "imessage" ? "iMessage" : scene.platform === "whatsapp" ? "WhatsApp" : scene.platform === "instagram" ? "Instagram" : "Telegram"} conversation with ${scene.contact.name}`}
+        aria-label={`${
+          scene.platform === "imessage"
+            ? "iMessage"
+            : scene.platform === "whatsapp"
+              ? "WhatsApp"
+              : scene.platform === "instagram"
+                ? "Instagram"
+                : scene.platform === "google-messages"
+                  ? "Google Messages"
+                  : "Telegram"
+        } conversation with ${scene.contact.name}`}
       >
-        {scene.device.frame === "iphone" && (
+        {scene.device.frame === "iphone" && !model && (
           <>
             <i className="tm-side-button tm-side-action" />
             <i className="tm-side-button tm-side-volume" />
             <i className="tm-side-button tm-side-power" />
+          </>
+        )}
+        {model && framed && (
+          <>
+            <i className="tm-side-key tm-key-volume" />
+            <i className="tm-side-key tm-key-power" />
           </>
         )}
         <div
@@ -227,12 +286,29 @@ export function Phone({
           style={css({ "--tm-wall-color": scene.appearance.color })}
         >
           <div className="tm-wallpaper" aria-hidden="true" />
-          {scene.statusBar.visible && <StatusBar scene={scene} />}
-          {scene.device.frame === "iphone" && scene.statusBar.visible && (
-            <div className="tm-island" aria-hidden="true">
-              <i />
-            </div>
-          )}
+          {scene.statusBar.visible &&
+            (os === "android" ? (
+              <AndroidStatusBar scene={scene} />
+            ) : (
+              <StatusBar scene={scene} />
+            ))}
+          {scene.statusBar.visible &&
+            (model ? (
+              framed &&
+              (os === "android" ? (
+                <div className="tm-cutout" aria-hidden="true" />
+              ) : (
+                <div className="tm-island" aria-hidden="true">
+                  <i />
+                </div>
+              ))
+            ) : (
+              scene.device.frame === "iphone" && (
+                <div className="tm-island" aria-hidden="true">
+                  <i />
+                </div>
+              )
+            ))}
           <PhoneHeader slots={slots} scene={scene} person={other} />
           {scene.platform !== "imessage" && pinned?.visible && (
             <PinnedBanner slots={slots} scene={scene} />
@@ -274,7 +350,8 @@ export function Phone({
                 const receipt =
                   outgoing &&
                   (scene.platform === "imessage" ||
-                    scene.platform === "instagram") &&
+                    scene.platform === "instagram" ||
+                    scene.platform === "google-messages") &&
                   !message.scheduledAt &&
                   (index === lastOutgoing ||
                     message.status === "failed" ||
@@ -434,6 +511,7 @@ export function Phone({
                           }
                         >
                           {scene.platform !== "instagram" &&
+                            scene.platform !== "google-messages" &&
                             (scene.platform === "whatsapp" ? first : last) &&
                             message.kind !== "sticker" &&
                             !emojiOnly(message.text) && (
@@ -485,21 +563,27 @@ export function Phone({
                               time={playhead}
                             />
                           )}
-                          {scene.platform !== "imessage" &&
-                            scene.platform !== "instagram" && (
-                              <span
-                                className="tm-inline-meta"
-                                data-status={message.status}
-                              >
-                                {message.edited && <span>edited </span>}
-                                {message.timestamp ||
-                                  (scene.appearance.showTimestamps
-                                    ? scene.statusBar.time
-                                    : "")}
-                                {outgoing && (
-                                  <DeliveryGlyph status={message.status} />
-                                )}
-                              </span>
+                          {(scene.platform === "whatsapp" ||
+                            scene.platform === "telegram") && (
+                            <span
+                              className="tm-inline-meta"
+                              data-status={message.status}
+                            >
+                              {message.edited && <span>edited </span>}
+                              {message.timestamp ||
+                                (scene.appearance.showTimestamps
+                                  ? scene.statusBar.time
+                                  : "")}
+                              {outgoing && (
+                                <DeliveryGlyph status={message.status} />
+                              )}
+                            </span>
+                          )}
+                          {scene.platform === "google-messages" &&
+                            outgoing &&
+                            message.kind !== "sticker" &&
+                            !emojiOnly(message.text) && (
+                              <GoogleReceipt status={message.status} />
                             )}
                           {message.reactions.length > 0 && (
                             <ReactionBadges slots={slots} message={message} scene={scene} />
@@ -619,7 +703,11 @@ export function Phone({
             {keyboard && mode !== "recording" && <Keyboard scene={scene} />}
           </div>
           <NativeInteraction slots={slots} scene={scene} time={playhead} />
-          <div className="tm-home-indicator" aria-hidden="true" />
+          {os === "android" ? (
+            <AndroidNavBar scene={scene} />
+          ) : (
+            <div className="tm-home-indicator" aria-hidden="true" />
+          )}
           {scene.appearance.screenEffect !== "none" && (
             <ScreenEffect
               effect={scene.appearance.screenEffect}
@@ -636,23 +724,17 @@ export function Phone({
             ...watermarkStyle(scene.id, time === undefined ? 0 : playhead),
             // Follow the phone when it shrinks, and stay inside the output when it zooms.
             left: Math.min(
-              source.device.width - 107,
+              stage.width - 107,
               Math.max(
                 -4,
-                (source.device.width -
-                  scene.device.width * scene.device.scale) /
-                  2 -
-                  4,
+                (stage.width - stage.width * scene.device.scale) / 2 - 4,
               ),
             ),
             top: Math.min(
-              source.device.height - 43,
+              stage.height - 43,
               Math.max(
                 24,
-                (source.device.height -
-                  scene.device.height * scene.device.scale) /
-                  2 +
-                  24,
+                (stage.height - stage.height * scene.device.scale) / 2 + 24,
               ),
             ),
           }}
@@ -790,6 +872,13 @@ function ConversationAvatar({ slots,
   );
 }
 function nativeReceipt(scene: Scene, message: Message): string {
+  if (scene.platform === "google-messages") {
+    const stamp = message.timestamp ? `${message.timestamp} · ` : "";
+    if (message.status === "read") return `${stamp}Read`;
+    if (message.status === "failed") return "Not sent";
+    if (message.status === "sending") return "Sending…";
+    return `${stamp}${message.status === "delivered" ? "Delivered" : "Sent"}`;
+  }
   if (message.status === "read") {
     const readers =
       isGroupConversation(scene) && scene.platform === "instagram"
@@ -849,6 +938,8 @@ function PhoneHeader({ slots,
       : group && platform === "whatsapp"
         ? members.map((p) => (p.isSelf ? "You" : p.name)).join(", ")
         : "");
+  if (sceneOs(scene) === "android")
+    return <AndroidHeader slots={slots} scene={scene} person={person} />;
   const avatar = <ConversationAvatar slots={slots} scene={scene} person={person} />;
   const reply =
     platform === "imessage" && scene.composer.context?.mode === "reply";
@@ -966,6 +1057,107 @@ function PhoneHeader({ slots,
         </>
       )}
     </div>
+  );
+}
+
+/**
+ * Android app bars: back arrow, avatar, name and subtitle, then Material action
+ * icons. Each app keeps its own action order.
+ */
+function AndroidHeader({ slots,
+  scene,
+  person,
+}: {
+  slots: PhoneMedia;
+  scene: Scene;
+  person?: Participant;
+}) {
+  const platform = scene.platform;
+  const group = isGroupConversation(scene);
+  const members = conversationMembers(scene);
+  const subtitle =
+    scene.contact.subtitle ||
+    (group && platform === "telegram"
+      ? `${members.length} members`
+      : group && platform === "whatsapp"
+        ? members.map((p) => (p.isSelf ? "You" : p.name)).join(", ")
+        : "");
+  const control = (kind: "video" | "call") => scene.header?.[kind] ?? "enabled";
+  const disabled = (kind: "video" | "call") =>
+    control(kind) === "disabled" ||
+    scene.composer.context?.mode === "recording";
+  const mute = scene.conversation?.muted ? (
+    <MatIcon name="notifications_off" size={17} />
+  ) : null;
+  const action = (name: "call" | "video" | "menu") => {
+    if (name === "menu")
+      return (
+        <span className="tm-nav-action" key="menu">
+          <MatIcon name="more_vert" size={22} />
+        </span>
+      );
+    if (control(name) === "hidden") return null;
+    return (
+      <span
+        className="tm-nav-action"
+        key={name}
+        data-disabled={disabled(name) || undefined}
+      >
+        <MatIcon
+          name={name === "call" ? "call" : "videocam"}
+          size={23}
+        />
+      </span>
+    );
+  };
+  const actions =
+    platform === "google-messages"
+      ? [action("call"), action("video"), action("menu")]
+      : platform === "whatsapp"
+        ? [action("video"), action("call"), action("menu")]
+        : platform === "telegram"
+          ? [action("call"), action("menu")]
+          : [action("call"), action("video")];
+  return (
+    <div className="tm-phone-header" aria-hidden="true">
+      <span className="tm-nav-back">
+        <MatIcon name="arrow_back" size={24} />
+        {!!scene.header?.backCount && (
+          <small className="tm-back-count">
+            {scene.header.backCount > 999 ? "999+" : scene.header.backCount}
+          </small>
+        )}
+      </span>
+      <ConversationAvatar slots={slots} scene={scene} person={person} />
+      <span className="tm-contact-title">
+        <strong>
+          {scene.contact.name}
+          {mute}
+        </strong>
+        {subtitle && <small>{subtitle}</small>}
+      </span>
+      <span className="tm-nav-actions">{actions}</span>
+    </div>
+  );
+}
+
+/** Google Messages delivery: a circular indicator at the bubble's corner. */
+function GoogleReceipt({ status }: { status: Message["status"] }) {
+  return (
+    <span
+      className="tm-gm-receipt"
+      data-status={status}
+      aria-hidden="true"
+    >
+      {status === "failed" ? (
+        <b>!</b>
+      ) : (
+        <MatIcon
+          name={status === "sending" ? "schedule" : status === "sent" ? "check" : "done_all"}
+          size={11}
+        />
+      )}
+    </span>
   );
 }
 
@@ -2067,6 +2259,8 @@ function Composer({ scene, time }: { scene: Scene; time: number }) {
         </div>
       </div>
     );
+  if (sceneOs(scene) === "android")
+    return <AndroidComposer scene={scene} time={time} />;
   return (
     <div className="tm-composer-wrap" data-mode={mode} aria-hidden="true">
       {scene.platform !== "imessage" &&
@@ -2161,7 +2355,118 @@ function Composer({ scene, time }: { scene: Scene; time: number }) {
   );
 }
 
+/**
+ * Android composers share a pill field plus a circular voice/send button;
+ * each app arranges its own icons inside the field.
+ */
+function AndroidComposer({ scene, time }: { scene: Scene; time: number }) {
+  const context = scene.composer.context;
+  const mode = context?.mode ?? "normal";
+  const platform = scene.platform;
+  const hasText = scene.composer.text.length > 0;
+  const referenced = scene.messages.find(
+    (message) => message.id === context?.messageId,
+  );
+  const person = scene.participants.find(
+    (participant) => participant.id === referenced?.senderId,
+  );
+  const placeholder =
+    platform === "google-messages"
+      ? scene.header?.transport === "sms"
+        ? "Text message"
+        : scene.composer.placeholder === "iMessage" ||
+            scene.header?.transport === "rcs"
+          ? "RCS message"
+          : scene.composer.placeholder
+      : scene.composer.placeholder === "iMessage"
+        ? "Message"
+        : scene.composer.placeholder;
+  return (
+    <div className="tm-composer-wrap" data-mode={mode} aria-hidden="true">
+      {(mode === "reply" || mode === "edit") && (
+        <div className="tm-compose-context">
+          <MatIcon name={mode === "edit" ? "close" : "reply"} size={20} />
+          <div>
+            <strong>
+              {mode === "edit"
+                ? "Edit message"
+                : (person?.name ?? "Reply")}
+            </strong>
+            <span>{referenced?.text || referenced?.kind}</span>
+          </div>
+          <MatIcon name="close" size={20} />
+        </div>
+      )}
+      <div className="tm-composer">
+        <div
+          className="tm-composer-field"
+          data-scheduled={mode === "scheduled" || undefined}
+        >
+          {mode === "scheduled" && (
+            <div className="tm-schedule-chip">
+              <MatIcon name="schedule" size={14} />
+              <span>{context?.scheduledAt}</span>
+              <MatIcon name="close" size={16} />
+            </div>
+          )}
+          {platform === "google-messages" && mode !== "scheduled" && (
+            <MatIcon name="add" size={24} className="tm-field-icon" />
+          )}
+          {(platform === "whatsapp" || platform === "telegram") && (
+            <MatIcon name="mood" size={24} className="tm-field-icon" />
+          )}
+          <span
+            className={hasText ? "tm-composer-text" : "tm-composer-placeholder"}
+          >
+            {hasText ? (
+              <ComposerText scene={scene} time={time} />
+            ) : (
+              <>
+                {placeholder}
+                {scene.composer.focused && <i className="tm-caret" />}
+              </>
+            )}
+          </span>
+          {platform === "google-messages" && (
+            <>
+              <MatIcon name="mood" size={24} className="tm-field-icon" />
+              {!hasText && (
+                <MatIcon
+                  name="photo_library"
+                  size={24}
+                  className="tm-field-icon"
+                />
+              )}
+            </>
+          )}
+          {platform === "whatsapp" && !hasText && (
+            <>
+              <MatIcon name="attach_file" size={23} className="tm-field-icon" />
+              <MatIcon name="photo_camera" size={23} className="tm-field-icon" />
+            </>
+          )}
+          {platform === "whatsapp" && hasText && (
+            <MatIcon name="photo_camera" size={23} className="tm-field-icon" />
+          )}
+          {platform === "telegram" && !hasText && (
+            <MatIcon name="attach_file" size={23} className="tm-field-icon" />
+          )}
+        </div>
+        <span className={hasText ? "tm-send" : "tm-composer-mic"}>
+          <MatIcon
+            name={
+              hasText ? (mode === "edit" ? "check" : "send-fill") : "mic-fill"
+            }
+            size={hasText ? 19 : 24}
+          />
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function Keyboard({ scene }: { scene: Scene }) {
+  if (sceneOs(scene) === "android") return <AndroidKeyboard scene={scene} />;
   if (scene.composer.keyboard === "emoji")
     return (
       <div className="tm-keyboard tm-emoji-keyboard" aria-hidden="true">

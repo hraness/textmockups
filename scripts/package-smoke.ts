@@ -21,7 +21,16 @@ try {
   if (!name) throw new Error("no tarball");
   const tarball = supplied ? resolve(name) : join(work, name);
   const listing = run(["tar", "-tzf", tarball], work);
-  for (const file of ["package/dist/index.js", "package/dist/index.d.ts", "package/dist/phone.css", "package/LICENSE", "package/README.md"])
+  for (const file of [
+    "package/dist/index.js",
+    "package/dist/index.d.ts",
+    "package/dist/phone.css",
+    "package/dist/fonts/roboto-flex-latin.woff2",
+    "package/dist/fonts/google-sans-flex-latin.woff2",
+    "package/LICENSE",
+    "package/README.md",
+    "package/THIRD-PARTY-NOTICES.md",
+  ])
     if (!listing.includes(file)) throw new Error(`packed tarball is missing ${file}`);
   if (listing.includes("package/src/")) throw new Error("packed tarball includes src/");
   const app = join(work, "app");
@@ -36,11 +45,18 @@ import { Phone, defaultScene, parseScene } from "@hraness/textmockups";
 import { evaluateScene } from "@hraness/textmockups/timeline";
 import { SCENE_VERSION } from "@hraness/textmockups/schema";
 import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 const scene = parseScene(JSON.parse(JSON.stringify(defaultScene)));
 const html = renderToStaticMarkup(createElement(Phone, { scene: evaluateScene(scene, 1) }));
 if (!html.includes("data-textmock-phone") || SCENE_VERSION !== 1) process.exit(1);
 const css = fileURLToPath(import.meta.resolve("@hraness/textmockups/phone.css"));
-if (!(await Bun.file(css).text()).includes(".tm-phone")) process.exit(1);
+const sheet = await Bun.file(css).text();
+if (!sheet.includes(".tm-phone")) process.exit(1);
+for (const part of sheet.split('url("./').slice(1)) {
+  const font = part.slice(0, part.indexOf('"'));
+  if (!(await Bun.file(join(dirname(css), font)).exists()))
+    throw new Error(\`phone.css references missing asset \${font}\`);
+}
 console.log("packed package renders");`,
   );
   console.log(run(["bun", "smoke.mjs"], app).trim());
