@@ -1,4 +1,5 @@
 .gallery/
+.references/
 .algal/
 node_modules/
 *.tsbuildinfo

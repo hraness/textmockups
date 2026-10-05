@@ -32,6 +32,9 @@ try {
   );
   if (tsc.exitCode !== 0) process.exit(tsc.exitCode ?? 1);
   await cp(join(root, "src", "phone.css"), join(outDir, "phone.css"));
+  await cp(join(root, "src", "fonts"), join(outDir, "fonts"), {
+    recursive: true,
+  });
   if (check) {
     const committed = join(root, "dist");
     const expected = (await files(outDir)).map((file) => relative(outDir, file));

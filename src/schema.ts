@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isSceneAssetUrl, MAX_INLINE_IMAGE_BYTES } from "./assets.js";
+import { DEVICE_MODELS, deviceProfile, sceneOs } from "./devices.js";
 import { FORBIDDEN_KEYS, MAX_MESSAGES, pointerSegments, readPointer } from "./pointer.js";
 
 export {
@@ -466,17 +467,28 @@ const SceneBaseSchema = z.strictObject({
   title: shortText.default("Untitled conversation"),
   rendererVersion: z.literal("2026.1").default("2026.1"),
   platform: z
-    .enum(["imessage", "whatsapp", "telegram", "instagram"])
+    .enum(["imessage", "whatsapp", "telegram", "instagram", "google-messages"])
     .default("imessage"),
   theme: z.enum(["light", "dark"]).default("light"),
   device: z
     .strictObject({
-      width: z.number().int().min(280).max(1024).default(393),
-      height: z.number().int().min(400).max(2048).default(852),
-      frame: z.enum(["iphone", "none"]).default("iphone"),
-      scale: z.number().min(0.25).max(4).default(1),
+      model: z.enum(DEVICE_MODELS).optional(),
+      width: z.number().int().min(280).max(1024).optional(),
+      height: z.number().int().min(400).max(2048).optional(),
+      frame: z.enum(["iphone", "device", "none"]).optional(),
+      scale: z.number().min(0.25).max(4).optional(),
     })
-    .default({ width: 393, height: 852, frame: "iphone", scale: 1 }),
+    .transform((device) => {
+      const profile = deviceProfile(device.model);
+      return {
+        ...device,
+        width: device.width ?? profile?.width ?? 393,
+        height: device.height ?? profile?.height ?? 852,
+        frame: device.frame ?? (profile?.os === "android" ? "device" : "iphone"),
+        scale: device.scale ?? 1,
+      };
+    })
+    .prefault({}),
   statusBar: z
     .strictObject({
       time: displayText(20).default("9:41"),
@@ -538,8 +550,8 @@ const SceneBaseSchema = z.strictObject({
       color: color.default("#FFFFFF"),
       showTimestamps: z.boolean().default(false),
       showAvatars: z.boolean().default(false),
-      bubbleRadius: z.number().min(0).max(32).default(20),
-      textSize: z.number().min(12).max(24).default(17),
+      bubbleRadius: z.number().min(0).max(32).optional(),
+      textSize: z.number().min(12).max(24).optional(),
       screenEffect: z
         .enum([
           "none",
@@ -553,15 +565,7 @@ const SceneBaseSchema = z.strictObject({
         ])
         .default("none"),
     })
-    .default({
-      wallpaper: "solid",
-      color: "#FFFFFF",
-      showTimestamps: false,
-      showAvatars: false,
-      bubbleRadius: 20,
-      textSize: 17,
-      screenEffect: "none",
-    }),
+    .prefault({}),
   timeline: z
     .strictObject({
       duration: z.number().min(0.1).max(MAX_DURATION).default(8),
@@ -571,13 +575,34 @@ const SceneBaseSchema = z.strictObject({
     })
     .default({ duration: 8, loop: true, fps: 30, tracks: [] }),
   extensions,
-});
+}).transform((scene) => ({
+  ...scene,
+  appearance: {
+    ...scene.appearance,
+    bubbleRadius:
+      scene.appearance.bubbleRadius ??
+      (scene.platform === "google-messages" ? 24 : 20),
+    textSize:
+      scene.appearance.textSize ??
+      (scene.platform === "google-messages" ? 16 : 17),
+  },
+}));
 export type Scene = z.infer<typeof SceneBaseSchema>;
 
 function unwrapSchema(schema: z.ZodType): z.ZodType {
-  while (schema instanceof z.ZodOptional || schema instanceof z.ZodDefault)
-    schema = schema.unwrap() as z.ZodType;
-  return schema;
+  for (;;) {
+    if (
+      schema instanceof z.ZodOptional ||
+      schema instanceof z.ZodDefault ||
+      schema instanceof z.ZodPrefault
+    ) {
+      schema = schema.unwrap() as z.ZodType;
+    } else if (schema instanceof z.ZodPipe) {
+      schema = schema.def.in as z.ZodType;
+    } else {
+      return schema;
+    }
+  }
 }
 function fieldSchema(path: string): z.ZodType {
   let schema: z.ZodType = SceneBaseSchema;
@@ -612,6 +637,7 @@ const nonPresentation = new Set([
   "rendererVersion",
   "extensions",
   "timeline",
+  "model",
 ]);
 export const SceneSchema = SceneBaseSchema.superRefine((scene, ctx) => {
   const issue = (path: (string | number)[], message: string) =>
@@ -635,6 +661,26 @@ export const SceneSchema = SceneBaseSchema.superRefine((scene, ctx) => {
   unique(scene.contact.participantIds, ["contact", "participantIds"]);
   if (scene.participants.filter((p) => p.isSelf).length !== 1)
     issue(["participants"], "Exactly one participant must be self");
+  const os = sceneOs(scene);
+  const platformValues = new Set<string>([scene.platform]);
+  for (const track of scene.timeline.tracks) {
+    if (track.path === "/platform")
+      for (const frame of track.keyframes) platformValues.add(String(frame.value));
+  }
+  if (os === "android") {
+    if (scene.device.frame === "iphone")
+      issue(
+        ["device", "frame"],
+        'Android phone models use frame "device" (hardware frame) or "none" (screenshot)',
+      );
+    if (platformValues.has("imessage"))
+      issue(["platform"], "iMessage is only available on iPhone models");
+  }
+  if (platformValues.has("google-messages") && os !== "android")
+    issue(
+      ["platform"],
+      "Google Messages runs on Android devices; choose a Pixel or Galaxy model",
+    );
   const participants = new Set(scene.participants.map((p) => p.id));
   const messages = new Set(scene.messages.map((m) => m.id));
   const reference = (value: string | undefined, path: (string | number)[]) => {

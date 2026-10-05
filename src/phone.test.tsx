@@ -60,6 +60,44 @@ describe("Phone", () => {
     expect(html).toContain("aspect-ratio:393 / 852");
     expect(html).toContain("--tm-fit-width:393px");
   });
+  test("Android scenes draw Android chrome and no iPhone hardware", () => {
+    const scene = presets.find((preset) => preset.id === "pixel-late")!.scene;
+    const html = renderToStaticMarkup(<Phone scene={scene} />);
+    expect(html).toContain('data-os="android"');
+    expect(html).toContain('data-model="pixel-11-pro"');
+    expect(html).toContain('data-system="pixel"');
+    expect(html).toContain("tm-status-android");
+    expect(html).toContain("tm-nav-bar");
+    expect(html).toContain('class="tm-cutout"');
+    expect(html).toContain("tm-gm-receipt");
+    expect(html).not.toContain("tm-island");
+    expect(html).not.toContain("tm-home-indicator");
+    expect(html).not.toContain("tm-side-button");
+  });
+  test("Galaxy scenes draw One UI three-button navigation", () => {
+    const scene = presets.find((preset) => preset.id === "galaxy-dinner")!
+      .scene;
+    const html = renderToStaticMarkup(<Phone scene={scene} />);
+    expect(html).toContain('data-system="one-ui"');
+    expect(html).toContain("tm-nav-recents");
+  });
+  test("a frameless device model draws no hardware chrome", () => {
+    const scene = parseScene({
+      ...defaultScene,
+      platform: "whatsapp",
+      device: { model: "pixel-11", frame: "none" },
+    });
+    const html = renderToStaticMarkup(<Phone scene={scene} />);
+    expect(html).toContain('data-frame="none"');
+    expect(html).toContain("tm-status-android");
+    expect(html).not.toContain('class="tm-cutout"');
+    expect(html).not.toContain("tm-side-key");
+  });
+  test("PhoneFit sizes a modelled phone by its framed stage", () => {
+    const scene = presets.find((preset) => preset.id === "pixel-late")!.scene;
+    const html = renderToStaticMarkup(<PhoneFit scene={scene} />);
+    expect(html).toContain("aspect-ratio:442 / 946");
+  });
   test("iMessage sets the day of a date label in semibold", () => {
     const scene = parseScene({
       ...defaultScene,

@@ -1,6 +1,6 @@
 # Textmockups
 
-Textmockups is a React component library for realistic iMessage, WhatsApp, Telegram, and Instagram chat mockups. You describe a conversation as a small JSON scene, and the `Phone` component draws it on an iPhone with the app's own bubbles, header, composer, receipts, and reactions.
+Textmockups is a React component library for realistic iMessage, WhatsApp, Telegram, Instagram, and Google Messages chat mockups. You describe a conversation as a small JSON scene, and the `Phone` component draws it on an iPhone, Pixel, or Galaxy with the app's own bubbles, header, composer, receipts, and reactions.
 
 It is the renderer behind [textmock.com](https://textmock.com), where you can [make one without code](https://textmock.com).
 
@@ -45,7 +45,7 @@ import "@hraness/textmockups/phone.css";
 const scene = parseScene({
   version: 1,
   id: "saturday",
-  platform: "whatsapp", // or "imessage", "telegram", "instagram"
+  platform: "whatsapp", // or "imessage", "telegram", "instagram", "google-messages"
   theme: "light",
   participants: [
     { id: "me", name: "You", isSelf: true },
@@ -75,6 +75,26 @@ The result is a 393 × 852 iPhone. To fit it to the width of its container inste
 
 Set `device.frame` to `"none"` for the screen alone, or change `device.width`, `device.height`, and `device.scale`.
 
+### iPhone and Android
+
+A scene without a `device.model` draws the classic 393 × 852 iPhone, exactly as before. Set `device.model` to draw a real phone — its screen geometry, hardware frame, status bar, navigation, and keyboard all follow the model:
+
+```tsx
+parseScene({
+  ...scene,
+  platform: "google-messages",
+  device: { model: "pixel-11-pro" },
+});
+```
+
+| Model | System |
+| --- | --- |
+| `iphone-17-pro`, `iphone-17-pro-max` | iOS: Dynamic Island, iOS status bar and home indicator |
+| `pixel-11`, `pixel-11-pro`, `pixel-11-pro-xl` | Pixel: Android status bar, gesture navigation, Gboard |
+| `galaxy-s26`, `galaxy-s26-plus`, `galaxy-s26-ultra` | One UI: Android status bar, three-button navigation, Samsung Keyboard |
+
+iMessage only runs on iPhone, and `google-messages` only runs on Android; the schema rejects mismatched scenes, including platform changes inside a timeline. Android text is set in the bundled Roboto Flex and Google Sans Flex fonts (`dist/fonts/`), which the stylesheet loads relative to itself — keep them next to `phone.css` if you host the assets yourself.
+
 ## What it draws
 
 | App | Details |
@@ -83,6 +103,7 @@ Set `device.frame` to `"none"` for the screen alone, or change `device.width`, `
 | WhatsApp | Doodle wallpaper, green outgoing bubbles, timestamps and blue double ticks inside the bubble, reactions, replies, voice notes, and the WhatsApp header and composer |
 | Telegram | Telegram colors, wallpaper, ticks, reactions, and composer |
 | Instagram | Direct message bubbles, Seen receipts, replies, and the Instagram composer |
+| Google Messages | Android only: Material 3 colors, rounded asymmetric bubbles, RCS/SMS transports, corner delivery circles, Read receipts, and the Gboard-style composer |
 
 Every app has light and dark themes, group chats, images, videos, voice messages, files, links, locations, contacts, stickers, polls, and payments.
 
