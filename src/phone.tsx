@@ -7,6 +7,7 @@ import type {
 import type { Message, MessageTextRun, Participant, Scene } from "./schema.js";
 import { evaluateScene, sceneTime } from "./timeline.js";
 import { Glyph } from "./glyph.js";
+import { PhoneText, type PhoneTextSlot } from "./text.js";
 import {
   AndroidKeyboard,
   AndroidNavBar,
@@ -85,7 +86,11 @@ export type PhoneProps = {
   watermark?: boolean;
   /** Image and video slots. Missing entries fall back to `defaultPhoneMedia`. */
   media?: Partial<PhoneMedia>;
+  /** Wraps message text, the contact name and the clock, for hosts that edit them in place. */
+  text?: PhoneTextSlot;
 };
+
+type Slots = PhoneMedia & { Text: PhoneTextSlot };
 
 const css = (value: Record<string, string | number | undefined>) =>
   value as CSSProperties;
@@ -152,8 +157,9 @@ export function Phone({
   exporting = false,
   watermark = true,
   media: mediaSlots,
+  text: Text = PhoneText,
 }: PhoneProps) {
-  const slots: PhoneMedia = { ...defaultPhoneMedia, ...mediaSlots };
+  const slots: Slots = { ...defaultPhoneMedia, ...mediaSlots, Text };
   const scene = time === undefined ? source : evaluateScene(source, time);
   const playhead =
     time === undefined ? source.timeline.duration : sceneTime(source, time);
@@ -288,9 +294,9 @@ export function Phone({
           <div className="tm-wallpaper" aria-hidden="true" />
           {scene.statusBar.visible &&
             (os === "android" ? (
-              <AndroidStatusBar scene={scene} />
+              <AndroidStatusBar scene={scene} Text={Text} />
             ) : (
-              <StatusBar scene={scene} />
+              <StatusBar scene={scene} Text={Text} />
             ))}
           {scene.statusBar.visible &&
             (model ? (
@@ -490,6 +496,7 @@ export function Phone({
                           tabIndex={
                             onSelectMessage && !exporting ? 0 : undefined
                           }
+                          data-message-id={message.id}
                           aria-label={`${person.name}: ${message.text || message.kind}${message.status === "read" ? ", read" : ""}`}
                           onClick={
                             onSelectMessage && !exporting
@@ -755,7 +762,7 @@ function Avatar({ slots,
   className = "",
   hidden = false,
 }: {
-  slots: PhoneMedia;
+  slots: Slots;
   name: string;
   url?: string;
   color?: string;
@@ -785,11 +792,21 @@ function Avatar({ slots,
   );
 }
 
-function StatusBar({ scene }: { scene: Scene }) {
+function StatusBar({
+  scene,
+  Text = PhoneText,
+}: {
+  scene: Scene;
+  Text?: PhoneTextSlot;
+}) {
   const { statusBar: status } = scene;
   return (
     <div className="tm-status-bar" aria-hidden="true">
-      <span className="tm-clock">{status.time}</span>
+      <span className="tm-clock">
+        <Text field="clock" value={status.time}>
+          {status.time}
+        </Text>
+      </span>
       <span className="tm-status-right">
         {status.carrier && <span className="tm-carrier">{status.carrier}</span>}
         <svg className="tm-cellular" width="19" height="13" viewBox="0 0 19 13">
@@ -839,7 +856,7 @@ function ConversationAvatar({ slots,
   scene,
   person,
 }: {
-  slots: PhoneMedia;
+  slots: Slots;
   scene: Scene;
   person?: Participant;
 }) {
@@ -924,7 +941,7 @@ function PhoneHeader({ slots,
   scene,
   person,
 }: {
-  slots: PhoneMedia;
+  slots: Slots;
   scene: Scene;
   person?: Participant;
 }) {
@@ -968,7 +985,9 @@ function PhoneHeader({ slots,
         {avatar}
         <span className="tm-contact-title">
           <strong>
-            {scene.contact.name}
+            <slots.Text field="contact" value={scene.contact.name}>
+              {scene.contact.name}
+            </slots.Text>
             {mute}
           </strong>
           {subtitle && <small>{subtitle}</small>}
@@ -993,7 +1012,9 @@ function PhoneHeader({ slots,
         {back}
         <span className="tm-contact-title">
           <strong>
-            {scene.contact.name}
+            <slots.Text field="contact" value={scene.contact.name}>
+              {scene.contact.name}
+            </slots.Text>
             {mute}
           </strong>
           {subtitle && <small>{subtitle}</small>}
@@ -1009,7 +1030,9 @@ function PhoneHeader({ slots,
           <div className="tm-im-contact">
             {avatar}
             <span className="tm-im-name">
-              {scene.contact.name}
+              <slots.Text field="contact" value={scene.contact.name}>
+                {scene.contact.name}
+              </slots.Text>
               {mute}
               <Glyph name="chevron" size={10} />
             </span>
@@ -1037,7 +1060,9 @@ function PhoneHeader({ slots,
           {avatar}
           <span className="tm-contact-title">
             <strong>
-              {scene.contact.name}
+              <slots.Text field="contact" value={scene.contact.name}>
+                {scene.contact.name}
+              </slots.Text>
               {mute}
             </strong>
             {subtitle && <small>{subtitle}</small>}
@@ -1068,7 +1093,7 @@ function AndroidHeader({ slots,
   scene,
   person,
 }: {
-  slots: PhoneMedia;
+  slots: Slots;
   scene: Scene;
   person?: Participant;
 }) {
@@ -1131,7 +1156,9 @@ function AndroidHeader({ slots,
       <ConversationAvatar slots={slots} scene={scene} person={person} />
       <span className="tm-contact-title">
         <strong>
-          {scene.contact.name}
+          <slots.Text field="contact" value={scene.contact.name}>
+            {scene.contact.name}
+          </slots.Text>
           {mute}
         </strong>
         {subtitle && <small>{subtitle}</small>}
@@ -1214,7 +1241,7 @@ function MessageContent({ slots,
   scene,
   time,
 }: {
-  slots: PhoneMedia;
+  slots: Slots;
   message: Message;
   scene: Scene;
   time: number;
@@ -1399,14 +1426,16 @@ function MessageContent({ slots,
               : undefined
           }
         >
-          {message.textRuns ? (
-            <FormattedText
-              runs={message.textRuns}
-              time={Math.max(0, time - message.at)}
-            />
-          ) : (
-            message.text
-          )}
+          <slots.Text field="message" messageId={message.id} value={message.text}>
+            {message.textRuns ? (
+              <FormattedText
+                runs={message.textRuns}
+                time={Math.max(0, time - message.at)}
+              />
+            ) : (
+              message.text
+            )}
+          </slots.Text>
         </span>
       )}
     </>
@@ -1439,7 +1468,7 @@ function ReactionBadges({ slots,
   message,
   scene,
 }: {
-  slots: PhoneMedia;
+  slots: Slots;
   message: Message;
   scene: Scene;
 }) {
@@ -1514,7 +1543,7 @@ function ReactionBadges({ slots,
 }
 
 function VoiceMessage({ slots, message, scene }: {
-  slots: PhoneMedia; message: Message; scene: Scene }) {
+  slots: Slots; message: Message; scene: Scene }) {
   const media = message.media!;
   const waveform = media.waveform.length
     ? media.waveform
@@ -1788,7 +1817,7 @@ function FocusStatus({ scene }: { scene: Scene }) {
 }
 
 function PinnedBanner({ slots, scene }: {
-  slots: PhoneMedia; scene: Scene }) {
+  slots: Slots; scene: Scene }) {
   const pin = scene.conversation?.pinned;
   const message = scene.messages.find(
     (message) => message.id === pin?.messageId,
@@ -1878,7 +1907,7 @@ function RecordingComposer({ scene }: { scene: Scene }) {
 }
 
 function NativeInteraction({ slots, scene, time }: {
-  slots: PhoneMedia; scene: Scene; time: number }) {
+  slots: Slots; scene: Scene; time: number }) {
   const picker = scene.interactions?.tapbackPicker;
   const message = scene.messages.find(
     (message) => message.id === picker?.messageId,

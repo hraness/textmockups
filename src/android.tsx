@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { Scene } from "./schema.js";
+import { PhoneText, type PhoneTextSlot } from "./text.js";
 import { androidIconPaths, type AndroidIconName } from "./icons-android.js";
 import { deviceProfile } from "./devices.js";
 
@@ -43,12 +44,22 @@ export function androidSystem(scene: Scene): "pixel" | "one-ui" {
  * Android status bar: a bold clock on the left; Wi-Fi, cellular and a battery
  * pill on the right. One UI draws the battery percentage inside the pill.
  */
-export function AndroidStatusBar({ scene }: { scene: Scene }) {
+export function AndroidStatusBar({
+  scene,
+  Text = PhoneText,
+}: {
+  scene: Scene;
+  Text?: PhoneTextSlot;
+}) {
   const { statusBar: status } = scene;
   const system = androidSystem(scene);
   return (
     <div className="tm-status-bar tm-status-android" aria-hidden="true">
-      <span className="tm-clock">{status.time}</span>
+      <span className="tm-clock">
+        <Text field="clock" value={status.time}>
+          {status.time}
+        </Text>
+      </span>
       <span className="tm-status-right">
         {!!status.carrier && <span className="tm-carrier">{status.carrier}</span>}
         <MatIcon

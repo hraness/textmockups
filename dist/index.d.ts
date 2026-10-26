@@ -1,4 +1,5 @@
 export { Phone, PhoneImage, PhoneFit, PhoneVideoPoster, defaultPhoneMedia, watermarkStyle, type PhoneFitProps, type PhoneImageProps, type PhoneMedia, type PhoneProps, type PhoneVideoProps, } from "./phone.js";
+export { PhoneText, type PhoneTextField, type PhoneTextProps, type PhoneTextSlot, } from "./text.js";
 export { Glyph, type GlyphName } from "./glyph.js";
 export { ANDROID_DEVICE_MODELS, DEVICE_MODELS, deviceProfile, deviceProfiles, deviceStage, IOS_DEVICE_MODELS, isDeviceModel, sceneOs, type DeviceModel, type DeviceOs, type DeviceProfile, type DeviceSystem, } from "./devices.js";
 export { MatIcon } from "./android.js";

@@ -1,5 +1,6 @@
 import type { ComponentType, CSSProperties, ImgHTMLAttributes } from "react";
 import type { Scene } from "./schema.js";
+import { type PhoneTextSlot } from "./text.js";
 /** Props the renderer passes to the image slot. `src` is the scene's authored asset reference. */
 export type PhoneImageProps = ImgHTMLAttributes<HTMLImageElement>;
 /** Props the renderer passes to the video slot. `playhead` is the evaluated media time in seconds. */
@@ -35,6 +36,8 @@ export type PhoneProps = {
     watermark?: boolean;
     /** Image and video slots. Missing entries fall back to `defaultPhoneMedia`. */
     media?: Partial<PhoneMedia>;
+    /** Wraps message text, the contact name and the clock, for hosts that edit them in place. */
+    text?: PhoneTextSlot;
 };
 /** Stable, smooth, scene-seeded color drift. This is branding, not a security watermark. */
 export declare function watermarkStyle(sceneId: string, seconds: number): CSSProperties;
@@ -48,4 +51,4 @@ export type PhoneFitProps = PhoneProps & {
  * for responsive pages; use `Phone` when you size the device yourself.
  */
 export declare function PhoneFit({ className, style, ...props }: PhoneFitProps): import("react").JSX.Element;
-export declare function Phone({ scene: source, time, selectedMessageId, onSelectMessage, exporting, watermark, media: mediaSlots, }: PhoneProps): import("react").JSX.Element;
+export declare function Phone({ scene: source, time, selectedMessageId, onSelectMessage, exporting, watermark, media: mediaSlots, text: Text, }: PhoneProps): import("react").JSX.Element;

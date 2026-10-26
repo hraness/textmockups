@@ -1,4 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
+import { PhoneText } from "./text.js";
 import { androidIconPaths } from "./icons-android.js";
 import { deviceProfile } from "./devices.js";
 /** Material Symbols, rounded style. Paths ship in src/icons-android.ts. */
@@ -14,10 +15,10 @@ export function androidSystem(scene) {
  * Android status bar: a bold clock on the left; Wi-Fi, cellular and a battery
  * pill on the right. One UI draws the battery percentage inside the pill.
  */
-export function AndroidStatusBar({ scene }) {
+export function AndroidStatusBar({ scene, Text = PhoneText, }) {
     const { statusBar: status } = scene;
     const system = androidSystem(scene);
-    return (_jsxs("div", { className: "tm-status-bar tm-status-android", "aria-hidden": "true", children: [_jsx("span", { className: "tm-clock", children: status.time }), _jsxs("span", { className: "tm-status-right", children: [!!status.carrier && _jsx("span", { className: "tm-carrier", children: status.carrier }), _jsx(MatIcon, { name: "signal_wifi_4_bar-fill", size: 17, style: { opacity: status.wifi > 0 ? 1 : 0.28 } }), _jsx(MatIcon, { name: "signal_cellular_4_bar-fill", size: 16, style: { opacity: status.cellular > 0 ? 1 : 0.28 } }), _jsxs("span", { className: "tm-battery-pill", "data-low": status.battery <= 20 || undefined, "data-charging": status.charging || undefined, children: [system === "one-ui" && _jsx("em", { children: status.battery }), _jsx("i", { style: { width: `${status.battery}%` } }), status.charging && _jsx("b", { children: "\u03DF" })] })] })] }));
+    return (_jsxs("div", { className: "tm-status-bar tm-status-android", "aria-hidden": "true", children: [_jsx("span", { className: "tm-clock", children: _jsx(Text, { field: "clock", value: status.time, children: status.time }) }), _jsxs("span", { className: "tm-status-right", children: [!!status.carrier && _jsx("span", { className: "tm-carrier", children: status.carrier }), _jsx(MatIcon, { name: "signal_wifi_4_bar-fill", size: 17, style: { opacity: status.wifi > 0 ? 1 : 0.28 } }), _jsx(MatIcon, { name: "signal_cellular_4_bar-fill", size: 16, style: { opacity: status.cellular > 0 ? 1 : 0.28 } }), _jsxs("span", { className: "tm-battery-pill", "data-low": status.battery <= 20 || undefined, "data-charging": status.charging || undefined, children: [system === "one-ui" && _jsx("em", { children: status.battery }), _jsx("i", { style: { width: `${status.battery}%` } }), status.charging && _jsx("b", { children: "\u03DF" })] })] })] }));
 }
 /**
  * Android navigation. Pixels ship gesture navigation (a centered handle);
