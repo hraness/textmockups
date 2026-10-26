@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Phone, PhoneFit, type PhoneImageProps } from "./phone.js";
+import type { PhoneTextProps } from "./text.js";
 import { defaultScene, presets } from "./presets.js";
 import { parseScene } from "./schema.js";
 
@@ -32,6 +33,27 @@ describe("Phone", () => {
       <Phone scene={withAvatar(`local:${"a".repeat(64)}`)} />,
     );
     expect(local).not.toContain("local:");
+  });
+  test("the default text slot leaves the markup unchanged apart from message ids", () => {
+    const html = renderToStaticMarkup(<Phone scene={defaultScene} />);
+    expect(html).toContain(`data-message-id="${defaultScene.messages[0]!.id}"`);
+    for (const message of defaultScene.messages)
+      if (message.text && !message.textRuns) expect(html).toContain(message.text.replaceAll("'", "&#x27;"));
+  });
+  test("a custom text slot wraps message text, the contact name, and the clock", () => {
+    const seen = new Set<string>();
+    const Text = ({ field, messageId, children }: PhoneTextProps) => {
+      seen.add(messageId ? `${field}:${messageId}` : field);
+      return <b data-edit={field}>{children}</b>;
+    };
+    for (const preset of presets) {
+      seen.clear();
+      renderToStaticMarkup(<Phone scene={preset.scene} text={Text} />);
+      expect(seen.has("contact")).toBe(true);
+      if (preset.scene.statusBar.visible) expect(seen.has("clock")).toBe(true);
+      const texted = preset.scene.messages.find((message) => message.text);
+      if (texted) expect(seen.has(`message:${texted.id}`)).toBe(true);
+    }
   });
   test("a custom image slot receives the authored reference", () => {
     const seen: unknown[] = [];

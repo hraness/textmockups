@@ -25,7 +25,7 @@ Install the compiled package from an immutable GitHub Release:
 ```json
 {
   "dependencies": {
-    "@hraness/textmockups": "https://github.com/hraness/textmockups/releases/download/v0.4.0/hraness-textmockups-0.4.0.tgz"
+    "@hraness/textmockups": "https://github.com/hraness/textmockups/releases/download/v0.5.0/hraness-textmockups-0.5.0.tgz"
   }
 }
 ```
@@ -126,6 +126,20 @@ Images and videos go through two replaceable slots. By default, images render wi
 ```
 
 Scenes may reference browser-local files as `local:<sha256>`. The default image slot leaves those empty; an app that stores files locally passes an `Image` that resolves them.
+
+## Edit text in place
+
+The `text` slot wraps message text, the contact name, and the clock. The default renders the text unchanged; an editor passes a component that makes it editable where it is drawn:
+
+```tsx
+function EditableText({ field, messageId, value, children }: PhoneTextProps) {
+  return <span contentEditable suppressContentEditableWarning>{children}</span>;
+}
+
+<Phone scene={scene} text={EditableText} />
+```
+
+`field` is `"message"`, `"contact"`, or `"clock"`, and `messageId` names the message. Each bubble also carries `data-message-id`, so an editor can attach its own menus.
 
 ## The scene format
 

@@ -11,6 +11,12 @@ export {
   type PhoneProps,
   type PhoneVideoProps,
 } from "./phone.js";
+export {
+  PhoneText,
+  type PhoneTextField,
+  type PhoneTextProps,
+  type PhoneTextSlot,
+} from "./text.js";
 export { Glyph, type GlyphName } from "./glyph.js";
 export {
   ANDROID_DEVICE_MODELS,

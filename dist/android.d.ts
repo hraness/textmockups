@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { Scene } from "./schema.js";
+import { type PhoneTextSlot } from "./text.js";
 import { type AndroidIconName } from "./icons-android.js";
 /** Material Symbols, rounded style. Paths ship in src/icons-android.ts. */
 export declare function MatIcon({ name, size, className, style, }: {
@@ -13,8 +14,9 @@ export declare function androidSystem(scene: Scene): "pixel" | "one-ui";
  * Android status bar: a bold clock on the left; Wi-Fi, cellular and a battery
  * pill on the right. One UI draws the battery percentage inside the pill.
  */
-export declare function AndroidStatusBar({ scene }: {
+export declare function AndroidStatusBar({ scene, Text, }: {
     scene: Scene;
+    Text?: PhoneTextSlot;
 }): import("react").JSX.Element;
 /**
  * Android navigation. Pixels ship gesture navigation (a centered handle);
