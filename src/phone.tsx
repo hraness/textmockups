@@ -164,6 +164,9 @@ export function Phone({
   const playhead =
     time === undefined ? source.timeline.duration : sceneTime(source, time);
   const group = isGroupConversation(scene);
+  // iMessage always shows who is talking in a group.
+  const rowAvatars =
+    scene.appearance.showAvatars || (scene.platform === "imessage" && group);
   const self = scene.participants.find((person) => person.isSelf)!;
   const other = scene.participants.find(
     (person) =>
@@ -245,6 +248,7 @@ export function Phone({
           transform: `scale(${scene.device.scale})`,
           transformOrigin: "50% 50%",
           "--tm-type": `${scene.appearance.textSize}px`,
+          "--tm-thread-w": `${scene.device.width - 40}px`,
           "--tm-radius": `${scene.appearance.bubbleRadius}px`,
           "--tm-composer-extra": `${extraComposerHeight + focusHeight}px`,
           "--tm-keyboard-height": `${keyboardHeight}px`,
@@ -338,14 +342,37 @@ export function Phone({
                   scene.platform === "imessage" &&
                   mode === "edit" &&
                   scene.composer.context?.messageId === message.id;
+                // In iMessage a photo or video stands alone: it ends the run before it and
+                // carries its own tail and avatar.
+                const media = (item?: Message) =>
+                  scene.platform === "imessage" &&
+                  !!item &&
+                  (item.kind === "image" || item.kind === "video" || !!item.gallery);
+                // A loose collage of a few photos floats free of the avatar column.
+                const collage =
+                  scene.platform === "imessage" &&
+                  !!message.gallery &&
+                  (message.gallery.count ?? message.gallery.items.length) <= 4;
+                const named =
+                  !previous ||
+                  previous.senderId !== message.senderId ||
+                  !!message.dateLabel ||
+                  previous.kind === "system" ||
+                  previous.unsent;
                 const first =
+                  media(message) ||
+                  media(previous) ||
+                  message.pause ||
                   !previous ||
                   previous.senderId !== message.senderId ||
                   !!message.dateLabel ||
                   previous.kind === "system" ||
                   previous.unsent;
                 const last =
+                  media(message) ||
+                  media(next) ||
                   !next ||
+                  next.pause ||
                   next.senderId !== message.senderId ||
                   !!next.dateLabel ||
                   next.kind === "system" ||
@@ -353,13 +380,32 @@ export function Phone({
                 const reply = message.replyTo
                   ? scene.messages.find((item) => item.id === message.replyTo)
                   : undefined;
+                // iOS 26 threads a reply with a hook from the original's middle. An original
+                // further up the thread is repeated above the reply as an outlined ghost.
+                const replyAdjacent = !!reply && previous?.id === reply.id;
+                const repliedBy =
+                  scene.platform === "imessage" && next?.replyTo === message.id
+                    ? next
+                    : undefined;
+                const replyCount =
+                  scene.platform === "imessage"
+                    ? threadMessages.filter(
+                        (item, at) =>
+                          item.replyTo === message.id && at !== index + 1,
+                      ).length
+                    : 0;
                 const receipt =
                   outgoing &&
                   (scene.platform === "imessage" ||
                     scene.platform === "instagram" ||
                     scene.platform === "google-messages") &&
                   !message.scheduledAt &&
-                  (index === lastOutgoing ||
+                  ((index === lastOutgoing &&
+                    // iMessage drops the receipt once they reply.
+                    (scene.platform !== "imessage" ||
+                      !threadMessages
+                        .slice(index + 1)
+                        .some((item) => item.senderId !== self.id && item.kind !== "system"))) ||
                     message.status === "failed" ||
                     message.status === "sending" ||
                     message.edited);
@@ -384,6 +430,7 @@ export function Phone({
                     data-editing={editing || undefined}
                     data-first={first || undefined}
                     data-last={last || undefined}
+                    data-reply={(scene.platform === "imessage" && !!reply) || undefined}
                   >
                     {scene.platform !== "imessage" &&
                       scene.conversation?.unread?.visible &&
@@ -413,18 +460,54 @@ export function Phone({
                           </span>
                         </div>
                       )}
+                    {scene.platform === "imessage" &&
+                      reply &&
+                      !replyAdjacent && (
+                        <div
+                          className="tm-reply-ghost"
+                          data-side={
+                            reply.senderId === self.id ? "out" : "in"
+                          }
+                        >
+                          <div
+                            className="tm-bubble tm-ghost"
+                            data-side={
+                              reply.senderId === self.id ? "out" : "in"
+                            }
+                            data-kind={reply.kind}
+                            data-tail
+                            aria-hidden="true"
+                          >
+                            <GhostTail />
+                            <MessageContent
+                              slots={slots}
+                              message={{ ...reply, effect: "none" }}
+                              scene={scene}
+                              time={playhead}
+                            />
+                            <ReplyHook
+                              from={reply.senderId === self.id ? "out" : "in"}
+                              to={outgoing ? "out" : "in"}
+                              drop={
+                                9 + (message.reactions.length ? 27.33 : 0) - 5
+                              }
+                              offset={!outgoing && rowAvatars ? 39 : 0}
+                            />
+                          </div>
+                        </div>
+                      )}
                     <div
                       className="tm-message-row"
                       data-side={outgoing ? "out" : "in"}
                       data-reactions={message.reactions.length > 0 || undefined}
                     >
-                      {!outgoing && scene.appearance.showAvatars && (
+                      {!outgoing && rowAvatars && (
                         <Avatar slots={slots}
                           name={person.name}
                           url={person.avatar}
                           color={person.color}
                           className="tm-row-avatar"
-                          hidden={!last}
+                          hidden={!last || collage}
                         />
                       )}
                       <div className="tm-message-stack">
@@ -453,10 +536,15 @@ export function Phone({
                               <small>Hide Edits</small>
                             </div>
                           )}
-                        {!outgoing && first && group && (
+                        {!outgoing && named && group && (
                           <div
                             className="tm-sender-name"
-                            style={{ color: person.color }}
+                            style={{
+                              color:
+                                scene.platform === "imessage"
+                                  ? undefined
+                                  : person.color,
+                            }}
                           >
                             {person.name}
                           </div>
@@ -485,11 +573,23 @@ export function Phone({
                           data-interactive={
                             (!!onSelectMessage && !exporting) || undefined
                           }
-                          style={messageStyle(
-                            message,
-                            playhead,
-                            time !== undefined,
-                          )}
+                          style={{
+                            ...messageStyle(
+                              message,
+                              playhead,
+                              time !== undefined,
+                            ),
+                            ...(message.link?.tint && {
+                              "--tm-link-tint": message.link.tint,
+                            }),
+                          }}
+                          data-tint={
+                            message.link?.tint
+                              ? luminance(message.link.tint) < 0.45
+                                ? "dark"
+                                : "light"
+                              : undefined
+                          }
                           role={
                             onSelectMessage && !exporting ? "button" : undefined
                           }
@@ -517,6 +617,11 @@ export function Phone({
                               : undefined
                           }
                         >
+                          {scene.platform === "imessage" && (
+                            <span className="tm-bubble-paint" aria-hidden="true">
+                              <span className="tm-paint" />
+                            </span>
+                          )}
                           {scene.platform !== "instagram" &&
                             scene.platform !== "google-messages" &&
                             (scene.platform === "whatsapp" ? first : last) &&
@@ -524,7 +629,27 @@ export function Phone({
                             !emojiOnly(message.text) && (
                               <BubbleTail platform={scene.platform} />
                             )}
-                          {reply && scene.platform !== "instagram" && (
+                          {repliedBy && (
+                            <ReplyHook
+                              from={outgoing ? "out" : "in"}
+                              to={repliedBy.senderId === self.id ? "out" : "in"}
+                              drop={
+                                (next?.senderId === message.senderId ? 4 : 10) +
+                                (repliedBy.dateLabel ? 24.27 : 0) +
+                                (repliedBy.reactions.length ? 27.33 : 0) -
+                                5
+                              }
+                              offset={
+                                repliedBy.senderId !== self.id &&
+                                rowAvatars
+                                  ? 39
+                                  : 0
+                              }
+                            />
+                          )}
+                          {reply &&
+                            scene.platform !== "instagram" &&
+                            scene.platform !== "imessage" && (
                             <div className="tm-reply">
                               <b>
                                 {
@@ -568,6 +693,7 @@ export function Phone({
                               message={message}
                               scene={scene}
                               time={playhead}
+                              tail={last}
                             />
                           )}
                           {(scene.platform === "whatsapp" ||
@@ -620,6 +746,11 @@ export function Phone({
                             </span>
                           ))}
                         </div>
+                        {replyCount > 0 && (
+                          <div className="tm-reply-count">
+                            {replyCount} {replyCount === 1 ? "Reply" : "Replies"}
+                          </div>
+                        )}
                         {(receipt ||
                           (scene.platform === "imessage" &&
                             message.kind === "voice")) && (
@@ -713,7 +844,8 @@ export function Phone({
           {os === "android" ? (
             <AndroidNavBar scene={scene} />
           ) : (
-            <div className="tm-home-indicator" aria-hidden="true" />
+            // A screenshot never shows the home indicator; a framed device does.
+            framed && <div className="tm-home-indicator" aria-hidden="true" />
           )}
           {scene.appearance.screenEffect !== "none" && (
             <ScreenEffect
@@ -773,9 +905,9 @@ function Avatar({ slots,
     <span
       className={`tm-avatar ${className}`}
       style={{
-        background: color,
+        "--tm-avatar": color,
         visibility: hidden ? "hidden" : undefined,
-      }}
+      } as CSSProperties}
       aria-hidden="true"
     >
       {url ? (
@@ -802,43 +934,91 @@ function StatusBar({
   const { statusBar: status } = scene;
   return (
     <div className="tm-status-bar" aria-hidden="true">
-      <span className="tm-clock">
-        <Text field="clock" value={status.time}>
-          {status.time}
-        </Text>
+      <span className="tm-status-left">
+        <span className="tm-clock">
+          <Text field="clock" value={status.time}>
+            {status.time}
+          </Text>
+        </span>
+        {status.silent && (
+          <svg className="tm-silent" width="15.33" height="16.67" viewBox="0 0 46 50">
+            <mask id="tm-silent-cut">
+              <rect width="46" height="50" fill="#fff" />
+              <path d="M3.5 4.5 41.5 43.5" stroke="#000" strokeWidth="10" />
+            </mask>
+            <g fill="currentColor" mask="url(#tm-silent-cut)">
+              <path d="M22.5 2C15.5 2 11 7 9.6 13L8 24c-.7 3.5-3.5 5.5-5.5 7.5-1.3 1.5-.7 5.5 2.5 5.5h35c3.2 0 3.8-4 2.5-5.5-2-2-4.8-4-5.5-7.5l-1.6-11C34 7 29.5 2 22.5 2Z" />
+              <path d="M16 41h13c0 3.2-2.9 5.3-6.5 5.3S16 44.2 16 41Z" />
+            </g>
+            <path d="M3.5 4.5 41.5 43.5" stroke="currentColor" strokeWidth="3.6" strokeLinecap="round" />
+          </svg>
+        )}
       </span>
       <span className="tm-status-right">
-        {status.carrier && <span className="tm-carrier">{status.carrier}</span>}
-        <svg className="tm-cellular" width="19" height="13" viewBox="0 0 19 13">
-          {[0, 1, 2, 3].map((bar) => (
-            <rect
-              key={bar}
-              x={bar * 5}
-              y={9 - bar * 3}
-              width="3.4"
-              height={4 + bar * 3}
-              rx=".9"
-              fill="currentColor"
-              opacity={bar < status.cellular ? 1 : 0.25}
-            />
-          ))}
-        </svg>
-        <svg
-          width="17"
-          height="13"
-          viewBox="0 0 18 14"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-        >
-          <path
-            opacity={status.wifi >= 3 ? 1 : 0.2}
-            d="M2 4a11 11 0 0 1 14 0"
-          />
-          <path opacity={status.wifi >= 2 ? 1 : 0.2} d="M5 7.4a6 6 0 0 1 8 0" />
-          <path opacity={status.wifi >= 1 ? 1 : 0.2} d="m8 10.8 1 1 1-1" />
-        </svg>
+        {status.cellular2 === undefined ? (
+          <svg className="tm-cellular" width="21.67" height="13" viewBox="0 0 65 39">
+            {[0, 1, 2, 3].map((bar) => (
+              <rect
+                key={bar}
+                x={bar * 18}
+                y={27 - bar * 8}
+                width="11"
+                height={12 + bar * 8}
+                rx="3.3"
+                fill="currentColor"
+                opacity={bar < status.cellular ? 1 : 0.2}
+              />
+            ))}
+          </svg>
+        ) : (
+          // Two lines: short bars for the first over a row of dots for the second.
+          <svg className="tm-cellular" width="21.67" height="15" viewBox="0 0 65 45">
+            {[0, 1, 2, 3].map((bar) => (
+              <g key={bar} fill="currentColor">
+                <rect
+                  x={bar * 18}
+                  y={14 - bar * 4.6}
+                  width="11"
+                  height={13 + bar * 4.6}
+                  rx="4.2"
+                  opacity={bar < status.cellular ? 1 : 0.2}
+                />
+                <rect
+                  x={bar * 18}
+                  y="33"
+                  width="11"
+                  height="11.7"
+                  rx="4.2"
+                  opacity={bar < (status.cellular2 ?? 0) ? 1 : 0.2}
+                />
+              </g>
+            ))}
+          </svg>
+        )}
+        {status.wifi > 0 ? (
+          <svg className="tm-wifi" width="17.67" height="13.67" viewBox="0 0 53 41">
+            <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+              <path
+                opacity={status.wifi >= 3 ? 1 : 0.2}
+                strokeWidth="9"
+                d="M2.1 13.9a36.5 36.5 0 0 1 48.8 0"
+              />
+              <path
+                opacity={status.wifi >= 2 ? 1 : 0.2}
+                strokeWidth="8"
+                d="M11.8 24.6a22 22 0 0 1 29.4 0"
+              />
+              <path
+                opacity={status.wifi >= 1 ? 1 : 0.2}
+                fill="currentColor"
+                strokeWidth="2.4"
+                d="M26.5 39.6 18.8 31.9a10.8 10.8 0 0 1 15.4 0Z"
+              />
+            </g>
+          </svg>
+        ) : (
+          status.carrier && <span className="tm-network">{status.carrier}</span>
+        )}
         <span
           className="tm-battery"
           data-low={status.battery <= 20 || undefined}
@@ -970,7 +1150,20 @@ function PhoneHeader({ slots,
       className="tm-nav-back"
       style={reply ? { visibility: "hidden" } : undefined}
     >
-      <Glyph name="back" size={24} />
+      {platform === "imessage" ? (
+        <svg width="44" height="44" viewBox="0 0 44 44">
+          <path
+            d="M24.2 14.2 16.7 22.2 24.2 30.2"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ) : (
+        <Glyph name="back" size={24} />
+      )}
       {!!scene.header?.backCount && (
         <small className="tm-back-count">
           {scene.header.backCount > 999 ? "999+" : scene.header.backCount}
@@ -1034,7 +1227,16 @@ function PhoneHeader({ slots,
                 {scene.contact.name}
               </slots.Text>
               {mute}
-              <Glyph name="chevron" size={10} />
+              <svg className="tm-name-chevron" viewBox="0 0 6 31.7" aria-hidden="true">
+                <path
+                  d="M1.5 10.4 3.9 16.4 1.5 22.4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </span>
             {subtitle && (
               <span className="tm-contact-subtitle">{subtitle}</span>
@@ -1050,7 +1252,17 @@ function PhoneHeader({ slots,
                 className="tm-im-video"
                 data-disabled={disabled("video") || undefined}
               >
-                <Glyph name="video" size={23} />
+                <svg width="44" height="44" viewBox="0 0 44 44">
+                  <g
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.67"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="10.17" y="14.17" width="17.33" height="16.33" rx="3.2" />
+                    <path d="M27.5 20.3 33.2 16.2c.6-.4 1.5 0 1.5.8v10.6c0 .8-.9 1.2-1.5.8l-5.7-4.1" />
+                  </g>
+                </svg>
               </span>
             )
           )}
@@ -1198,21 +1410,23 @@ function DateLabel({
 }) {
   const split =
     platform === "imessage"
-      ? /^(.+?) (\d{1,2}:\d{2}(?:\s?[AP]M)?)$/i.exec(label)
+      ? /^(.+?)((?: at)? \d{1,2}:\d{2}(?:\s?[AP]M)?)$/i.exec(label)
       : null;
   if (!split) return <span>{label}</span>;
   return (
     <span>
-      <b>{split[1]}</b> {split[2]}
+      <b>{split[1]}</b>
+      {/* iOS sets AM and PM off with a narrow no-break space. */}
+      {split[2].replace(/\s([AP]M)$/i, "\u202f$1")}
     </span>
   );
 }
 
 function BubbleTail({ platform }: { platform: Scene["platform"] }) {
   return platform === "imessage" ? (
-    <svg className="tm-tail" viewBox="-16 -17.5 23 18" aria-hidden="true">
-      <path d="M-16 -17.5H0C0 -7.6 1.7 -2.4 6.4 -.45 6.95 -.2 6.85 .45 6.2 .5 2.6 .7-1.2-.6-3.4-2.5-4.3-3.3-5.2-4.1-6-4.9L-16-17.5Z" />
-    </svg>
+    <span className="tm-tail" aria-hidden="true">
+      <span className="tm-paint" />
+    </span>
   ) : (
     <svg className="tm-tail" viewBox="0 0 12 14" aria-hidden="true">
       <path d="M0 0h12v14C7 13 2 8 0 0Z" />
@@ -1240,15 +1454,61 @@ function MessageContent({ slots,
   message,
   scene,
   time,
+  tail = false,
 }: {
   slots: Slots;
   message: Message;
   scene: Scene;
   time: number;
+  tail?: boolean;
 }) {
   let content: ReactNode = null;
   const media = message.media;
-  if (message.kind === "image" || message.kind === "video")
+  if (scene.platform === "imessage" && message.gallery)
+    content = <ImGallery slots={slots} gallery={message.gallery} />;
+  else if (
+    scene.platform === "imessage" &&
+    (message.kind === "image" || message.kind === "video")
+  ) {
+    const outgoing = scene.participants.some(
+      (person) => person.isSelf && person.id === message.senderId,
+    );
+    const [width, height] = mediaBox(media?.width ?? 4, media?.height ?? 3);
+    content = (
+      <div
+        className="tm-media tm-im-media"
+        style={{
+          width,
+          height,
+          clipPath: `path("${mediaClip(width, height, outgoing ? "out" : "in", tail)}")`,
+        }}
+      >
+        {message.kind === "video" && media?.videoUrl ? (
+          <slots.Video
+            src={media.videoUrl}
+            playhead={media.playhead}
+            width={media.width}
+            height={media.height}
+            poster={media.poster ?? media.url}
+          />
+        ) : media?.url || media?.poster ? (
+          <slots.Image
+            src={
+              message.kind === "video"
+                ? (media?.poster ?? media?.url)
+                : media?.url
+            }
+            alt={media?.alt ?? ""}
+            referrerPolicy="no-referrer"
+            draggable={false}
+          />
+        ) : (
+          <Landscape />
+        )}
+        {message.kind === "video" && !media?.playing && <ImPlay size={32} />}
+      </div>
+    );
+  } else if (message.kind === "image" || message.kind === "video")
     content = (
       <div
         className="tm-media"
@@ -1308,7 +1568,50 @@ function MessageContent({ slots,
         <Glyph name="download" size={20} />
       </div>
     );
-  if (message.kind === "link")
+  if (
+    message.kind === "link" &&
+    scene.platform === "imessage" &&
+    message.link?.icon &&
+    !message.link.image &&
+    message.link.description
+  )
+    // A text post (an X post, say): its words, then the author under a small picture.
+    content = (
+      <div className="tm-link-post">
+        <p>{message.link.description}</p>
+        <div>
+          <slots.Image
+            src={message.link.icon}
+            alt=""
+            referrerPolicy="no-referrer"
+          />
+          <span>
+            <strong>{message.link.title}</strong>
+            <small>{safeHostname(message.link.url)}</small>
+          </span>
+        </div>
+      </div>
+    );
+  else if (
+    message.kind === "link" &&
+    scene.platform === "imessage" &&
+    message.link?.icon &&
+    !message.link.image
+  )
+    content = (
+      <div className="tm-link-compact">
+        <slots.Image
+          src={message.link.icon}
+          alt=""
+          referrerPolicy="no-referrer"
+        />
+        <span>
+          <strong>{message.link.title}</strong>
+          <small>{safeHostname(message.link.url)}</small>
+        </span>
+      </div>
+    );
+  else if (message.kind === "link")
     content = (
       <div className="tm-link-card">
         {message.link?.image ? (
@@ -1433,13 +1736,40 @@ function MessageContent({ slots,
                 time={Math.max(0, time - message.at)}
               />
             ) : (
-              message.text
+              <EmojiText text={message.text} />
             )}
           </slots.Text>
+          {/* A trailing line break keeps its empty line, as on the phone. */}
+          {message.text.endsWith("\n") && "\u200b"}
         </span>
       )}
     </>
   );
+}
+
+// Emoji, or a clock time that a phone would detect and underline.
+const EMOJI =
+  /((?:\p{Extended_Pictographic}|\p{Regional_Indicator}{2})(?:\uFE0F|\p{Emoji_Modifier}|\u200D\p{Extended_Pictographic}\uFE0F?)*)|(?<![\d:])(?:[01]?\d|2[0-3]):[0-5]\d(?: ?[AaPp]\.?[Mm]\.?)?(?![\d:])/gu;
+
+/** Emoji inside text, set apart so a platform can draw them at its own size, and detected times. */
+function EmojiText({ text }: { text: string }) {
+  const parts: ReactNode[] = [];
+  let index = 0;
+  for (const match of text.matchAll(EMOJI)) {
+    if (match.index > index) parts.push(text.slice(index, match.index));
+    parts.push(
+      <span
+        key={match.index}
+        className={match[1] ? "tm-emoji" : "tm-detected"}
+      >
+        {match[0]}
+      </span>,
+    );
+    index = match.index + match[0].length;
+  }
+  if (!parts.length) return text;
+  if (index < text.length) parts.push(text.slice(index));
+  return <>{parts}</>;
 }
 
 function groupedReactions(message: Message, scene: Scene) {
@@ -1506,27 +1836,46 @@ function ReactionBadges({ slots,
       aria-label={`Reactions — ${label}`}
       title={label}
     >
-      {groups.slice(0, 3).map((group, index) => (
-        <span
-          key={group.emoji}
-          className="tm-reaction"
-          style={{ zIndex: index + 1 }}
-          data-self={group.self || undefined}
-        >
-          <span>
-            {group.emoji}
+      {groups.slice(0, 3).map((group, index) =>
+        scene.platform === "imessage" ? (
+          <span
+            key={group.emoji}
+            className="tm-reaction tm-tapback"
+            style={{ zIndex: 3 - index }}
+            data-self={group.self || undefined}
+            data-tapback={TAPBACKS[group.emoji]}
+          >
+            <i className="tm-tapback-ring" />
+            <i className="tm-tapback-shape">
+              <i className="tm-paint" />
+            </i>
+            <span className="tm-tapback-glyph">
+              {TAPBACKS[group.emoji] ? (
+                <TapbackGlyph kind={TAPBACKS[group.emoji]!} />
+              ) : (
+                group.emoji
+              )}
+            </span>
             {group.names.length > 1 && (
               <b className="tm-reaction-count">{group.names.length}</b>
             )}
           </span>
-          {scene.platform === "imessage" && (
-            <>
-              <i />
-              <i />
-            </>
-          )}
-        </span>
-      ))}
+        ) : (
+          <span
+            key={group.emoji}
+            className="tm-reaction"
+            style={{ zIndex: index + 1 }}
+            data-self={group.self || undefined}
+          >
+            <span>
+              {group.emoji}
+              {group.names.length > 1 && (
+                <b className="tm-reaction-count">{group.names.length}</b>
+              )}
+            </span>
+          </span>
+        ),
+      )}
       {overflow > 0 && (
         <span
           className="tm-reaction tm-reaction-count"
@@ -1539,6 +1888,338 @@ function ReactionBadges({ slots,
         </span>
       )}
     </div>
+  );
+}
+
+/** The hook that threads a reply: from the middle of the original down to the reply. */
+function ReplyHook({
+  from,
+  to,
+  drop,
+  offset,
+}: {
+  from: "in" | "out";
+  to: "in" | "out";
+  drop: number;
+  offset: number;
+}) {
+  // 14pt in from the reply's edge; across the thread when the original sits on the other side.
+  const inset = 14 + offset;
+  const across = `calc(var(--tm-thread-w) - ${inset + 36}px)`;
+  return (
+    <i
+      className="tm-reply-hook"
+      data-to={to}
+      aria-hidden="true"
+      style={{
+        bottom: -drop,
+        left: to === "in" ? (from === "in" ? inset : undefined) : from === "in" ? across : undefined,
+        right: to === "out" ? (from === "out" ? inset : undefined) : from === "out" ? across : undefined,
+      }}
+    />
+  );
+}
+
+// iOS 26 media, measured on the 17 Pro Max: a single photo or video fits 291.67 x 332.33pt.
+const MEDIA_MAX: [number, number] = [291.67, 332.33];
+function mediaBox(
+  width: number,
+  height: number,
+  [maxWidth, maxHeight] = MEDIA_MAX,
+): [number, number] {
+  const aspect = width / height;
+  const w = Math.min(maxWidth, maxHeight * aspect);
+  return [Math.round(w * 100) / 100, Math.round((w / aspect) * 100) / 100];
+}
+
+// The text tail (24 x 12, 7pt below the bubble): a start point, then lines and cubics.
+type Point = [number, number];
+const TAIL_START: Point = [13.67, 0];
+const TAIL: Point[][] = [
+  [[13.67, 6.6]],
+  [[13.67, 8.4], [15.1, 9.4], [15.65, 10.4]],
+  [[16.05, 11.2], [15.5, 11.85], [14.6, 11.85]],
+  [[13.9, 11.85], [13.3, 11.6], [12.7, 11.2]],
+  [[4.4, 5.6]],
+  [[3.8, 5.2], [3.4, 5], [2.6, 5]],
+  [[0, 5]],
+  [[0, 0]],
+];
+
+/** A rounded rectangle joined to the tail, so a photo runs into the tail like a bubble. */
+function mediaClip(w: number, h: number, side: "in" | "out", tail: boolean) {
+  const r = 20;
+  const n = (value: number) => Math.round(value * 100) / 100;
+  const rect = `M${r} 0H${n(w - r)}A${r} ${r} 0 0 1 ${n(w)} ${r}V${n(h - r)}A${r} ${r} 0 0 1 ${n(w - r)} ${n(h)}H${r}A${r} ${r} 0 0 1 0 ${n(h - r)}V${r}A${r} ${r} 0 0 1 ${r} 0Z`;
+  if (!tail) return rect;
+  const at = ([x, y]: Point) =>
+    `${n(side === "out" ? w - 24 + x : 24 - x)} ${n(h - 5 + y)}`;
+  let start = TAIL_START;
+  let segments = TAIL;
+  if (side === "in") {
+    // Mirroring flips the winding; walk the outline backwards so the shapes still unite.
+    const ends = [TAIL_START, ...TAIL.map((segment) => segment.at(-1)!)];
+    start = ends.at(-1)!;
+    segments = TAIL.map((segment, index) =>
+      segment.length === 3
+        ? [segment[1]!, segment[0]!, ends[index]!]
+        : [ends[index]!],
+    ).reverse();
+  }
+  const path = segments
+    .map((segment) => `${segment.length === 3 ? "C" : "L"}${segment.map(at).join(" ")}`)
+    .join("");
+  return `${rect}M${at(start)}${path}Z`;
+}
+
+/** The play button on a paused video: frosted glass with the triangle knocked out. */
+function ImPlay({ size }: { size: number }) {
+  return (
+    <span className="tm-im-play" data-size={size > 36 ? "large" : undefined} aria-hidden="true">
+      <i />
+    </span>
+  );
+}
+
+/** iOS 26 groups photos sent together: a few stagger down the thread, many stack. */
+function ImGallery({
+  slots,
+  gallery,
+}: {
+  slots: Slots;
+  gallery: NonNullable<Message["gallery"]>;
+}) {
+  const count = gallery.count ?? gallery.items.length;
+  const picture = (item: (typeof gallery.items)[number]) =>
+    item.url ? (
+      <slots.Image src={item.url} alt="" referrerPolicy="no-referrer" draggable={false} />
+    ) : (
+      <Landscape />
+    );
+  if (count > 4) {
+    const [front, ...rest] = gallery.items;
+    const [width, height] = mediaBox(front!.width, front!.height);
+    return (
+      <div className="tm-im-deck">
+        <div className="tm-im-deck-label">
+          <svg width="10.33" height="10" viewBox="0 0 10.33 10" aria-hidden="true">
+            <rect x="0" y="0" width="4.67" height="4.5" rx="1.2" />
+            <rect x="5.67" y="0" width="4.67" height="4.5" rx="1.2" />
+            <rect x="0" y="5.5" width="4.67" height="4.5" rx="1.2" />
+            <rect x="5.67" y="5.5" width="4.67" height="4.5" rx="1.2" />
+          </svg>
+          <b>{count} Items</b>
+          {gallery.saved && " Saved"}
+        </div>
+        <div className="tm-im-deck-cards" style={{ width, height }}>
+          {[3, 2, 1].map((depth) => {
+            const item = rest[depth - 1] ?? front!;
+            return (
+              <div key={depth} className="tm-im-card" data-depth={depth}>
+                {picture(item)}
+              </div>
+            );
+          })}
+          <div className="tm-im-card">
+            {picture(front!)}
+            {front!.video && <ImPlay size={42} />}
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="tm-im-collage">
+      {gallery.items.slice(0, 4).map((item, index) => {
+        const [width, height] = mediaBox(item.width, item.height, [220.67, 229]);
+        return (
+          <div
+            key={index}
+            className="tm-im-card"
+            data-at={index % 2 ? "start" : "end"}
+            // Each photo tucks under the one above, a taller one further.
+            style={{
+              width,
+              height,
+              marginTop: index ? -Math.round(Math.max(8, height * 0.173 - 14.9) * 3) / 3 : 0,
+            }}
+          >
+            {picture(item)}
+            {item.video && <ImPlay size={32} />}
+            {item.live && <ImLive />}
+          </div>
+        );
+      })}
+      {!gallery.saved && (
+        <span className="tm-im-save" aria-hidden="true">
+          <svg width="16" height="17" viewBox="0 0 16 17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 5.5H3.5a2 2 0 0 0-2 2v6.5a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7.5a2 2 0 0 0-2-2H11M8 1v9.5M5 7.5l3 3 3-3" />
+          </svg>
+        </span>
+      )}
+    </div>
+  );
+}
+
+/** The Live Photo badge: a dot inside a solid ring inside a dotted ring. */
+function ImLive() {
+  return (
+    <svg className="tm-im-live" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#fff" aria-hidden="true">
+      <circle cx="10" cy="10" r="2.4" fill="#fff" stroke="none" />
+      <circle cx="10" cy="10" r="5.1" strokeWidth="1.7" />
+      <circle cx="10" cy="10" r="8.8" strokeWidth="1.25" strokeDasharray="0.1 1.85" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** iOS 26 message bar icons, traced from iPhone 17 Pro Max screenshots. */
+function ComposerIcon({ name }: { name: "plus" | "mic" }) {
+  return name === "plus" ? (
+    <svg
+      className="tm-im-plus"
+      width="16"
+      height="16"
+      viewBox="-8 -8 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.67"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <path d="M0-6.83v13.66M-6.83 0h13.66" />
+    </svg>
+  ) : (
+    <svg
+      className="tm-im-mic"
+      width="14"
+      height="20"
+      viewBox="-7 0 14 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.35"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <rect x="-2.63" y="0.67" width="5.26" height="11.66" rx="2.63" />
+      <path d="M-6.03 8v.97a6.03 6.03 0 0 0 12.06 0V8M0 15v4.33M-4.33 19.33h8.66" />
+    </svg>
+  );
+}
+
+function GhostTail() {
+  return (
+    <svg className="tm-ghost-tail" viewBox="0 0 24 12" aria-hidden="true">
+      <path
+        d="M13.67 0V6.6C13.67 8.4 15.1 9.4 15.65 10.4 16.05 11.2 15.5 11.85 14.6 11.85 13.9 11.85 13.3 11.6 12.7 11.2L4.4 5.6C3.8 5.2 3.4 5 2.6 5H0V0Z"
+        fill="var(--tm-screen)"
+      />
+      <path
+        d="M13.67 2.4V6.6C13.67 8.4 15.1 9.4 15.65 10.4 16.05 11.2 15.5 11.85 14.6 11.85 13.9 11.85 13.3 11.6 12.7 11.2L4.4 5.6C3.8 5.2 3.4 5 2.6 5"
+        fill="none"
+        stroke="currentColor"
+      />
+    </svg>
+  );
+}
+
+/** The six classic tapbacks draw as iOS 26's puffy glyphs; any other emoji draws as itself. */
+const TAPBACKS: Record<string, TapbackKind | undefined> = {
+  "❤️": "heart",
+  "❤": "heart",
+  "👍": "like",
+  "👎": "dislike",
+  "😂": "haha",
+  "‼️": "emphasize",
+  "‼": "emphasize",
+  "❓": "question",
+};
+type TapbackKind = "heart" | "like" | "dislike" | "haha" | "emphasize" | "question";
+
+function TapbackGlyph({ kind }: { kind: TapbackKind }) {
+  if (kind === "heart")
+    return (
+      <svg viewBox="0 0 56 49" width="18.7" height="16.3" aria-hidden="true">
+        <defs>
+          <radialGradient id="tm-heart-body" cx="0.5" cy="0.32" r="0.72">
+            <stop offset="0" stopColor="#ffc3dc" />
+            <stop offset="0.45" stopColor="#ff92c4" />
+            <stop offset="1" stopColor="#ff4f9f" />
+          </radialGradient>
+          <radialGradient id="tm-heart-shine" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0" stopColor="#fff" stopOpacity="0.5" />
+            <stop offset="1" stopColor="#fff" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        <path
+          d="M28 48.2C21.6 43.4 1.4 30.6 1.4 15.4 1.4 7 7.4 1 15.2 1c5.8 0 10.2 3.2 12.8 7.6C30.6 4.2 35 1 40.8 1 48.6 1 54.6 7 54.6 15.4c0 15.2-20.2 28-26.6 32.8Z"
+          fill="url(#tm-heart-body)"
+        />
+        <ellipse cx="16" cy="9.5" rx="9" ry="6" fill="url(#tm-heart-shine)" />
+        <ellipse cx="40" cy="9.5" rx="9" ry="6" fill="url(#tm-heart-shine)" />
+        <ellipse cx="28" cy="15" rx="7" ry="5" fill="url(#tm-heart-shine)" />
+      </svg>
+    );
+  if (kind === "like" || kind === "dislike")
+    return (
+      <svg
+        viewBox="0 0 20 20"
+        width="20"
+        height="20"
+        aria-hidden="true"
+        style={{ transform: kind === "dislike" ? "scale(-.9, -.9) rotate(10deg)" : "scale(.9) rotate(10deg)" }}
+      >
+        <defs>
+          <linearGradient id="tm-glove" x1="0.2" y1="0" x2="0.8" y2="1">
+            <stop offset="0" stopColor="var(--tm-puff-hi, currentColor)" />
+            <stop offset="1" stopColor="var(--tm-puff-body, currentColor)" />
+          </linearGradient>
+        </defs>
+        <g stroke="var(--tm-puff-edge, none)" strokeWidth="0.7" fill="url(#tm-glove)">
+          <rect x="2.2" y="9.6" width="5.6" height="8.6" rx="2.8" />
+          <path d="M7 9.4c1.4-.7 2.4-1.9 2.8-3.6l.6-2.6c.4-1.8 3.3-1.6 3.2.6-.1 1.3-.4 2.5-.9 3.6h3.6a1.9 1.9 0 0 1 .3 3.8 1.75 1.75 0 0 1-.2 3.4 1.65 1.65 0 0 1-.4 3.2 1.5 1.5 0 0 1-1.4 2H9.4C7.9 19.8 7 18.6 7 17Z" />
+        </g>
+        <path
+          d="M13.4 11.1h3.2M13.6 14.4h2.8M13.6 17.5h2.2"
+          fill="none"
+          stroke="var(--tm-puff-edge, none)"
+          strokeWidth="0.7"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  // iOS 26 draws the rest as puffy white letters, lit from the top left.
+  const strokes: Record<Exclude<TapbackKind, "heart" | "like" | "dislike">, [string, string, number]> = {
+    haha: [
+      "0 0 20 19",
+      "M2.2 2.4v6.4M7.2 2.4v6.4M2.2 5.5h5M10.2 8.8l2.5-5.9a.9.9 0 0 1 1.6 0l2.5 5.9M11.1 6.7h4.8M4.4 11.9v5M8.3 11.9v5M4.4 14.3h3.9M10.4 16.9l2-4.5a.7.7 0 0 1 1.3 0l2 4.5M11.1 15.3h3.9",
+      3.3,
+    ],
+    emphasize: [
+      "0 0 14 20",
+      "M3.6 2.6 3.3 12M10.6 2.6 10.3 12M3.3 17.2h.01M10.3 17.2h.01",
+      3.8,
+    ],
+    question: [
+      "0 0 13 20",
+      "M2.6 5.4C2.6 3.2 4.3 1.8 6.5 1.8s3.8 1.3 3.8 3.3c0 2.7-3.8 3.1-3.8 6.4M6.5 17.2h.01",
+      3.8,
+    ],
+  };
+  const [viewBox, d, width] = strokes[kind];
+  const [, , boxWidth, boxHeight] = viewBox.split(" ").map(Number);
+  return (
+    <svg viewBox={viewBox} width={boxWidth} height={boxHeight} aria-hidden="true">
+      <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+        <path d={d} stroke="var(--tm-puff-edge, currentColor)" strokeWidth={width + 0.7} />
+        <path d={d} stroke="var(--tm-puff-body, currentColor)" strokeWidth={width} />
+        <path
+          d={d}
+          stroke="var(--tm-puff-hi, currentColor)"
+          strokeWidth={width * 0.5}
+          transform="translate(-0.3 -0.4)"
+        />
+      </g>
+    </svg>
   );
 }
 
@@ -2307,10 +2988,14 @@ function Composer({ scene, time }: { scene: Scene; time: number }) {
         )}
       <div className="tm-composer" data-native-edit={nativeEdit || undefined}>
         <span className="tm-add">
-          <Glyph
-            name={scene.platform === "telegram" ? "paperclip" : "plus"}
-            size={24}
-          />
+          {scene.platform === "imessage" ? (
+            <ComposerIcon name="plus" />
+          ) : (
+            <Glyph
+              name={scene.platform === "telegram" ? "paperclip" : "plus"}
+              size={24}
+            />
+          )}
         </span>
         <div
           className="tm-composer-field"
@@ -2341,16 +3026,12 @@ function Composer({ scene, time }: { scene: Scene; time: number }) {
           {!hasText && scene.platform === "telegram" && (
             <Glyph name="gift" size={20} />
           )}{" "}
-          {!hasText && (
-            <Glyph
-              name={
-                scene.platform === "imessage"
-                  ? "mic"
-                  : "sticker"
-              }
-              size={20}
-            />
-          )}{" "}
+          {!hasText &&
+            (scene.platform === "imessage" ? (
+              <ComposerIcon name="mic" />
+            ) : (
+              <Glyph name="sticker" size={20} />
+            ))}{" "}
           {hasText && scene.platform === "imessage" && (
             <span className="tm-send">
               <Glyph name="arrow-up" size={20} />
@@ -2702,10 +3383,27 @@ function messageStyle(
     if (message.effect === "ripple")
       rotate = Math.sin(age * 18) * 3 * Math.exp(-age * 2);
   }
+  const x = p.offsetX + dx;
+  const y = p.offsetY + (1 - spring) * 12;
+  const scale = p.scale * (0.92 + 0.08 * spring) * effectScale;
+  const opacity = p.opacity * Math.min(1, enter * 3);
+  // A resting bubble has no transform, so iMessage's blue stays anchored to the screen.
   return {
-    opacity: p.opacity * Math.min(1, enter * 3),
-    transform: `translate(${p.offsetX + dx}px, ${p.offsetY + (1 - spring) * 12}px) scale(${p.scale * (0.92 + 0.08 * spring) * effectScale}) rotate(${rotate}deg)`,
+    opacity: opacity === 1 ? undefined : opacity,
+    transform:
+      x === 0 && y === 0 && scale === 1 && rotate === 0
+        ? undefined
+        : `translate(${x}px, ${y}px) scale(${scale}) rotate(${rotate}deg)`,
   };
+}
+
+/** Relative luminance of a #rrggbb color, 0 to 1. */
+function luminance(hex: string): number {
+  const [r, g, b] = [1, 3, 5].map((at) => {
+    const c = parseInt(hex.slice(at, at + 2), 16) / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
 }
 
 function emojiOnly(text: string): boolean {

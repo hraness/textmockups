@@ -326,7 +326,7 @@
   overflow: hidden;
   border-radius: 50%;
   color: #fff;
-  background: linear-gradient(155deg, #b6b7c1, #9396a3);
+  background: var(--tm-avatar, linear-gradient(155deg, #b6b7c1, #9396a3));
   font-size: 20px;
   font-weight: 500;
   letter-spacing: 0.2px;
@@ -643,7 +643,7 @@
   position: relative;
   z-index: 2;
 }
-.tm-reaction i {
+.tm-reaction:not(.tm-tapback) > i {
   position: absolute;
   bottom: -4px;
   right: 0;
@@ -654,17 +654,17 @@
   box-shadow: 0 0 0 2px var(--tm-screen);
   z-index: -1;
 }
-.tm-reaction i:last-child {
+.tm-reaction:not(.tm-tapback) > i:last-child {
   bottom: -9px;
   right: -5px;
   width: 5px;
   height: 5px;
 }
-.tm-bubble[data-side="out"] .tm-reaction i {
+.tm-bubble[data-side="out"] .tm-reaction:not(.tm-tapback) > i {
   right: auto;
   left: 0;
 }
-.tm-bubble[data-side="out"] .tm-reaction i:last-child {
+.tm-bubble[data-side="out"] .tm-reaction:not(.tm-tapback) > i:last-child {
   left: -5px;
 }
 .tm-typing-row {
@@ -1574,7 +1574,7 @@
   color: var(--tm-ink);
 }
 .tm-text-run {
-  text-underline-offset: 2px;
+  text-underline-offset: 2.67px;
 }
 .tm-effect-word {
   display: inline-block;
@@ -4155,15 +4155,17 @@
 /* iOS 26 iMessage: Liquid Glass controls, a larger contact, and the deeper blue.
    Measured from iOS 26 screenshots; geometry stays in logical points. */
 .tm-phone[data-platform="imessage"] {
+  --tm-ink: #000;
   --tm-out: #2457dc;
-  --tm-in: #e1e1e4;
-  --tm-glass: rgb(255 255 255 / 0.9);
+  --tm-in: #dedee0;
+  --tm-glass: rgb(249 249 249 / 0.94);
   --tm-glass-shadow:
-    0 0 0 0.5px rgb(0 0 0 / 0.035),
-    0 1px 2px rgb(0 0 0 / 0.04),
-    0 6px 20px rgb(0 0 0 / 0.08);
+    inset 0 0 0 0.67px #fff,
+    inset 0 1.3px 1.6px rgb(0 0 0 / 0.03),
+    0 4px 24px rgb(0 0 0 / 0.12);
 }
 .tm-phone[data-platform="imessage"][data-theme="dark"] {
+  --tm-ink: #fff;
   --tm-in: #262629;
   --tm-glass: rgb(44 44 47 / 0.88);
   --tm-glass-shadow:
@@ -4193,39 +4195,50 @@
 }
 .tm-phone[data-platform="imessage"] .tm-nav-back,
 .tm-phone[data-platform="imessage"] .tm-im-video {
-  top: 60px;
+  top: 62px;
   width: 44px;
   height: 44px;
 }
 .tm-phone[data-platform="imessage"] .tm-nav-back {
-  left: 14px;
+  left: 20px;
 }
 .tm-phone[data-platform="imessage"] .tm-im-video {
-  right: 14px;
+  right: 20px;
+}
+.tm-phone[data-platform="imessage"] .tm-nav-back > svg,
+.tm-phone[data-platform="imessage"] .tm-im-video > svg {
+  position: absolute;
+  inset: 0;
 }
 .tm-phone[data-platform="imessage"] .tm-im-contact {
-  top: 54px;
+  top: 62px;
   gap: 0;
 }
-.tm-phone[data-platform="imessage"] .tm-im-contact > .tm-avatar {
-  width: 58px;
-  height: 58px;
-  font-size: 25px;
+.tm-phone[data-platform="imessage"] .tm-im-contact > .tm-avatar,
+.tm-phone[data-platform="imessage"] .tm-im-contact > .tm-group-avatar {
+  width: 60px;
+  height: 60px;
+  font-size: 26px;
 }
 .tm-phone[data-platform="imessage"] .tm-im-name {
   position: relative;
-  margin-top: -5px;
-  gap: 5px;
-  padding: 5px 11px 6px 14px;
+  box-sizing: border-box;
+  height: 31.7px;
+  margin-top: -4.7px;
+  gap: 0;
+  padding: 0 10.6px 0 14px;
   border-radius: 999px;
-  font-size: 17px;
-  line-height: 21px;
+  font-size: 17.5px;
+  line-height: 31.7px;
   font-weight: 650;
   letter-spacing: -0.4px;
 }
-.tm-phone[data-platform="imessage"] .tm-im-name svg {
-  width: 8px;
-  stroke-width: 3.2;
+.tm-phone[data-platform="imessage"] .tm-im-name > .tm-name-chevron {
+  flex: none;
+  width: 6px;
+  height: 31.7px;
+  margin-left: 5.7px;
+  color: #6b6b6f;
 }
 .tm-phone[data-platform="imessage"] .tm-contact-subtitle {
   margin-top: 3px;
@@ -4257,6 +4270,35 @@
   line-height: 22px;
   letter-spacing: -0.4px;
 }
+/* At rest the bar floats 28pt in from each edge, as measured on the 17 Pro Max. */
+.tm-phone[data-platform="imessage"] .tm-screen:not([data-keyboard]) .tm-composer {
+  gap: 12px;
+  padding: 10px 28px 27.67px;
+}
+.tm-phone[data-platform="imessage"] .tm-composer-field {
+  padding-left: 16px;
+  padding-right: 13.33px;
+}
+.tm-phone[data-platform="imessage"] .tm-composer-field > .tm-composer-text,
+.tm-phone[data-platform="imessage"] .tm-composer-placeholder {
+  letter-spacing: 0;
+}
+.tm-phone[data-platform="imessage"] .tm-composer-placeholder {
+  color: #717175;
+}
+.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-composer-placeholder {
+  color: #8e8e93;
+}
+.tm-phone[data-platform="imessage"] .tm-add > svg {
+  color: var(--tm-ink);
+}
+.tm-phone[data-platform="imessage"] .tm-composer-field > .tm-im-mic {
+  flex: none;
+  color: #aeb2b9;
+}
+.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-composer-field > .tm-im-mic {
+  color: #8e8e93;
+}
 .tm-phone[data-platform="imessage"] .tm-composer-field .tm-send {
   width: 30px;
   height: 30px;
@@ -4268,4 +4310,830 @@
 }
 .tm-screen[data-status-hidden] .tm-thread {
   top: 100px;
+}
+
+/* iOS 26 status bar, measured from iPhone 17 Pro Max screenshots: each group centers in its ear. */
+.tm-status-bar:not(.tm-status-android) {
+  display: block;
+  padding: 0;
+}
+.tm-status-bar:not(.tm-status-android) .tm-status-left,
+.tm-status-bar:not(.tm-status-android) .tm-status-right {
+  position: absolute;
+  top: 32.2px;
+  left: 19%;
+  display: flex;
+  align-items: center;
+  transform: translate(-50%, -50%);
+}
+.tm-status-bar:not(.tm-status-android) .tm-status-left {
+  gap: 4.1px;
+}
+.tm-status-bar:not(.tm-status-android) .tm-status-right {
+  left: 80.6%;
+  gap: 0;
+}
+.tm-status-bar:not(.tm-status-android) .tm-clock {
+  min-width: 0;
+  padding: 0;
+  font-size: 18.3px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  font-variant-numeric: normal;
+}
+.tm-silent {
+  flex: none;
+  margin-top: 1.6px;
+}
+.tm-status-bar:not(.tm-status-android) .tm-cellular {
+  margin-right: 9px;
+}
+.tm-status-bar:not(.tm-status-android) .tm-wifi {
+  margin-right: 9px;
+}
+.tm-network {
+  margin-right: 9px;
+  padding-top: 1.3px;
+  font-size: 15px;
+  line-height: 15px;
+  font-weight: 600;
+  letter-spacing: -1.45px;
+}
+.tm-status-bar:not(.tm-status-android) .tm-battery {
+  box-sizing: border-box;
+  width: 28.33px;
+  height: 14px;
+  margin: 0 2.67px 0 0;
+  padding: 1.33px;
+  border: 1px solid color-mix(in srgb, var(--tm-ink) 40%, transparent);
+  border-radius: 4.4px;
+}
+.tm-status-bar:not(.tm-status-android) .tm-battery::after {
+  right: -3.67px;
+  top: 4px;
+  width: 1.67px;
+  height: 4.33px;
+  opacity: 0.5;
+  border-radius: 0 1px 1px 0;
+}
+.tm-status-bar:not(.tm-status-android) .tm-battery i {
+  border-radius: 2.6px;
+}
+
+/* iOS 26 iMessage bubbles, measured from iPhone 17 Pro Max screenshots.
+   The outgoing blue is anchored to the screen, not the bubble: each bubble and tail
+   is a window onto one screen-sized gradient (fixed to the layout-contained screen). */
+.tm-phone[data-platform="imessage"] .tm-screen {
+  contain: layout;
+}
+.tm-phone[data-platform="imessage"] {
+  --tm-out-top: color(display-p3 0.1855 0.4353 0.8914);
+  --tm-out-bottom: color(display-p3 0.0855 0.229 0.829);
+}
+.tm-phone[data-platform="imessage"] .tm-thread-content {
+  padding: 0 20px 8px;
+}
+.tm-phone[data-platform="imessage"] .tm-message-block {
+  margin-top: 4px;
+}
+.tm-phone[data-platform="imessage"] .tm-message-block[data-first] {
+  margin-top: 10px;
+}
+.tm-phone[data-platform="imessage"] .tm-message-block:first-child {
+  margin-top: 0;
+}
+/* A reply closes its thread with extra room before the next message. */
+.tm-phone[data-platform="imessage"] .tm-message-block[data-reply] + .tm-message-block {
+  margin-top: 32px;
+}
+.tm-phone[data-platform="imessage"] .tm-message-stack {
+  max-width: calc(100% - 89.67px);
+}
+.tm-phone[data-platform="imessage"] .tm-bubble {
+  min-width: 40px;
+  min-height: 40px;
+  box-sizing: border-box;
+  padding: 9.86px 14.07px;
+  line-height: 20.28px;
+  letter-spacing: 0;
+}
+.tm-phone[data-platform="imessage"] .tm-bubble,
+.tm-phone[data-platform="imessage"] .tm-bubble[data-side="out"] {
+  background: none;
+}
+.tm-bubble-paint {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  clip-path: inset(0 round var(--tm-radius));
+  background: var(--tm-in);
+}
+.tm-paint {
+  display: none;
+}
+.tm-bubble[data-side="out"] > .tm-bubble-paint,
+.tm-bubble[data-side="out"] > .tm-tail {
+  background: none;
+}
+.tm-bubble[data-side="out"] > .tm-bubble-paint > .tm-paint,
+.tm-bubble[data-side="out"] > .tm-tail > .tm-paint {
+  display: block;
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(var(--tm-out-top), var(--tm-out-bottom));
+}
+.tm-phone[data-platform="imessage"] .tm-tail {
+  position: absolute;
+  left: 0;
+  right: auto;
+  bottom: -7px;
+  width: 24px;
+  height: 12px;
+  transform: scaleX(-1);
+  background: var(--tm-in);
+  clip-path: path(
+    "M13.67 0V6.6C13.67 8.4 15.1 9.4 15.65 10.4 16.05 11.2 15.5 11.85 14.6 11.85 13.9 11.85 13.3 11.6 12.7 11.2L4.4 5.6C3.8 5.2 3.4 5 2.6 5H0V0Z"
+  );
+}
+.tm-phone[data-platform="imessage"] .tm-bubble[data-side="out"] > .tm-tail {
+  left: auto;
+  right: 0;
+  transform: none;
+  background: none;
+}
+/* 16.3pt from the bubble above to the cap line; 10pt from the baseline to the next message. */
+.tm-phone[data-platform="imessage"] .tm-date b {
+  font-weight: 560;
+}
+.tm-phone[data-platform="imessage"] .tm-date {
+  margin: 3.44px 0 7.33px;
+  font-size: 11.3px;
+  line-height: 13.5px;
+  letter-spacing: 0;
+}
+/* The thread runs under the glass header and the message bar, as in iOS 26. */
+.tm-phone[data-platform="imessage"] .tm-screen .tm-thread {
+  top: 0;
+  bottom: 0;
+}
+.tm-phone[data-platform="imessage"] .tm-thread-content {
+  padding-top: 152px;
+  padding-bottom: calc(90px + var(--tm-composer-extra, 0px));
+}
+.tm-phone[data-platform="imessage"] .tm-screen[data-keyboard] .tm-thread-content {
+  padding-bottom: calc(
+    var(--tm-keyboard-height, 286px) + 64px + var(--tm-composer-extra, 0px)
+  );
+}
+.tm-phone[data-platform="imessage"] .tm-screen[data-status-hidden] .tm-thread-content {
+  padding-top: 100px;
+}
+.tm-phone[data-platform="imessage"] .tm-phone-header,
+.tm-phone[data-platform="imessage"] .tm-input-region {
+  z-index: 4;
+}
+/* Open at the latest message; a short conversation still starts under the header. */
+.tm-phone[data-platform="imessage"] .tm-thread {
+  justify-content: flex-start;
+}
+.tm-phone[data-platform="imessage"] .tm-thread-content {
+  box-sizing: border-box;
+  min-height: 100%;
+}
+
+/* iOS 26 tapbacks: a 34pt bubble whose two trailing dots point at the message, cut out of
+   the thread by a 1.5pt ring. Their tapbacks are gray; yours are the screen-anchored blue. */
+.tm-phone[data-platform="imessage"] .tm-message-row[data-reactions] {
+  padding-top: 27.33px;
+}
+/* A sender's name already leaves most of that room. */
+.tm-phone[data-platform="imessage"] .tm-message-row[data-reactions]:has(.tm-sender-name) {
+  padding-top: 5.83px;
+}
+.tm-phone[data-platform="imessage"] .tm-reactions {
+  top: -27.33px;
+  right: -14px;
+  gap: 0;
+}
+.tm-phone[data-platform="imessage"] .tm-bubble[data-side="out"] .tm-reactions {
+  right: auto;
+  left: -14px;
+  flex-direction: row-reverse;
+}
+.tm-tapback.tm-reaction {
+  display: block;
+  position: relative;
+  width: 34px;
+  min-width: 0;
+  height: 34px;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  color: #fff;
+}
+.tm-tapback.tm-reaction > i {
+  position: absolute;
+  display: block;
+  right: auto;
+  bottom: auto;
+  border-radius: 0;
+  box-shadow: none;
+  z-index: auto;
+}
+.tm-tapback.tm-reaction > .tm-tapback-ring {
+  left: -1.5px;
+  top: -1.5px;
+  width: 41.5px;
+  height: 46px;
+  background: var(--tm-screen);
+  clip-path: path(
+    "M0 18.5a18.5 18.5 0 1 0 37 0a18.5 18.5 0 1 0-37 0ZM23.6 33.8a6 6 0 1 0 12 0a6 6 0 1 0-12 0ZM32 41.7a4 4 0 1 0 8 0a4 4 0 1 0-8 0Z"
+  );
+}
+.tm-tapback.tm-reaction > .tm-tapback-shape {
+  left: 0;
+  top: 0;
+  width: 38px;
+  height: 43px;
+  background: var(--tm-in);
+  clip-path: path(
+    "M0 17a17 17 0 1 0 34 0a17 17 0 1 0-34 0ZM23.6 32.3a4.5 4.5 0 1 0 9 0a4.5 4.5 0 1 0-9 0ZM32 40.2a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0Z"
+  );
+}
+/* Mirrored by path, not transform, so the self paint stays anchored to the screen. */
+.tm-bubble[data-side="out"] .tm-tapback.tm-reaction > .tm-tapback-ring {
+  clip-path: path(
+    "M0 18.5a18.5 18.5 0 1 0 37 0a18.5 18.5 0 1 0-37 0ZM1.4 33.8a6 6 0 1 0 12 0a6 6 0 1 0-12 0ZM-3 41.7a4 4 0 1 0 8 0a4 4 0 1 0-8 0Z"
+  );
+}
+.tm-bubble[data-side="out"] .tm-tapback.tm-reaction > .tm-tapback-shape {
+  clip-path: path(
+    "M0 17a17 17 0 1 0 34 0a17 17 0 1 0-34 0ZM1.4 32.3a4.5 4.5 0 1 0 9 0a4.5 4.5 0 1 0-9 0ZM-3 40.2a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0Z"
+  );
+}
+.tm-tapback.tm-reaction[data-self] > .tm-tapback-shape {
+  background: none;
+}
+.tm-tapback[data-self] > .tm-tapback-shape > .tm-paint {
+  display: block;
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(var(--tm-out-top), var(--tm-out-bottom));
+}
+.tm-tapback-glyph {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: 0;
+  color: #fff;
+  filter: drop-shadow(0 0.6px 0.5px rgb(0 20 110 / 0.3));
+}
+.tm-tapback:not([data-self]) > .tm-tapback-glyph {
+  color: #8d8d93;
+  filter: none;
+}
+.tm-tapback[data-self] > .tm-tapback-glyph {
+  --tm-puff-edge: #b6d4f5;
+  --tm-puff-body: #d6e8fc;
+  --tm-puff-hi: #fff;
+  filter: none;
+}
+.tm-tapback[data-tapback="heart"] > .tm-tapback-glyph,
+.tm-tapback:not([data-tapback]) > .tm-tapback-glyph {
+  filter: none;
+}
+.tm-tapback[data-tapback="heart"] > .tm-tapback-glyph > svg {
+  margin-top: 1px;
+}
+.tm-tapback > .tm-reaction-count {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+}
+.tm-phone[data-platform="imessage"] .tm-tapback + .tm-tapback {
+  margin-left: 0;
+  margin-right: -12px;
+}
+
+/* iOS 26 replies: a 4pt hook from the original's middle down to the reply, which stops 5pt
+   short of it. An original further up the thread repeats above the reply as an outlined ghost. */
+.tm-reply-hook {
+  position: absolute;
+  z-index: -1;
+  top: calc(50% - 2px);
+  width: 36px;
+  box-sizing: border-box;
+  border: 0 solid #9e9e9e;
+  border-width: 4px 0 0 4px;
+  border-top-left-radius: 18px;
+  pointer-events: none;
+}
+.tm-reply-hook[data-to="out"] {
+  border-width: 4px 4px 0 0;
+  border-radius: 0 18px 0 0;
+}
+.tm-reply-hook::before,
+.tm-reply-hook::after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #9e9e9e;
+}
+.tm-reply-hook::before {
+  top: -4px;
+  right: -2px;
+}
+.tm-reply-hook::after {
+  bottom: -2px;
+  left: -4px;
+}
+.tm-reply-hook[data-to="out"]::before {
+  right: auto;
+  left: -2px;
+}
+.tm-reply-hook[data-to="out"]::after {
+  left: auto;
+  right: -4px;
+}
+.tm-phone[data-theme="dark"] .tm-reply-hook {
+  border-color: #5a5a5e;
+}
+.tm-phone[data-theme="dark"] .tm-reply-hook::before,
+.tm-phone[data-theme="dark"] .tm-reply-hook::after {
+  background: #5a5a5e;
+}
+.tm-reply-ghost {
+  display: flex;
+  margin-bottom: 9px;
+}
+.tm-reply-ghost[data-side="out"] {
+  justify-content: flex-end;
+}
+.tm-phone[data-platform="imessage"] .tm-reply-ghost[data-side="in"] {
+  padding-left: var(--tm-avatar-gutter, 0px);
+}
+.tm-phone[data-platform="imessage"] .tm-bubble.tm-ghost {
+  max-width: calc(100% - 89.67px);
+  color: rgb(0 0 0 / 0.5);
+  box-shadow: inset 0 0 0 1px currentColor;
+}
+.tm-ghost > .tm-bubble-text,
+.tm-ghost > .tm-link-compact,
+.tm-ghost > .tm-link-card,
+.tm-ghost > .tm-media {
+  opacity: 0.55;
+  color: var(--tm-ink);
+}
+.tm-ghost-tail {
+  position: absolute;
+  right: 0;
+  bottom: -7px;
+  width: 24px;
+  height: 12px;
+  overflow: visible;
+}
+.tm-ghost[data-side="in"] > .tm-ghost-tail {
+  right: auto;
+  left: 0;
+  transform: scaleX(-1);
+}
+.tm-phone[data-theme="dark"] .tm-bubble.tm-ghost {
+  color: rgb(255 255 255 / 0.45);
+}
+.tm-reply-count {
+  margin-top: 3px;
+  padding: 0 14px;
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: #0a7aff;
+}
+.tm-message-row[data-side="out"] .tm-reply-count {
+  text-align: right;
+}
+
+/* Link previews: a compact card for a site icon, a large card with a sampled footer for an image. */
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"] {
+  padding: 0;
+  width: auto;
+  --tm-link-tint: #e9e9eb;
+}
+.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-bubble[data-kind="link"] {
+  --tm-link-tint: #3a3a3c;
+}
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"]:not(.tm-ghost) > .tm-bubble-paint,
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"]:not(.tm-ghost) > .tm-tail {
+  background: var(--tm-link-tint);
+}
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"] > .tm-bubble-paint > .tm-paint,
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"] > .tm-tail > .tm-paint {
+  display: none;
+}
+.tm-link-compact {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6.5px;
+  box-sizing: border-box;
+  height: 56px;
+  padding: 0 21px 0 5.5px;
+  color: var(--tm-ink);
+}
+.tm-link-compact > img {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+.tm-link-compact > span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.tm-link-compact strong,
+.tm-link-compact small {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tm-link-compact strong {
+  font-size: 15px;
+  line-height: 18px;
+  font-weight: 600;
+}
+.tm-link-compact small {
+  font-size: 13px;
+  line-height: 16px;
+  color: #8a8a8e;
+}
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"]:has(> .tm-link-post) {
+  --tm-link-tint: var(--tm-in);
+}
+.tm-link-post {
+  position: relative;
+  box-sizing: border-box;
+  width: calc(var(--tm-thread-w) - 96.67px);
+  max-width: 100%;
+  padding: 8px 15.67px 11.33px;
+  color: var(--tm-ink);
+}
+.tm-link-post > p {
+  margin: 0 0 10.67px;
+  font-size: 16.15px;
+  line-height: 21px;
+  white-space: pre-wrap;
+}
+.tm-link-post > div {
+  display: flex;
+  padding-right: 6px;
+  align-items: center;
+  gap: 10.33px;
+}
+.tm-link-post img {
+  flex: none;
+  width: 25px;
+  height: 25px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+.tm-link-post span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.tm-link-post strong {
+  font-size: 15px;
+  line-height: 18px;
+  font-weight: 600;
+  white-space: pre-line;
+}
+.tm-link-post small {
+  margin-top: 1.67px;
+  font-size: 13px;
+  line-height: 16px;
+  color: #8a8a8e;
+}
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"] .tm-link-card {
+  position: relative;
+  width: calc(var(--tm-thread-w) - 89.67px);
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: var(--tm-radius);
+  color: var(--tm-ink);
+}
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"] .tm-link-card:has(> img) {
+  width: min-content;
+}
+/* A wide image spans the bubble; a square or tall one shrinks the card to a 236pt square. */
+.tm-phone[data-platform="imessage"] .tm-link-card > img {
+  display: block;
+  width: auto;
+  height: auto;
+  min-width: 236px;
+  max-width: calc(var(--tm-thread-w) - 89.67px);
+  max-height: 236px;
+  object-fit: cover;
+}
+.tm-phone[data-platform="imessage"] .tm-link-card > div:last-child {
+  padding: 7.3px 16px 8.5px;
+  background: var(--tm-link-tint);
+}
+.tm-phone[data-platform="imessage"] .tm-link-card strong {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 15px;
+  line-height: 18px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.tm-phone[data-platform="imessage"] .tm-link-card p {
+  display: none;
+}
+.tm-phone[data-platform="imessage"] .tm-link-card small {
+  display: block;
+  margin-top: 3px;
+  font-size: 13px;
+  line-height: 16px;
+  letter-spacing: 0;
+  color: rgb(60 60 67 / 0.8);
+  opacity: 1;
+}
+.tm-bubble[data-tint="dark"] .tm-link-card,
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"][data-tint="dark"] .tm-link-card {
+  color: #fff;
+}
+.tm-phone[data-platform="imessage"] .tm-bubble[data-tint="dark"] .tm-link-card small {
+  color: rgb(235 235 245 / 0.7);
+}
+
+/* iOS 26 groups: 32pt monograms lit from above, level with the tail, and gray 11pt names
+   inset to the bubble text. */
+.tm-phone[data-platform="imessage"] .tm-avatar {
+  background: linear-gradient(
+    color-mix(in srgb, var(--tm-avatar, #9a9fae) 78%, #fff),
+    color-mix(in srgb, var(--tm-avatar, #9a9fae) 86%, #000)
+  );
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.tm-phone[data-platform="imessage"] .tm-row-avatar {
+  width: 32px;
+  height: 32px;
+  margin-bottom: -6.67px;
+  font-size: 16.5px;
+}
+.tm-phone[data-platform="imessage"] .tm-sender-name {
+  margin: 6px 0 4px 14px;
+  font-size: 11px;
+  line-height: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: #636368;
+}
+.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-sender-name {
+  color: #98989f;
+}
+
+/* iOS 26 photos and videos: no bubble paint; the picture itself is the bubble, tail included. */
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="image"],
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="video"] {
+  width: auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+}
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="image"] > .tm-bubble-paint,
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="image"] > .tm-tail,
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="video"] > .tm-bubble-paint,
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="video"] > .tm-tail {
+  display: none;
+}
+.tm-phone[data-platform="imessage"] .tm-im-media {
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
+  border-radius: 0;
+}
+/* The picture runs 7pt past the bottom so it fills the tail. */
+.tm-im-media > img,
+.tm-im-media > video {
+  position: absolute;
+  inset: 0 0 -7px;
+  width: 100%;
+  height: calc(100% + 7px);
+  object-fit: cover;
+}
+.tm-im-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 32px;
+  height: 32px;
+  margin: -16px 0 0 -16px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.28);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  /* The triangle is cut out of the glass and shows the picture, darkened. */
+  -webkit-mask: var(--tm-play-cut) center / 100% 100% no-repeat;
+  mask: var(--tm-play-cut) center / 100% 100% no-repeat;
+  --tm-play-cut: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill-rule='evenodd' d='M0 16a16 16 0 1 0 32 0a16 16 0 1 0-32 0ZM12.4 10.1v11.8c0 1.1 1.2 1.7 2.1 1.2l9.4-5.9c.9-.6.9-1.8 0-2.4l-9.4-5.9c-.9-.5-2.1.1-2.1 1.2Z'/%3E%3C/svg%3E");
+}
+.tm-im-play > i {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 0.8);
+  -webkit-mask: var(--tm-play-tri) center / 100% 100% no-repeat;
+  mask: var(--tm-play-tri) center / 100% 100% no-repeat;
+  --tm-play-tri: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M12.4 10.1v11.8c0 1.1 1.2 1.7 2.1 1.2l9.4-5.9c.9-.6.9-1.8 0-2.4l-9.4-5.9c-.9-.5-2.1.1-2.1 1.2Z'/%3E%3C/svg%3E");
+}
+.tm-im-play[data-size="large"] {
+  width: 42px;
+  height: 42px;
+  margin: -21px 0 0 -21px;
+  background: rgb(240 238 234 / 0.86);
+}
+.tm-im-play[data-size="large"] {
+  --tm-play-cut: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 42 42'%3E%3Cpath fill-rule='evenodd' d='M0 21a21 21 0 1 0 42 0a21 21 0 1 0-42 0ZM16.6 14.3v13.4c0 1.2 1.3 1.9 2.3 1.3l10.6-6.7c1-.6 1-2 0-2.6l-10.6-6.7c-1-.6-2.3.1-2.3 1.3Z'/%3E%3C/svg%3E");
+}
+.tm-im-play[data-size="large"] > i {
+  --tm-play-tri: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 42 42'%3E%3Cpath d='M16.6 14.3v13.4c0 1.2 1.3 1.9 2.3 1.3l10.6-6.7c1-.6 1-2 0-2.6l-10.6-6.7c-1-.6-2.3.1-2.3 1.3Z'/%3E%3C/svg%3E");
+}
+.tm-im-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #c9c9cc;
+}
+.tm-im-card > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Many photos stack into a deck that fans out to the right, under an "N Items" label. */
+.tm-im-deck {
+  padding: 0 0 4px 8.33px;
+}
+.tm-im-deck-label {
+  display: flex;
+  align-items: center;
+  margin: 2.33px 0 9.67px 6.67px;
+  font-size: 11.25px;
+  line-height: 13px;
+  letter-spacing: 0;
+  color: #636368;
+  white-space: pre;
+}
+.tm-phone[data-theme="dark"] .tm-im-deck-label {
+  color: #98989f;
+}
+.tm-im-deck-label > svg {
+  margin-right: 5px;
+  fill: #1f6ff4;
+}
+.tm-im-deck-label > b {
+  font-weight: 600;
+  color: #1f6ff4;
+}
+.tm-im-deck-cards {
+  position: relative;
+}
+.tm-im-deck-cards > .tm-im-card {
+  position: absolute;
+  inset: 0;
+}
+.tm-im-deck-cards > .tm-im-card:not([data-depth]) {
+  box-shadow: 0 1px 10px rgb(0 0 0 / 0.14);
+}
+.tm-im-deck-cards > .tm-im-card[data-depth] {
+  transform-origin: 0 100%;
+  box-shadow: 0 0 2px rgb(0 0 0 / 0.4);
+  filter: brightness(0.66);
+}
+.tm-im-deck-cards > .tm-im-card[data-depth="1"] {
+  transform: translate(5.1%, -0.5%) rotate(2.3deg) scale(0.95);
+}
+.tm-im-deck-cards > .tm-im-card[data-depth="2"] {
+  transform: translate(10.2%, -1%) rotate(4.6deg) scale(0.9);
+}
+.tm-im-deck-cards > .tm-im-card[data-depth="3"] {
+  transform: translate(15.2%, -1.5%) rotate(6.9deg) scale(0.85);
+}
+
+/* A few photos stagger down the thread, alternating sides, each slightly turned. */
+.tm-im-collage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 269.67px;
+  padding: 4px 0;
+}
+.tm-im-collage > .tm-im-card {
+  flex: none;
+  box-shadow: 0 1px 12px rgb(0 0 0 / 0.13);
+}
+.tm-im-collage > .tm-im-card[data-at="end"] {
+  align-self: flex-end;
+  transform: rotate(0.78deg);
+}
+.tm-im-collage > .tm-im-card[data-at="start"] {
+  transform: rotate(-0.5deg);
+}
+.tm-im-collage > .tm-im-card:nth-child(3) {
+  margin-right: 8.33px;
+  transform: rotate(0.5deg);
+}
+.tm-im-live {
+  position: absolute;
+  top: 9px;
+  left: 11px;
+  filter: drop-shadow(0 0 2px rgb(0 0 0 / 0.3));
+}
+.tm-im-save {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 15.5px);
+  display: grid;
+  place-items: center;
+  width: 34.33px;
+  height: 34.33px;
+  margin-top: -21px;
+  border-radius: 50%;
+  background: #dedee0;
+  color: #1858c3;
+}
+.tm-phone[data-theme="dark"] .tm-im-save {
+  background: #3a3a3c;
+  color: #3b8cff;
+}
+.tm-phone[data-platform="imessage"] .tm-bubble:has(> .tm-im-deck),
+.tm-phone[data-platform="imessage"] .tm-bubble:has(> .tm-im-collage) {
+  overflow: visible;
+}
+
+/* An iOS 26 group header sets a large first member and a small second on a gray disc. */
+.tm-phone[data-platform="imessage"] .tm-im-contact > .tm-group-avatar {
+  border-radius: 50%;
+  background: #dedfdf;
+}
+.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-im-contact > .tm-group-avatar {
+  background: #3a3a3c;
+}
+.tm-phone[data-platform="imessage"] .tm-im-contact > .tm-group-avatar > .tm-avatar {
+  border: 0;
+}
+.tm-phone[data-platform="imessage"] .tm-im-contact > .tm-group-avatar > .tm-avatar:nth-child(1) {
+  left: 6.67px;
+  top: 6.33px;
+  width: 32.33px;
+  height: 32.33px;
+  font-size: 16px;
+}
+.tm-phone[data-platform="imessage"] .tm-im-contact > .tm-group-avatar > .tm-avatar:nth-child(2) {
+  left: 32.5px;
+  top: 31.67px;
+  width: 19px;
+  height: 19px;
+  font-size: 10px;
+}
+.tm-phone[data-platform="imessage"] .tm-im-contact > .tm-group-avatar > .tm-avatar:nth-child(3) {
+  left: 36px;
+  top: 10px;
+  width: 15px;
+  height: 15px;
+  font-size: 8px;
+}
+
+/* iOS draws emoji in text about a fifth larger than the letters, on the same baseline. */
+.tm-phone[data-platform="imessage"] .tm-emoji {
+  margin-left: 1px;
+  font-size: 1.22em;
+  line-height: 0;
+  vertical-align: -2px;
+}
+.tm-phone[data-platform="imessage"] .tm-detected {
+  text-decoration: underline 0.67px color-mix(in srgb, currentColor 50%, transparent);
+  text-underline-offset: 2.67px;
+}
+.tm-phone[data-platform="imessage"] .tm-receipt:not([data-status="failed"]) {
+  position: relative;
+  top: 1.67px;
+  padding-right: 20.67px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: #636368;
 }

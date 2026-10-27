@@ -49,3 +49,4 @@ export {
   type RasterSize,
 } from "./assets.js";
 export { defaultScene, presets, type Preset } from "./presets.js";
+export { fitBubbles } from "./fit.js";
