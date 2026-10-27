@@ -126,7 +126,7 @@ describe("Phone", () => {
       messages: [{ ...defaultScene.messages[0], dateLabel: "Today 9:41 AM" }],
     });
     expect(renderToStaticMarkup(<Phone scene={scene} />)).toContain(
-      "<b>Today</b> 9:41 AM",
+      "<b>Today</b> 9:41\u202fAM",
     );
     const plain = parseScene({
       ...scene,
@@ -134,6 +134,83 @@ describe("Phone", () => {
     });
     expect(renderToStaticMarkup(<Phone scene={plain} />)).toContain(
       "<span>Yesterday</span>",
+    );
+  });
+  test("iMessage sets emoji apart and underlines a detected time", () => {
+    const scene = parseScene({
+      ...defaultScene,
+      messages: [{ ...defaultScene.messages[0], text: "the drop at 3:17 😆" }],
+    });
+    const html = renderToStaticMarkup(<Phone scene={scene} />);
+    expect(html).toContain('<span class="tm-detected">3:17</span>');
+    expect(html).toContain('<span class="tm-emoji">😆</span>');
+  });
+  test("a pause starts a new bubble group from the same sender", () => {
+    const first = { ...defaultScene.messages[0], id: "a", text: "one", dateLabel: "" };
+    const tails = (pause: boolean) =>
+      renderToStaticMarkup(
+        <Phone
+          scene={parseScene({
+            ...defaultScene,
+            messages: [first, { ...first, id: "b", text: "two", pause }],
+          })}
+        />,
+      ).match(/data-tail="true"/g)?.length;
+    expect(tails(false)).toBe(1);
+    expect(tails(true)).toBe(2);
+  });
+  test("iMessage draws a gallery as a collage, or a deck past four", () => {
+    const gallery = (count: number) =>
+      renderToStaticMarkup(
+        <Phone
+          scene={parseScene({
+            ...defaultScene,
+            messages: [
+              {
+                ...defaultScene.messages[0],
+                kind: "image",
+                text: "",
+                gallery: {
+                  items: [{ width: 800, height: 600 }, { width: 600, height: 800 }],
+                  count,
+                },
+              },
+            ],
+          })}
+        />,
+      );
+    expect(gallery(2)).toContain("tm-im-collage");
+    expect(gallery(15)).toContain("tm-im-deck");
+    expect(gallery(15)).toContain("15 Items");
+  });
+  test("a link with words and an icon is a text post", () => {
+    const scene = parseScene({
+      ...defaultScene,
+      messages: [
+        {
+          ...defaultScene.messages[0],
+          kind: "link",
+          text: "",
+          link: {
+            url: "https://example.com/post",
+            title: "Sam (@sam)",
+            description: "A thought worth sharing.",
+            icon: "https://example.com/sam.png",
+          },
+        },
+      ],
+    });
+    const html = renderToStaticMarkup(<Phone scene={scene} />);
+    expect(html).toContain("tm-link-post");
+    expect(html).toContain("<p>A thought worth sharing.</p>");
+  });
+  test("a second line's signal draws the dual SIM indicator", () => {
+    const scene = parseScene({
+      ...defaultScene,
+      statusBar: { ...defaultScene.statusBar, cellular2: 2 },
+    });
+    expect(renderToStaticMarkup(<Phone scene={scene} />)).toContain(
+      'viewBox="0 0 65 45"',
     );
   });
 });

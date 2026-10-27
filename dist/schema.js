@@ -220,6 +220,8 @@ export const MessageSchema = z
     stickers: z.array(AttachedStickerSchema).max(32).optional(),
     timestamp: displayText(80).default(""),
     dateLabel: displayText(80).default(""),
+    /** Sent after a long pause: starts a new bubble group even from the same sender. */
+    pause: z.boolean().default(false),
     status: z
         .enum(["sending", "sent", "delivered", "read", "failed"])
         .default("delivered"),
@@ -292,6 +294,28 @@ export const MessageSchema = z
         title: shortText,
         description: displayText(1000).default(""),
         image: assetUrl.optional(),
+        /** A site icon: without an image, iMessage draws the compact card. */
+        icon: assetUrl.optional(),
+        /** The card's footer color, sampled from the image the way iOS 26 does. */
+        tint: color.optional(),
+    })
+        .optional(),
+    /** Photos and videos sent together: iMessage staggers a few and stacks many. */
+    gallery: z
+        .strictObject({
+        items: z
+            .array(z.strictObject({
+            url: assetUrl.optional(),
+            width: z.number().int().min(1).max(8192).default(800),
+            height: z.number().int().min(1).max(8192).default(600),
+            video: z.boolean().default(false),
+            live: z.boolean().default(false),
+        }))
+            .min(2)
+            .max(64),
+        /** The stack's label count when it holds more than the items drawn. */
+        count: z.number().int().min(2).max(9999).optional(),
+        saved: z.boolean().default(false),
     })
         .optional(),
     location: z
@@ -356,7 +380,9 @@ export const MessageSchema = z
         payment: "payment",
     };
     const field = attachmentFields[message.kind];
-    if (field && !message[field])
+    // A gallery stands in for the single picture of a photo or video message.
+    const gallery = message.gallery && field === "media";
+    if (field && !message[field] && !gallery)
         ctx.addIssue({
             code: "custom",
             path: [field],
@@ -445,7 +471,11 @@ const SceneBaseSchema = z.strictObject({
         charging: z.boolean().default(false),
         wifi: z.number().int().min(0).max(3).default(3),
         cellular: z.number().int().min(0).max(4).default(4),
+        /** A second line's signal (dual SIM): iPhone stacks it as dots under the first. */
+        cellular2: z.number().int().min(0).max(4).optional(),
         carrier: displayText(40).default(""),
+        /** The bell-slash beside the clock when the phone is in Silent mode. */
+        silent: z.boolean().optional(),
         visible: z.boolean().default(true),
     })
         .default({

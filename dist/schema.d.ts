@@ -212,6 +212,7 @@ export declare const MessageSchema: z.ZodObject<{
     }, z.core.$strict>>>;
     timestamp: z.ZodDefault<z.ZodString>;
     dateLabel: z.ZodDefault<z.ZodString>;
+    pause: z.ZodDefault<z.ZodBoolean>;
     status: z.ZodDefault<z.ZodEnum<{
         sending: "sending";
         sent: "sent";
@@ -282,6 +283,19 @@ export declare const MessageSchema: z.ZodObject<{
         title: z.ZodString;
         description: z.ZodDefault<z.ZodString>;
         image: z.ZodOptional<z.ZodString>;
+        icon: z.ZodOptional<z.ZodString>;
+        tint: z.ZodOptional<z.ZodString>;
+    }, z.core.$strict>>;
+    gallery: z.ZodOptional<z.ZodObject<{
+        items: z.ZodArray<z.ZodObject<{
+            url: z.ZodOptional<z.ZodString>;
+            width: z.ZodDefault<z.ZodNumber>;
+            height: z.ZodDefault<z.ZodNumber>;
+            video: z.ZodDefault<z.ZodBoolean>;
+            live: z.ZodDefault<z.ZodBoolean>;
+        }, z.core.$strict>>;
+        count: z.ZodOptional<z.ZodNumber>;
+        saved: z.ZodDefault<z.ZodBoolean>;
     }, z.core.$strict>>;
     location: z.ZodOptional<z.ZodObject<{
         latitude: z.ZodNumber;
@@ -396,7 +410,9 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
         charging: z.ZodDefault<z.ZodBoolean>;
         wifi: z.ZodDefault<z.ZodNumber>;
         cellular: z.ZodDefault<z.ZodNumber>;
+        cellular2: z.ZodOptional<z.ZodNumber>;
         carrier: z.ZodDefault<z.ZodString>;
+        silent: z.ZodOptional<z.ZodBoolean>;
         visible: z.ZodDefault<z.ZodBoolean>;
     }, z.core.$strict>>;
     participants: z.ZodArray<z.ZodObject<{
@@ -531,6 +547,7 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
         }, z.core.$strict>>>;
         timestamp: z.ZodDefault<z.ZodString>;
         dateLabel: z.ZodDefault<z.ZodString>;
+        pause: z.ZodDefault<z.ZodBoolean>;
         status: z.ZodDefault<z.ZodEnum<{
             sending: "sending";
             sent: "sent";
@@ -601,6 +618,19 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
             title: z.ZodString;
             description: z.ZodDefault<z.ZodString>;
             image: z.ZodOptional<z.ZodString>;
+            icon: z.ZodOptional<z.ZodString>;
+            tint: z.ZodOptional<z.ZodString>;
+        }, z.core.$strict>>;
+        gallery: z.ZodOptional<z.ZodObject<{
+            items: z.ZodArray<z.ZodObject<{
+                url: z.ZodOptional<z.ZodString>;
+                width: z.ZodDefault<z.ZodNumber>;
+                height: z.ZodDefault<z.ZodNumber>;
+                video: z.ZodDefault<z.ZodBoolean>;
+                live: z.ZodDefault<z.ZodBoolean>;
+            }, z.core.$strict>>;
+            count: z.ZodOptional<z.ZodNumber>;
+            saved: z.ZodDefault<z.ZodBoolean>;
         }, z.core.$strict>>;
         location: z.ZodOptional<z.ZodObject<{
             latitude: z.ZodNumber;
@@ -746,6 +776,8 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
         cellular: number;
         carrier: string;
         visible: boolean;
+        cellular2?: number | undefined;
+        silent?: boolean | undefined;
     };
     participants: {
         id: string;
@@ -769,6 +801,7 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
         text: string;
         timestamp: string;
         dateLabel: string;
+        pause: boolean;
         status: "sending" | "sent" | "delivered" | "read" | "failed";
         statusText: string;
         edited: boolean;
@@ -845,6 +878,19 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
             title: string;
             description: string;
             image?: string | undefined;
+            icon?: string | undefined;
+            tint?: string | undefined;
+        } | undefined;
+        gallery?: {
+            items: {
+                width: number;
+                height: number;
+                video: boolean;
+                live: boolean;
+                url?: string | undefined;
+            }[];
+            saved: boolean;
+            count?: number | undefined;
         } | undefined;
         location?: {
             latitude: number;
@@ -989,6 +1035,8 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
         cellular: number;
         carrier: string;
         visible: boolean;
+        cellular2?: number | undefined;
+        silent?: boolean | undefined;
     };
     participants: {
         id: string;
@@ -1012,6 +1060,7 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
         text: string;
         timestamp: string;
         dateLabel: string;
+        pause: boolean;
         status: "sending" | "sent" | "delivered" | "read" | "failed";
         statusText: string;
         edited: boolean;
@@ -1088,6 +1137,19 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
             title: string;
             description: string;
             image?: string | undefined;
+            icon?: string | undefined;
+            tint?: string | undefined;
+        } | undefined;
+        gallery?: {
+            items: {
+                width: number;
+                height: number;
+                video: boolean;
+                live: boolean;
+                url?: string | undefined;
+            }[];
+            saved: boolean;
+            count?: number | undefined;
         } | undefined;
         location?: {
             latitude: number;
@@ -1277,7 +1339,9 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
         charging: z.ZodDefault<z.ZodBoolean>;
         wifi: z.ZodDefault<z.ZodNumber>;
         cellular: z.ZodDefault<z.ZodNumber>;
+        cellular2: z.ZodOptional<z.ZodNumber>;
         carrier: z.ZodDefault<z.ZodString>;
+        silent: z.ZodOptional<z.ZodBoolean>;
         visible: z.ZodDefault<z.ZodBoolean>;
     }, z.core.$strict>>;
     participants: z.ZodArray<z.ZodObject<{
@@ -1412,6 +1476,7 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
         }, z.core.$strict>>>;
         timestamp: z.ZodDefault<z.ZodString>;
         dateLabel: z.ZodDefault<z.ZodString>;
+        pause: z.ZodDefault<z.ZodBoolean>;
         status: z.ZodDefault<z.ZodEnum<{
             sending: "sending";
             sent: "sent";
@@ -1482,6 +1547,19 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
             title: z.ZodString;
             description: z.ZodDefault<z.ZodString>;
             image: z.ZodOptional<z.ZodString>;
+            icon: z.ZodOptional<z.ZodString>;
+            tint: z.ZodOptional<z.ZodString>;
+        }, z.core.$strict>>;
+        gallery: z.ZodOptional<z.ZodObject<{
+            items: z.ZodArray<z.ZodObject<{
+                url: z.ZodOptional<z.ZodString>;
+                width: z.ZodDefault<z.ZodNumber>;
+                height: z.ZodDefault<z.ZodNumber>;
+                video: z.ZodDefault<z.ZodBoolean>;
+                live: z.ZodDefault<z.ZodBoolean>;
+            }, z.core.$strict>>;
+            count: z.ZodOptional<z.ZodNumber>;
+            saved: z.ZodDefault<z.ZodBoolean>;
         }, z.core.$strict>>;
         location: z.ZodOptional<z.ZodObject<{
             latitude: z.ZodNumber;
@@ -1627,6 +1705,8 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
         cellular: number;
         carrier: string;
         visible: boolean;
+        cellular2?: number | undefined;
+        silent?: boolean | undefined;
     };
     participants: {
         id: string;
@@ -1650,6 +1730,7 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
         text: string;
         timestamp: string;
         dateLabel: string;
+        pause: boolean;
         status: "sending" | "sent" | "delivered" | "read" | "failed";
         statusText: string;
         edited: boolean;
@@ -1726,6 +1807,19 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
             title: string;
             description: string;
             image?: string | undefined;
+            icon?: string | undefined;
+            tint?: string | undefined;
+        } | undefined;
+        gallery?: {
+            items: {
+                width: number;
+                height: number;
+                video: boolean;
+                live: boolean;
+                url?: string | undefined;
+            }[];
+            saved: boolean;
+            count?: number | undefined;
         } | undefined;
         location?: {
             latitude: number;
@@ -1870,6 +1964,8 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
         cellular: number;
         carrier: string;
         visible: boolean;
+        cellular2?: number | undefined;
+        silent?: boolean | undefined;
     };
     participants: {
         id: string;
@@ -1893,6 +1989,7 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
         text: string;
         timestamp: string;
         dateLabel: string;
+        pause: boolean;
         status: "sending" | "sent" | "delivered" | "read" | "failed";
         statusText: string;
         edited: boolean;
@@ -1969,6 +2066,19 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
             title: string;
             description: string;
             image?: string | undefined;
+            icon?: string | undefined;
+            tint?: string | undefined;
+        } | undefined;
+        gallery?: {
+            items: {
+                width: number;
+                height: number;
+                video: boolean;
+                live: boolean;
+                url?: string | undefined;
+            }[];
+            saved: boolean;
+            count?: number | undefined;
         } | undefined;
         location?: {
             latitude: number;
