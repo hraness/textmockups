@@ -2345,7 +2345,7 @@ function Composer({ scene, time }: { scene: Scene; time: number }) {
             <Glyph
               name={
                 scene.platform === "imessage"
-                  ? "wave"
+                  ? "mic"
                   : "sticker"
               }
               size={20}
