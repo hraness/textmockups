@@ -4620,14 +4620,18 @@
   );
 }
 /* Mirrored by path, not transform, so the self paint stays anchored to the screen. */
+/* The boxes start 3pt further left so every path coordinate stays positive: iOS WebKit
+   cuts a clip path at its box's left edge. */
 .tm-bubble[data-side="out"] .tm-tapback.tm-reaction > .tm-tapback-ring {
+  left: -4.5px;
   clip-path: path(
-    "M0 18.5a18.5 18.5 0 1 0 37 0a18.5 18.5 0 1 0-37 0ZM1.4 33.8a6 6 0 1 0 12 0a6 6 0 1 0-12 0ZM-3 41.7a4 4 0 1 0 8 0a4 4 0 1 0-8 0Z"
+    "M3 18.5a18.5 18.5 0 1 0 37 0a18.5 18.5 0 1 0-37 0ZM4.4 33.8a6 6 0 1 0 12 0a6 6 0 1 0-12 0ZM0 41.7a4 4 0 1 0 8 0a4 4 0 1 0-8 0Z"
   );
 }
 .tm-bubble[data-side="out"] .tm-tapback.tm-reaction > .tm-tapback-shape {
+  left: -3px;
   clip-path: path(
-    "M0 17a17 17 0 1 0 34 0a17 17 0 1 0-34 0ZM1.4 32.3a4.5 4.5 0 1 0 9 0a4.5 4.5 0 1 0-9 0ZM-3 40.2a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0Z"
+    "M3 17a17 17 0 1 0 34 0a17 17 0 1 0-34 0ZM4.4 32.3a4.5 4.5 0 1 0 9 0a4.5 4.5 0 1 0-9 0ZM0 40.2a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0Z"
   );
 }
 .tm-tapback.tm-reaction[data-self] > .tm-tapback-shape {
@@ -4639,12 +4643,15 @@
   inset: 0;
   background: linear-gradient(var(--tm-out-top), var(--tm-out-bottom));
 }
-.tm-tapback-glyph {
+/* Outranks `.tm-reaction > span`, whose flex row would push the glyph to the left. */
+.tm-tapback.tm-reaction > .tm-tapback-glyph {
   position: absolute;
   inset: 0 0 auto;
+  width: 34px;
   height: 34px;
   display: grid;
   place-items: center;
+  gap: 0;
   font-size: 20px;
   line-height: 1;
   letter-spacing: 0;
@@ -4659,6 +4666,9 @@
   --tm-puff-edge: #b6d4f5;
   --tm-puff-body: #d6e8fc;
   --tm-puff-hi: #fff;
+  --tm-glove-hi: #fff;
+  --tm-glove-body: #cfe6f4;
+  --tm-glove-edge: #9ccbe6;
   filter: none;
 }
 .tm-tapback[data-tapback="heart"] > .tm-tapback-glyph,
@@ -5194,4 +5204,8 @@
   font-weight: 600;
   letter-spacing: 0;
   color: #636368;
+}
+/* Messages offers the save button beside photos you receive, not ones you send. */
+.tm-bubble[data-side="out"] .tm-im-save {
+  display: none;
 }
