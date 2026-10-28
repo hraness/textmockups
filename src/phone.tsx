@@ -2096,12 +2096,12 @@ function ComposerIcon({ name }: { name: "plus" | "mic" }) {
       viewBox="-7 0 14 20"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.35"
+      strokeWidth="1.4"
       strokeLinecap="round"
       aria-hidden="true"
     >
-      <rect x="-2.63" y="0.67" width="5.26" height="11.66" rx="2.63" />
-      <path d="M-6.03 8v.97a6.03 6.03 0 0 0 12.06 0V8M0 15v4.33M-4.33 19.33h8.66" />
+      <rect x="-2.83" y="0.7" width="5.66" height="11.6" rx="2.83" />
+      <path d="M-6 8v1.17a6 6 0 0 0 12 0V8M0 15.17v3.66M-4.67 18.83h9.34" />
     </svg>
   );
 }
