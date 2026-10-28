@@ -25,7 +25,7 @@ Install the compiled package from an immutable GitHub Release:
 ```json
 {
   "dependencies": {
-    "@hraness/textmockups": "https://github.com/hraness/textmockups/releases/download/v0.8.0/hraness-textmockups-0.8.0.tgz"
+    "@hraness/textmockups": "https://github.com/hraness/textmockups/releases/download/v0.9.0/hraness-textmockups-0.9.0.tgz"
   }
 }
 ```
@@ -147,7 +147,7 @@ function EditableText({ field, messageId, value, children }: PhoneTextProps) {
 <Phone scene={scene} text={EditableText} />
 ```
 
-`field` is `"message"`, `"contact"`, or `"clock"`, and `messageId` names the message. Each bubble also carries `data-message-id`, so an editor can attach its own menus.
+`field` is `"message"`, `"contact"`, `"clock"`, `"date"` (the label above a message), or `"receipt"` (the line below one), and `messageId` names the message. Each bubble also carries `data-message-id`, so an editor can attach its own menus.
 
 A long conversation opens at its latest message. To show earlier messages, set `--tm-thread-offset` on the phone or any ancestor; it moves the thread down by that length, as if scrolled up. The element marked `data-textmock-thread` is the visible thread, so its first child's height minus its own gives the furthest offset.
 
