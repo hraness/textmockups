@@ -443,10 +443,12 @@ export function Phone({
                       )}
                     {message.dateLabel && (
                       <div className="tm-date">
-                        <DateLabel
-                          label={message.dateLabel}
-                          platform={scene.platform}
-                        />
+                        <slots.Text field="date" messageId={message.id} value={message.dateLabel}>
+                          <DateLabel
+                            label={message.dateLabel}
+                            platform={scene.platform}
+                          />
+                        </slots.Text>
                       </div>
                     )}
                     {scene.platform === "imessage" &&
@@ -760,8 +762,14 @@ export function Phone({
                                 className="tm-receipt"
                                 data-status={message.status}
                               >
-                                {message.statusText ||
-                                  nativeReceipt(scene, message)}
+                                <slots.Text
+                                  field="receipt"
+                                  messageId={message.id}
+                                  value={message.statusText || nativeReceipt(scene, message)}
+                                >
+                                  {message.statusText ||
+                                    nativeReceipt(scene, message)}
+                                </slots.Text>
                                 {message.edited && (
                                   <span>
                                     {" "}

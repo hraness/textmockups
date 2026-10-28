@@ -4180,36 +4180,37 @@
   background: linear-gradient(180deg, #2c66e1, #2356db);
 }
 /* The scroll edge effect, measured on iOS 26 screenshots: content under the top bar keeps
-   about an eighth of its contrast, then returns over the 100pt below the contact. */
+   about an eighth of its contrast, then returns over the 100pt below the contact.
+   Stops are percentages: WebKit on iOS does not zoom gradient lengths in px. */
 .tm-phone[data-platform="imessage"] .tm-phone-header {
   height: 200px;
   background: linear-gradient(
-    rgb(251 251 251 / 0.87) 0 45px,
-    rgb(248 248 248 / 0.87) 90px,
-    rgb(248 248 248 / 0.86) 96px,
-    rgb(248 248 248 / 0.83) 102px,
-    rgb(248 248 248 / 0.79) 108px,
-    rgb(249 249 249 / 0.75) 114px,
-    rgb(249 249 249 / 0.67) 120px,
-    rgb(249 249 249 / 0.59) 126px,
-    rgb(249 249 249 / 0.52) 132px,
-    rgb(250 250 250 / 0.42) 138px,
-    rgb(250 250 250 / 0.34) 144px,
-    rgb(252 252 252 / 0.2) 157px,
-    rgb(253 253 253 / 0.08) 170px,
-    rgb(254 254 254 / 0.04) 180px,
-    rgb(255 255 255 / 0.03) 190px,
-    rgb(255 255 255 / 0) 200px
+    rgb(251 251 251 / 0.87) 0 22.5%,
+    rgb(248 248 248 / 0.87) 45%,
+    rgb(248 248 248 / 0.86) 48%,
+    rgb(248 248 248 / 0.83) 51%,
+    rgb(248 248 248 / 0.79) 54%,
+    rgb(249 249 249 / 0.75) 57%,
+    rgb(249 249 249 / 0.67) 60%,
+    rgb(249 249 249 / 0.59) 63%,
+    rgb(249 249 249 / 0.52) 66%,
+    rgb(250 250 250 / 0.42) 69%,
+    rgb(250 250 250 / 0.34) 72%,
+    rgb(252 252 252 / 0.2) 78.5%,
+    rgb(253 253 253 / 0.08) 85%,
+    rgb(254 254 254 / 0.04) 90%,
+    rgb(255 255 255 / 0.03) 95%,
+    rgb(255 255 255 / 0) 100%
   );
 }
 .tm-phone[data-platform="imessage"][data-theme="dark"] .tm-phone-header {
   background: linear-gradient(
-    color-mix(in srgb, var(--tm-screen) 87%, transparent) 0 96px,
-    color-mix(in srgb, var(--tm-screen) 75%, transparent) 114px,
-    color-mix(in srgb, var(--tm-screen) 52%, transparent) 132px,
-    color-mix(in srgb, var(--tm-screen) 34%, transparent) 144px,
-    color-mix(in srgb, var(--tm-screen) 8%, transparent) 170px,
-    transparent 200px
+    color-mix(in srgb, var(--tm-screen) 87%, transparent) 0 48%,
+    color-mix(in srgb, var(--tm-screen) 75%, transparent) 57%,
+    color-mix(in srgb, var(--tm-screen) 52%, transparent) 66%,
+    color-mix(in srgb, var(--tm-screen) 34%, transparent) 72%,
+    color-mix(in srgb, var(--tm-screen) 8%, transparent) 85%,
+    transparent 100%
   );
 }
 .tm-phone[data-platform="imessage"] .tm-nav-back,
@@ -4294,20 +4295,20 @@
   background: linear-gradient(
     to top,
     rgb(249 249 249 / 0.86),
-    rgb(249 249 249 / 0.8) 25px,
-    rgb(249 249 249 / 0.55) 40px,
-    rgb(249 249 249 / 0.1) 71px,
-    rgb(249 249 249 / 0) 98px
+    rgb(249 249 249 / 0.8) 25.51%,
+    rgb(249 249 249 / 0.55) 40.82%,
+    rgb(249 249 249 / 0.1) 72.45%,
+    rgb(249 249 249 / 0) 100%
   );
 }
 .tm-phone[data-platform="imessage"][data-theme="dark"] .tm-composer::before {
   background: linear-gradient(
     to top,
     color-mix(in srgb, var(--tm-screen) 86%, transparent),
-    color-mix(in srgb, var(--tm-screen) 80%, transparent) 25px,
-    color-mix(in srgb, var(--tm-screen) 55%, transparent) 40px,
-    color-mix(in srgb, var(--tm-screen) 10%, transparent) 71px,
-    transparent 98px
+    color-mix(in srgb, var(--tm-screen) 80%, transparent) 25.51%,
+    color-mix(in srgb, var(--tm-screen) 55%, transparent) 40.82%,
+    color-mix(in srgb, var(--tm-screen) 10%, transparent) 72.45%,
+    transparent 100%
   );
 }
 .tm-phone[data-platform="imessage"] .tm-add {
@@ -4511,7 +4512,7 @@
   transform: scaleX(-1);
   background: var(--tm-in);
   clip-path: path(
-    "M13.67 0V6.6C13.67 8.4 15.1 9.4 15.65 10.4 16.05 11.2 15.5 11.85 14.6 11.85 13.9 11.85 13.3 11.6 12.7 11.2L4.4 5.6C3.8 5.2 3.4 5 2.6 5H0V0Z"
+    "M17.9 0C16.4 1.4 13.67 2.6 13.67 4.6V6.6C13.67 8.4 15.1 9.4 15.65 10.4 16.05 11.2 15.5 11.85 14.6 11.85 13.9 11.85 13.3 11.6 12.7 11.2L4.4 5.6C3.8 5.2 3.4 5 2.6 5H0V0Z"
   );
 }
 .tm-phone[data-platform="imessage"] .tm-bubble[data-side="out"] > .tm-tail {
