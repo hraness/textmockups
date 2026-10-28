@@ -73,9 +73,6 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
         : mode === "recording" && scene.composer.context?.recording.locked
             ? 45
             : 0;
-    const focusHeight = scene.platform === "imessage" && scene.conversation?.focus?.visible
-        ? 38
-        : 0;
     const model = deviceProfile(scene.device.model);
     const os = model?.os ?? "ios";
     const framed = scene.device.frame !== "none";
@@ -107,7 +104,7 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                     "--tm-type": `${scene.appearance.textSize}px`,
                     "--tm-thread-w": `${scene.device.width - 40}px`,
                     "--tm-radius": `${scene.appearance.bubbleRadius}px`,
-                    "--tm-composer-extra": `${extraComposerHeight + focusHeight}px`,
+                    "--tm-composer-extra": `${extraComposerHeight}px`,
                     "--tm-keyboard-height": `${keyboardHeight}px`,
                     "--tm-bezel": model ? `${model.bezel}px` : undefined,
                     "--tm-screen-radius": model ? `${model.radius}px` : undefined,
@@ -151,7 +148,16 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                 !!message.dateLabel ||
                                                 previous.kind === "system" ||
                                                 previous.unsent;
-                                            const first = media(message) ||
+                                            // A tapback ends the group above it so its badge has room, unless fitBubbles
+                                            // finds the badge clears the bubble above (data-clear).
+                                            const tapback = scene.platform === "imessage" &&
+                                                message.reactions.length > 0 &&
+                                                previous?.senderId === message.senderId;
+                                            const tapbackBelow = scene.platform === "imessage" &&
+                                                !!next?.reactions.length &&
+                                                next.senderId === message.senderId;
+                                            const first = tapback ||
+                                                media(message) ||
                                                 media(previous) ||
                                                 message.pause ||
                                                 !previous ||
@@ -159,7 +165,8 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                 !!message.dateLabel ||
                                                 previous.kind === "system" ||
                                                 previous.unsent;
-                                            const last = media(message) ||
+                                            const last = tapbackBelow ||
+                                                media(message) ||
                                                 media(next) ||
                                                 !next ||
                                                 next.pause ||
@@ -185,8 +192,10 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                     scene.platform === "google-messages") &&
                                                 !message.scheduledAt &&
                                                 ((index === lastOutgoing &&
-                                                    // iMessage drops the receipt once they reply.
+                                                    // iMessage drops the receipt once they reply, but a set one such as
+                                                    // "Read 11:38 AM" stays above the reply.
                                                     (scene.platform !== "imessage" ||
+                                                        !!message.statusText ||
                                                         !threadMessages
                                                             .slice(index + 1)
                                                             .some((item) => item.senderId !== self.id && item.kind !== "system"))) ||
@@ -197,7 +206,7 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                 return (_jsx("div", { className: "tm-system-message", "data-message-id": message.id, children: message.unsent
                                                         ? `${outgoing ? "You" : person.name} unsent a message`
                                                         : message.text }, message.id));
-                                            return (_jsxs("div", { className: "tm-message-block", "data-message-id": message.id, "data-side": outgoing ? "out" : "in", "data-editing": editing || undefined, "data-first": first || undefined, "data-last": last || undefined, "data-reply": (scene.platform === "imessage" && !!reply) || undefined, children: [scene.platform !== "imessage" &&
+                                            return (_jsxs("div", { className: "tm-message-block", "data-message-id": message.id, "data-side": outgoing ? "out" : "in", "data-editing": editing || undefined, "data-first": first || undefined, "data-last": last || undefined, "data-reply": (scene.platform === "imessage" && !!reply) || undefined, "data-tapback": tapback || undefined, children: [scene.platform !== "imessage" &&
                                                         scene.conversation?.unread?.visible &&
                                                         scene.conversation.unread.messageId === message.id && (_jsx("div", { className: "tm-unread-divider", children: scene.platform === "whatsapp"
                                                             ? `${scene.conversation.unread.count} UNREAD MESSAGE${scene.conversation.unread.count === 1 ? "" : "S"}`
@@ -266,8 +275,7 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                                                     transform: `translate(-50%, -50%) rotate(${sticker.rotation}deg) scale(${sticker.scale})`,
                                                                                 }, children: sticker.url ? (_jsx(slots.Image, { src: sticker.url, alt: "Attached sticker", referrerPolicy: "no-referrer", draggable: false })) : (sticker.emoji) }, sticker.id)))] }), replyCount > 0 && (_jsxs("div", { className: "tm-reply-count", children: [replyCount, " ", replyCount === 1 ? "Reply" : "Replies"] })), (receipt ||
                                                                         (scene.platform === "imessage" &&
-                                                                            message.kind === "voice")) && (_jsxs("div", { className: "tm-receipt-row", children: [receipt && (_jsxs("div", { className: "tm-receipt", "data-status": message.status, children: [_jsx(slots.Text, { field: "receipt", messageId: message.id, value: message.statusText || nativeReceipt(scene, message), children: message.statusText ||
-                                                                                            nativeReceipt(scene, message) }), message.edited && (_jsxs("span", { children: [" ", "\u00B7 Edited", message.editedAt
+                                                                            message.kind === "voice")) && (_jsxs("div", { className: "tm-receipt-row", children: [receipt && (_jsxs("div", { className: "tm-receipt", "data-status": message.status, children: [_jsx(slots.Text, { field: "receipt", messageId: message.id, value: message.statusText || nativeReceipt(scene, message), children: _jsx(ReceiptLabel, { label: message.statusText || nativeReceipt(scene, message), platform: scene.platform }) }), message.edited && (_jsxs("span", { children: [" ", "\u00B7 Edited", message.editedAt
                                                                                                 ? ` ${message.editedAt}`
                                                                                                 : ""] }))] })), scene.platform === "imessage" &&
                                                                                 message.kind === "voice" && (_jsx("span", { className: "tm-audio-keep", "data-kept": message.media?.keep || undefined, children: message.media?.keep ? "Kept" : "Keep" }))] })), scene.platform === "instagram" &&
@@ -276,8 +284,8 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                                         !receipt &&
                                                                         scene.appearance.showTimestamps &&
                                                                         message.timestamp && (_jsx("div", { className: "tm-message-time", children: message.timestamp }))] })] })] }, message.id));
-                                        }), scene.composer.typing.visible && (_jsxs("div", { className: "tm-typing-row", children: [_jsx(TypingDots, { time: playhead }), scene.platform !== "imessage" && (_jsxs("span", { children: [scene.participants.find((p) => p.id === scene.composer.typing.participantId)?.name ?? scene.contact.name, " ", "is typing"] }))] })), scene.messages.length === 0 && (_jsxs("div", { className: "tm-empty-conversation", children: [_jsx(Avatar, { slots: slots, name: scene.contact.name, url: scene.contact.avatar ?? other?.avatar, color: other?.color }), _jsx("span", { children: scene.contact.name })] }))] }) }), scene.platform === "imessage" &&
-                                scene.conversation?.unread?.visible && (_jsxs("div", { className: "tm-catch-up", children: [_jsx(Glyph, { name: "chevron", size: 16 }), _jsx(Glyph, { name: "chevron", size: 16 }), _jsx("span", { children: scene.conversation.unread.count })] })), _jsxs("div", { className: "tm-input-region", children: [_jsx(FocusStatus, { scene: scene }), _jsx(Composer, { scene: scene, time: playhead }), keyboard && mode !== "recording" && _jsx(Keyboard, { scene: scene })] }), _jsx(NativeInteraction, { slots: slots, scene: scene, time: playhead }), os === "android" ? (_jsx(AndroidNavBar, { scene: scene })) : (
+                                        }), scene.composer.typing.visible && (_jsxs("div", { className: "tm-typing-row", children: [_jsx(TypingDots, { time: playhead }), scene.platform !== "imessage" && (_jsxs("span", { children: [scene.participants.find((p) => p.id === scene.composer.typing.participantId)?.name ?? scene.contact.name, " ", "is typing"] }))] })), _jsx(FocusStatus, { scene: scene }), scene.messages.length === 0 && (_jsxs("div", { className: "tm-empty-conversation", children: [_jsx(Avatar, { slots: slots, name: scene.contact.name, url: scene.contact.avatar ?? other?.avatar, color: other?.color }), _jsx("span", { children: scene.contact.name })] }))] }) }), scene.platform === "imessage" &&
+                                scene.conversation?.unread?.visible && (_jsxs("div", { className: "tm-catch-up", children: [_jsx(Glyph, { name: "chevron", size: 16 }), _jsx(Glyph, { name: "chevron", size: 16 }), _jsx("span", { children: scene.conversation.unread.count })] })), _jsxs("div", { className: "tm-input-region", children: [_jsx(Composer, { scene: scene, time: playhead }), keyboard && mode !== "recording" && _jsx(Keyboard, { scene: scene })] }), _jsx(NativeInteraction, { slots: slots, scene: scene, time: playhead }), os === "android" ? (_jsx(AndroidNavBar, { scene: scene })) : (
                             // A screenshot never shows the home indicator; a framed device does.
                             framed && _jsx("div", { className: "tm-home-indicator", "aria-hidden": "true" })), scene.appearance.screenEffect !== "none" && (_jsx(ScreenEffect, { effect: scene.appearance.screenEffect, time: playhead }))] })] }), watermark && (_jsxs("div", { className: "tm-watermark", "data-textmock-watermark": true, style: {
                     ...watermarkStyle(scene.id, time === undefined ? 0 : playhead),
@@ -408,6 +416,15 @@ function DateLabel({ label, platform, }) {
     if (!split)
         return _jsx("span", { children: label });
     return (_jsxs("span", { children: [_jsx("b", { children: split[1] }), split[2].replace(/\s([AP]M)$/i, "\u202f$1")] }));
+}
+/** iMessage sets the time after a receipt in regular weight: "**Read** 11:38 AM". */
+function ReceiptLabel({ label, platform, }) {
+    const split = platform === "imessage"
+        ? /^(.+?)( \d{1,2}:\d{2}(?:\s?[AP]M)?)$/i.exec(label)
+        : null;
+    if (!split)
+        return _jsx(_Fragment, { children: label });
+    return (_jsxs(_Fragment, { children: [split[1], _jsx("span", { children: split[2].replace(/\s([AP]M)$/i, "\u202f$1") })] }));
 }
 function BubbleTail({ platform }) {
     return platform === "imessage" ? (_jsx("span", { className: "tm-tail", "aria-hidden": "true", children: _jsx("span", { className: "tm-paint" }) })) : (_jsx("svg", { className: "tm-tail", viewBox: "0 0 12 14", "aria-hidden": "true", children: _jsx("path", { d: "M0 0h12v14C7 13 2 8 0 0Z" }) }));
@@ -627,7 +644,8 @@ const TAPBACKS = {
     "❤": "heart",
     "👍": "like",
     "👎": "dislike",
-    "😂": "haha",
+    // iOS 26 draws the HA HA tapback apart from a 😂 emoji tapback, which draws as itself.
+    HAHA: "haha",
     "‼️": "emphasize",
     "‼": "emphasize",
     "❓": "question",
@@ -726,7 +744,7 @@ function Landscape() {
     return (_jsxs("svg", { className: "tm-landscape", viewBox: "0 0 600 450", role: "img", "aria-label": "Illustrated alpine lake", children: [_jsxs("defs", { children: [_jsxs("linearGradient", { id: "tm-sky", x2: "0", y2: "1", children: [_jsx("stop", { stopColor: "#b9d5de" }), _jsx("stop", { offset: "1", stopColor: "#e8e5d9" })] }), _jsxs("linearGradient", { id: "tm-lake", x2: "0", y2: "1", children: [_jsx("stop", { stopColor: "#9bbec3" }), _jsx("stop", { offset: "1", stopColor: "#486f79" })] })] }), _jsx("path", { fill: "url(#tm-sky)", d: "M0 0h600v450H0z" }), _jsx("path", { fill: "#94aeb0", d: "m0 230 80-125 47 52L224 35l120 161L440 76l160 166v208H0" }), _jsx("path", { fill: "#dce5df", d: "m139 143 85-108 72 97-52-20-24-30-25 51-25-12Z" }), _jsx("path", { fill: "#537577", d: "m0 198 96 59 104-77 119 85 79-119 93 69 109-52v287H0" }), _jsx("path", { fill: "url(#tm-lake)", d: "m0 305 130-36 96 17 102-13 120 30 152-15v162H0Z" }), _jsx("path", { fill: "#264f4d", d: "m0 237 33 38 45 12 22 38-48 13L0 321Zm600 0-25 23-48 27-12 34 85 24Z" }), _jsx("path", { stroke: "#c4d6d3", opacity: ".5", d: "M94 337h230m55 18h160M190 375h207m-330 23h129m53 22h229" })] }));
 }
 function NativeIcon({ name, }) {
-    return (_jsx("svg", { className: "tm-native-icon", width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.7", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: name === "moon" ? (_jsx("path", { fill: "currentColor", stroke: "none", d: "M19.7 15A8.3 8.3 0 0 1 9 4.3 8.5 8.5 0 1 0 19.7 15Z" })) : name === "muted" ? (_jsx(_Fragment, { children: _jsx("path", { d: "M7 6a6 6 0 0 1 11 3v5l2 4H4l2-4V9M10 21h4M3 3l18 18" }) })) : name === "pin" ? (_jsx("path", { d: "m9 3 8 3-3 4 1 6-5-2-5-1 4-4V3Zm1 11-4 8" })) : name === "edit" ? (_jsx("path", { d: "m15 3 6 6-12 12H3v-6L15 3Zm-10 13 3 3M12 6l6 6" })) : name === "reply" ? (_jsx("path", { d: "m10 5-7 6 7 6v-4c5-1 8 1 11 6 0-8-4-11-11-10V5Z" })) : (_jsx(_Fragment, { children: _jsx("path", { d: "M4 6h16M9 3h6M6 6l1 15h10l1-15M10 10v7M14 10v7" }) })) }));
+    return (_jsx("svg", { className: "tm-native-icon", width: "16", height: "16", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.7", strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true", children: name === "moon" ? (_jsx("path", { fill: "currentColor", stroke: "none", d: "M19.7 15A7.3 7.3 0 0 1 9 4.3 8.5 8.5 0 1 0 19.7 15Z" })) : name === "muted" ? (_jsx(_Fragment, { children: _jsx("path", { d: "M7 6a6 6 0 0 1 11 3v5l2 4H4l2-4V9M10 21h4M3 3l18 18" }) })) : name === "pin" ? (_jsx("path", { d: "m9 3 8 3-3 4 1 6-5-2-5-1 4-4V3Zm1 11-4 8" })) : name === "edit" ? (_jsx("path", { d: "m15 3 6 6-12 12H3v-6L15 3Zm-10 13 3 3M12 6l6 6" })) : name === "reply" ? (_jsx("path", { d: "m10 5-7 6 7 6v-4c5-1 8 1 11 6 0-8-4-11-11-10V5Z" })) : (_jsx(_Fragment, { children: _jsx("path", { d: "M4 6h16M9 3h6M6 6l1 15h10l1-15M10 10v7M14 10v7" }) })) }));
 }
 function FocusStatus({ scene }) {
     const focus = scene.conversation?.focus;

@@ -185,10 +185,6 @@ export function Phone({
       : mode === "recording" && scene.composer.context?.recording.locked
         ? 45
         : 0;
-  const focusHeight =
-    scene.platform === "imessage" && scene.conversation?.focus?.visible
-      ? 38
-      : 0;
   const model = deviceProfile(scene.device.model);
   const os: DeviceOs = model?.os ?? "ios";
   const framed = scene.device.frame !== "none";
@@ -250,7 +246,7 @@ export function Phone({
           "--tm-type": `${scene.appearance.textSize}px`,
           "--tm-thread-w": `${scene.device.width - 40}px`,
           "--tm-radius": `${scene.appearance.bubbleRadius}px`,
-          "--tm-composer-extra": `${extraComposerHeight + focusHeight}px`,
+          "--tm-composer-extra": `${extraComposerHeight}px`,
           "--tm-keyboard-height": `${keyboardHeight}px`,
           "--tm-bezel": model ? `${model.bezel}px` : undefined,
           "--tm-screen-radius": model ? `${model.radius}px` : undefined,
@@ -359,7 +355,18 @@ export function Phone({
                   !!message.dateLabel ||
                   previous.kind === "system" ||
                   previous.unsent;
+                // A tapback ends the group above it so its badge has room, unless fitBubbles
+                // finds the badge clears the bubble above (data-clear).
+                const tapback =
+                  scene.platform === "imessage" &&
+                  message.reactions.length > 0 &&
+                  previous?.senderId === message.senderId;
+                const tapbackBelow =
+                  scene.platform === "imessage" &&
+                  !!next?.reactions.length &&
+                  next.senderId === message.senderId;
                 const first =
+                  tapback ||
                   media(message) ||
                   media(previous) ||
                   message.pause ||
@@ -369,6 +376,7 @@ export function Phone({
                   previous.kind === "system" ||
                   previous.unsent;
                 const last =
+                  tapbackBelow ||
                   media(message) ||
                   media(next) ||
                   !next ||
@@ -401,8 +409,10 @@ export function Phone({
                     scene.platform === "google-messages") &&
                   !message.scheduledAt &&
                   ((index === lastOutgoing &&
-                    // iMessage drops the receipt once they reply.
+                    // iMessage drops the receipt once they reply, but a set one such as
+                    // "Read 11:38 AM" stays above the reply.
                     (scene.platform !== "imessage" ||
+                      !!message.statusText ||
                       !threadMessages
                         .slice(index + 1)
                         .some((item) => item.senderId !== self.id && item.kind !== "system"))) ||
@@ -431,6 +441,7 @@ export function Phone({
                     data-first={first || undefined}
                     data-last={last || undefined}
                     data-reply={(scene.platform === "imessage" && !!reply) || undefined}
+                    data-tapback={tapback || undefined}
                   >
                     {scene.platform !== "imessage" &&
                       scene.conversation?.unread?.visible &&
@@ -767,8 +778,10 @@ export function Phone({
                                   messageId={message.id}
                                   value={message.statusText || nativeReceipt(scene, message)}
                                 >
-                                  {message.statusText ||
-                                    nativeReceipt(scene, message)}
+                                  <ReceiptLabel
+                                    label={message.statusText || nativeReceipt(scene, message)}
+                                    platform={scene.platform}
+                                  />
                                 </slots.Text>
                                 {message.edited && (
                                   <span>
@@ -823,6 +836,7 @@ export function Phone({
                   )}
                 </div>
               )}
+              <FocusStatus scene={scene} />
               {scene.messages.length === 0 && (
                 <div className="tm-empty-conversation">
                   <Avatar slots={slots}
@@ -844,7 +858,6 @@ export function Phone({
               </div>
             )}
           <div className="tm-input-region">
-            <FocusStatus scene={scene} />
             <Composer scene={scene} time={playhead} />
             {keyboard && mode !== "recording" && <Keyboard scene={scene} />}
           </div>
@@ -1427,6 +1440,27 @@ function DateLabel({
       {/* iOS sets AM and PM off with a narrow no-break space. */}
       {split[2].replace(/\s([AP]M)$/i, "\u202f$1")}
     </span>
+  );
+}
+
+/** iMessage sets the time after a receipt in regular weight: "**Read** 11:38 AM". */
+function ReceiptLabel({
+  label,
+  platform,
+}: {
+  label: string;
+  platform: Scene["platform"];
+}) {
+  const split =
+    platform === "imessage"
+      ? /^(.+?)( \d{1,2}:\d{2}(?:\s?[AP]M)?)$/i.exec(label)
+      : null;
+  if (!split) return <>{label}</>;
+  return (
+    <>
+      {split[1]}
+      <span>{split[2].replace(/\s([AP]M)$/i, "\u202f$1")}</span>
+    </>
   );
 }
 
@@ -2136,7 +2170,8 @@ const TAPBACKS: Record<string, TapbackKind | undefined> = {
   "❤": "heart",
   "👍": "like",
   "👎": "dislike",
-  "😂": "haha",
+  // iOS 26 draws the HA HA tapback apart from a 😂 emoji tapback, which draws as itself.
+  HAHA: "haha",
   "‼️": "emphasize",
   "‼": "emphasize",
   "❓": "question",
@@ -2480,7 +2515,7 @@ function NativeIcon({
         <path
           fill="currentColor"
           stroke="none"
-          d="M19.7 15A8.3 8.3 0 0 1 9 4.3 8.5 8.5 0 1 0 19.7 15Z"
+          d="M19.7 15A7.3 7.3 0 0 1 9 4.3 8.5 8.5 0 1 0 19.7 15Z"
         />
       ) : name === "muted" ? (
         <>

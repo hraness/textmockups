@@ -25,7 +25,7 @@ Install the compiled package from an immutable GitHub Release:
 ```json
 {
   "dependencies": {
-    "@hraness/textmockups": "https://github.com/hraness/textmockups/releases/download/v0.9.0/hraness-textmockups-0.9.0.tgz"
+    "@hraness/textmockups": "https://github.com/hraness/textmockups/releases/download/v0.10.0/hraness-textmockups-0.10.0.tgz"
   }
 }
 ```
@@ -99,7 +99,7 @@ iMessage only runs on iPhone, and `google-messages` only runs on Android; the sc
 
 | App | Details |
 | --- | --- |
-| iMessage | Blue and gray bubbles with tails, tapbacks, Delivered and Read receipts, SMS and RCS green bubbles, effects (slam, loud, gentle, invisible ink), screen effects, typing indicator, focus status, pinned messages, replies, edits, unsend, link previews (including text posts), photo collages and stacks, underlined times, dual SIM signal, and the iOS keyboard |
+| iMessage | Blue and gray bubbles with tails, tapbacks (❤️ 👍 👎 ‼️ ❓, `HAHA` for the HA HA tapback, and any emoji), Delivered and Read receipts, SMS and RCS green bubbles, effects (slam, loud, gentle, invisible ink), screen effects, typing indicator, focus status, pinned messages, replies, edits, unsend, link previews (including text posts), photo collages and stacks, underlined times, dual SIM signal, and the iOS keyboard |
 | WhatsApp | Doodle wallpaper, green outgoing bubbles, timestamps and blue double ticks inside the bubble, reactions, replies, voice notes, and the WhatsApp header and composer |
 | Telegram | Telegram colors, wallpaper, ticks, reactions, and composer |
 | Instagram | Direct message bubbles, Seen receipts, replies, and the Instagram composer |
@@ -107,7 +107,7 @@ iMessage only runs on iPhone, and `google-messages` only runs on Android; the sc
 
 Every app has light and dark themes, group chats, images, videos, voice messages, files, links, locations, contacts, stickers, polls, and payments.
 
-iMessage narrows a wrapped bubble to its longest line, which CSS cannot do on its own. Once a phone is in the document, call `fitBubbles(element)` after each render (and before an export) to measure and fit them:
+iMessage narrows a wrapped bubble to its longest line, and keeps a tapped-back message in the group above when the badge clears the bubble there. CSS cannot do either on its own. Once a phone is in the document, call `fitBubbles(element)` after each render (and before an export) to measure and fit them:
 
 ```ts
 import { fitBubbles } from "@hraness/textmockups";

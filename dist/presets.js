@@ -76,7 +76,7 @@ export const presets = [
             ][index] ?? message.text,
             reactions: message.reactions.map((reaction) => ({
                 ...reaction,
-                emoji: "😂",
+                emoji: "HAHA",
             })),
         })),
     }),
@@ -108,7 +108,7 @@ export const presets = [
                 at: 3.3,
                 text: "You said that three episodes ago.",
                 reactions: [
-                    { id: "laugh", emoji: "😂", participantId: "me", at: 4.4 },
+                    { id: "laugh", emoji: "HAHA", participantId: "me", at: 4.4 },
                 ],
             },
             {
