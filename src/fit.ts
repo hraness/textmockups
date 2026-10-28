@@ -21,6 +21,33 @@ export function fitBubbles(root: ParentNode): void {
     // Subpixel rounding must never rewrap the text.
     if (lineCount(bubble) !== lines) bubble.style.width = "";
   });
+  clearTapbacks(root);
+}
+
+/**
+ * Messages keeps a tapped-back message in the group above when its badge clears the bubble
+ * there, so the badge rises beside it. Only the widths decide that, so it is measured here.
+ */
+function clearTapbacks(root: ParentNode) {
+  const blocks = [
+    ...root.querySelectorAll<HTMLElement>(
+      '[data-platform="imessage"] .tm-message-block[data-tapback]',
+    ),
+  ];
+  const clear = blocks.map((block) => {
+    const above = block.previousElementSibling?.querySelector(".tm-message-row .tm-bubble");
+    const bubble = block.querySelector<HTMLElement>(".tm-message-row .tm-bubble");
+    const badge = bubble?.querySelector(".tm-reactions");
+    if (!above || !bubble || !badge) return false;
+    const a = above.getBoundingClientRect();
+    const b = badge.getBoundingClientRect();
+    const gap = 2 * scaleOf(bubble);
+    return block.dataset.side === "out" ? b.right + gap <= a.left : b.left >= a.right + gap;
+  });
+  blocks.forEach((block, index) => {
+    if (clear[index]) block.dataset.clear = "";
+    else delete block.dataset.clear;
+  });
 }
 
 function scaleOf(bubble: HTMLElement) {

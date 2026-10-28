@@ -204,6 +204,37 @@ describe("Phone", () => {
     expect(html).toContain("tm-link-post");
     expect(html).toContain("<p>A thought worth sharing.</p>");
   });
+  test("iMessage keeps a set receipt above their reply and sets its time in regular weight", () => {
+    const base = { ...defaultScene.messages[0], dateLabel: "", statusText: "" };
+    const scene = (statusText: string) =>
+      parseScene({
+        ...defaultScene,
+        messages: [
+          { ...base, id: "a", senderId: "me", text: "on my way", status: "read", statusText },
+          { ...base, id: "b", senderId: "jamie", text: "see you" },
+        ],
+      });
+    expect(renderToStaticMarkup(<Phone scene={scene("")} />)).not.toContain("tm-receipt");
+    expect(renderToStaticMarkup(<Phone scene={scene("Read 11:38 AM")} />)).toContain(
+      "Read<span> 11:38\u202fAM</span>",
+    );
+  });
+  test("an iMessage tapback ends the group above it", () => {
+    const base = { ...defaultScene.messages[0], senderId: "me", dateLabel: "", reactions: [] };
+    const html = renderToStaticMarkup(
+      <Phone
+        scene={parseScene({
+          ...defaultScene,
+          messages: [
+            { ...base, id: "a", text: "one" },
+            { ...base, id: "b", text: "two", reactions: [{ id: "r", emoji: "HAHA", participantId: "jamie", at: base.at }] },
+          ],
+        })}
+      />,
+    );
+    expect(html.match(/data-tail="true"/g)?.length).toBe(2);
+    expect(html).toContain("data-tapback");
+  });
   test("a second line's signal draws the dual SIM indicator", () => {
     const scene = parseScene({
       ...defaultScene,
