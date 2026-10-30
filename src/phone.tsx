@@ -419,6 +419,8 @@ export function Phone({
                     message.status === "failed" ||
                     message.status === "sending" ||
                     message.edited);
+                const incomingEdited =
+                  scene.platform === "imessage" && !outgoing && message.edited;
                 if (message.kind === "system" || message.unsent)
                   return (
                     <div
@@ -630,17 +632,13 @@ export function Phone({
                               : undefined
                           }
                         >
-                          {scene.platform === "imessage" && (
-                            <span className="tm-bubble-paint" aria-hidden="true">
-                              <span className="tm-paint" />
-                            </span>
-                          )}
+                          <BubblePaint platform={scene.platform} message={message} />
                           {scene.platform !== "instagram" &&
                             scene.platform !== "google-messages" &&
                             (scene.platform === "whatsapp" ? first : last) &&
                             message.kind !== "sticker" &&
                             !emojiOnly(message.text) && (
-                              <BubbleTail platform={scene.platform} />
+                              <BubbleTail platform={scene.platform} scheduled={!!message.scheduledAt} />
                             )}
                           {repliedBy && (
                             <ReplyHook
@@ -764,7 +762,7 @@ export function Phone({
                             {replyCount} {replyCount === 1 ? "Reply" : "Replies"}
                           </div>
                         )}
-                        {(receipt ||
+                        {(receipt || incomingEdited ||
                           (scene.platform === "imessage" &&
                             message.kind === "voice")) && (
                           <div className="tm-receipt-row">
@@ -792,6 +790,11 @@ export function Phone({
                                       : ""}
                                   </span>
                                 )}
+                              </div>
+                            )}
+                            {incomingEdited && (
+                              <div className="tm-receipt tm-incoming-edit">
+                                Edited{message.editedAt ? ` ${message.editedAt}` : ""}
                               </div>
                             )}
                             {scene.platform === "imessage" &&
@@ -1464,7 +1467,30 @@ function ReceiptLabel({
   );
 }
 
-function BubbleTail({ platform }: { platform: Scene["platform"] }) {
+/** Emoji, stickers, photos, and Send Later messages do not have a filled bubble. */
+function BubblePaint({
+  platform,
+  message,
+}: {
+  platform: Scene["platform"];
+  message: Message;
+}) {
+  if (
+    platform !== "imessage" ||
+    message.scheduledAt ||
+    ["image", "video", "sticker"].includes(message.kind) ||
+    (message.kind === "text" && emojiOnly(message.text))
+  )
+    return null;
+  return (
+    <span className="tm-bubble-paint" aria-hidden="true">
+      <span className="tm-paint" />
+    </span>
+  );
+}
+
+function BubbleTail({ platform, scheduled = false }: { platform: Scene["platform"]; scheduled?: boolean }) {
+  if (platform === "imessage" && scheduled) return <GhostTail scheduled />;
   return platform === "imessage" ? (
     <span className="tm-tail" aria-hidden="true">
       <span className="tm-paint" />
@@ -2148,9 +2174,9 @@ function ComposerIcon({ name }: { name: "plus" | "mic" }) {
   );
 }
 
-function GhostTail() {
+function GhostTail({ scheduled = false }: { scheduled?: boolean }) {
   return (
-    <svg className="tm-ghost-tail" viewBox="0 0 24 12" aria-hidden="true">
+    <svg className={`tm-ghost-tail${scheduled ? " tm-scheduled-tail" : ""}`} viewBox="0 0 24 12" aria-hidden="true">
       <path
         d="M13.67 0V6.6C13.67 8.4 15.1 9.4 15.65 10.4 16.05 11.2 15.5 11.85 14.6 11.85 13.9 11.85 13.3 11.6 12.7 11.2L4.4 5.6C3.8 5.2 3.4 5 2.6 5H0V0Z"
         fill="var(--tm-screen)"
@@ -2159,6 +2185,7 @@ function GhostTail() {
         d="M13.67 2.4V6.6C13.67 8.4 15.1 9.4 15.65 10.4 16.05 11.2 15.5 11.85 14.6 11.85 13.9 11.85 13.3 11.6 12.7 11.2L4.4 5.6C3.8 5.2 3.4 5 2.6 5"
         fill="none"
         stroke="currentColor"
+        strokeDasharray={scheduled ? "4 4" : undefined}
       />
     </svg>
   );
@@ -2726,8 +2753,17 @@ function NativeInteraction({ slots, scene, time }: {
             className="tm-bubble"
             data-side={outgoing ? "out" : "in"}
             data-kind={message.kind}
+            data-tail={scene.platform === "imessage" || undefined}
+            data-emoji={(scene.platform === "imessage" && message.kind === "text" && emojiOnly(message.text)) || undefined}
+            data-scheduled={(scene.platform === "imessage" && !!message.scheduledAt) || undefined}
           >
-            <MessageContent slots={slots} message={message} scene={scene} time={time} />
+            <BubblePaint platform={scene.platform} message={message} />
+            {scene.platform === "imessage" &&
+              message.kind !== "sticker" &&
+              !emojiOnly(message.text) && (
+                <BubbleTail platform={scene.platform} scheduled={!!message.scheduledAt} />
+              )}
+            <MessageContent slots={slots} message={message} scene={scene} time={time} tail />
           </div>
           {picker.showMenu && (
             <div className="tm-message-menu">

@@ -202,6 +202,7 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                     message.status === "failed" ||
                                                     message.status === "sending" ||
                                                     message.edited);
+                                            const incomingEdited = scene.platform === "imessage" && !outgoing && message.edited;
                                             if (message.kind === "system" || message.unsent)
                                                 return (_jsx("div", { className: "tm-system-message", "data-message-id": message.id, children: message.unsent
                                                         ? `${outgoing ? "You" : person.name} unsent a message`
@@ -245,11 +246,11 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                                                     onSelectMessage(message.id);
                                                                                 }
                                                                             }
-                                                                            : undefined, children: [scene.platform === "imessage" && (_jsx("span", { className: "tm-bubble-paint", "aria-hidden": "true", children: _jsx("span", { className: "tm-paint" }) })), scene.platform !== "instagram" &&
+                                                                            : undefined, children: [_jsx(BubblePaint, { platform: scene.platform, message: message }), scene.platform !== "instagram" &&
                                                                                 scene.platform !== "google-messages" &&
                                                                                 (scene.platform === "whatsapp" ? first : last) &&
                                                                                 message.kind !== "sticker" &&
-                                                                                !emojiOnly(message.text) && (_jsx(BubbleTail, { platform: scene.platform })), repliedBy && (_jsx(ReplyHook, { from: outgoing ? "out" : "in", to: repliedBy.senderId === self.id ? "out" : "in", drop: (next?.senderId === message.senderId ? 4 : 10) +
+                                                                                !emojiOnly(message.text) && (_jsx(BubbleTail, { platform: scene.platform, scheduled: !!message.scheduledAt })), repliedBy && (_jsx(ReplyHook, { from: outgoing ? "out" : "in", to: repliedBy.senderId === self.id ? "out" : "in", drop: (next?.senderId === message.senderId ? 4 : 10) +
                                                                                     (repliedBy.dateLabel ? 24.27 : 0) +
                                                                                     (repliedBy.reactions.length ? 27.33 : 0) -
                                                                                     5, offset: repliedBy.senderId !== self.id &&
@@ -273,11 +274,11 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                                                     top: `${sticker.y * 100}%`,
                                                                                     zIndex: 5 + sticker.zIndex,
                                                                                     transform: `translate(-50%, -50%) rotate(${sticker.rotation}deg) scale(${sticker.scale})`,
-                                                                                }, children: sticker.url ? (_jsx(slots.Image, { src: sticker.url, alt: "Attached sticker", referrerPolicy: "no-referrer", draggable: false })) : (sticker.emoji) }, sticker.id)))] }), replyCount > 0 && (_jsxs("div", { className: "tm-reply-count", children: [replyCount, " ", replyCount === 1 ? "Reply" : "Replies"] })), (receipt ||
+                                                                                }, children: sticker.url ? (_jsx(slots.Image, { src: sticker.url, alt: "Attached sticker", referrerPolicy: "no-referrer", draggable: false })) : (sticker.emoji) }, sticker.id)))] }), replyCount > 0 && (_jsxs("div", { className: "tm-reply-count", children: [replyCount, " ", replyCount === 1 ? "Reply" : "Replies"] })), (receipt || incomingEdited ||
                                                                         (scene.platform === "imessage" &&
                                                                             message.kind === "voice")) && (_jsxs("div", { className: "tm-receipt-row", children: [receipt && (_jsxs("div", { className: "tm-receipt", "data-status": message.status, children: [_jsx(slots.Text, { field: "receipt", messageId: message.id, value: message.statusText || nativeReceipt(scene, message), children: _jsx(ReceiptLabel, { label: message.statusText || nativeReceipt(scene, message), platform: scene.platform }) }), message.edited && (_jsxs("span", { children: [" ", "\u00B7 Edited", message.editedAt
                                                                                                 ? ` ${message.editedAt}`
-                                                                                                : ""] }))] })), scene.platform === "imessage" &&
+                                                                                                : ""] }))] })), incomingEdited && (_jsxs("div", { className: "tm-receipt tm-incoming-edit", children: ["Edited", message.editedAt ? ` ${message.editedAt}` : ""] })), scene.platform === "imessage" &&
                                                                                 message.kind === "voice" && (_jsx("span", { className: "tm-audio-keep", "data-kept": message.media?.keep || undefined, children: message.media?.keep ? "Kept" : "Keep" }))] })), scene.platform === "instagram" &&
                                                                         message.edited &&
                                                                         !receipt && (_jsx("div", { className: "tm-ig-edited", children: "Edited" })), scene.platform === "imessage" &&
@@ -426,7 +427,18 @@ function ReceiptLabel({ label, platform, }) {
         return _jsx(_Fragment, { children: label });
     return (_jsxs(_Fragment, { children: [split[1], _jsx("span", { children: split[2].replace(/\s([AP]M)$/i, "\u202f$1") })] }));
 }
-function BubbleTail({ platform }) {
+/** Emoji, stickers, photos, and Send Later messages do not have a filled bubble. */
+function BubblePaint({ platform, message, }) {
+    if (platform !== "imessage" ||
+        message.scheduledAt ||
+        ["image", "video", "sticker"].includes(message.kind) ||
+        (message.kind === "text" && emojiOnly(message.text)))
+        return null;
+    return (_jsx("span", { className: "tm-bubble-paint", "aria-hidden": "true", children: _jsx("span", { className: "tm-paint" }) }));
+}
+function BubbleTail({ platform, scheduled = false }) {
+    if (platform === "imessage" && scheduled)
+        return _jsx(GhostTail, { scheduled: true });
     return platform === "imessage" ? (_jsx("span", { className: "tm-tail", "aria-hidden": "true", children: _jsx("span", { className: "tm-paint" }) })) : (_jsx("svg", { className: "tm-tail", viewBox: "0 0 12 14", "aria-hidden": "true", children: _jsx("path", { d: "M0 0h12v14C7 13 2 8 0 0Z" }) }));
 }
 function DeliveryGlyph({ status }) {
@@ -635,8 +647,8 @@ function ImLive() {
 function ComposerIcon({ name }) {
     return name === "plus" ? (_jsx("svg", { className: "tm-im-plus", width: "16", height: "16", viewBox: "-8 -8 16 16", fill: "none", stroke: "currentColor", strokeWidth: "1.67", strokeLinecap: "round", "aria-hidden": "true", children: _jsx("path", { d: "M0-6.83v13.66M-6.83 0h13.66" }) })) : (_jsxs("svg", { className: "tm-im-mic", width: "14", height: "20", viewBox: "-7 0 14 20", fill: "none", stroke: "currentColor", strokeWidth: "1.4", strokeLinecap: "round", "aria-hidden": "true", children: [_jsx("rect", { x: "-2.83", y: "0.7", width: "5.66", height: "11.6", rx: "2.83" }), _jsx("path", { d: "M-6 8v1.17a6 6 0 0 0 12 0V8M0 15.17v3.66M-4.67 18.83h9.34" })] }));
 }
-function GhostTail() {
-    return (_jsxs("svg", { className: "tm-ghost-tail", viewBox: "0 0 24 12", "aria-hidden": "true", children: [_jsx("path", { d: "M13.67 0V6.6C13.67 8.4 15.1 9.4 15.65 10.4 16.05 11.2 15.5 11.85 14.6 11.85 13.9 11.85 13.3 11.6 12.7 11.2L4.4 5.6C3.8 5.2 3.4 5 2.6 5H0V0Z", fill: "var(--tm-screen)" }), _jsx("path", { d: "M13.67 2.4V6.6C13.67 8.4 15.1 9.4 15.65 10.4 16.05 11.2 15.5 11.85 14.6 11.85 13.9 11.85 13.3 11.6 12.7 11.2L4.4 5.6C3.8 5.2 3.4 5 2.6 5", fill: "none", stroke: "currentColor" })] }));
+function GhostTail({ scheduled = false }) {
+    return (_jsxs("svg", { className: `tm-ghost-tail${scheduled ? " tm-scheduled-tail" : ""}`, viewBox: "0 0 24 12", "aria-hidden": "true", children: [_jsx("path", { d: "M13.67 0V6.6C13.67 8.4 15.1 9.4 15.65 10.4 16.05 11.2 15.5 11.85 14.6 11.85 13.9 11.85 13.3 11.6 12.7 11.2L4.4 5.6C3.8 5.2 3.4 5 2.6 5H0V0Z", fill: "var(--tm-screen)" }), _jsx("path", { d: "M13.67 2.4V6.6C13.67 8.4 15.1 9.4 15.65 10.4 16.05 11.2 15.5 11.85 14.6 11.85 13.9 11.85 13.3 11.6 12.7 11.2L4.4 5.6C3.8 5.2 3.4 5 2.6 5", fill: "none", stroke: "currentColor", strokeDasharray: scheduled ? "4 4" : undefined })] }));
 }
 /** The six classic tapbacks draw as iOS 26's puffy glyphs; any other emoji draws as itself. */
 const TAPBACKS = {
@@ -786,7 +798,9 @@ function NativeInteraction({ slots, scene, time }) {
                                 .map((group) => `${group.emoji}: ${group.names.join(", ")}`)
                                 .join("; "), children: ["+", groups
                                     .slice(3)
-                                    .reduce((total, group) => total + group.names.length, 0)] }))] })), _jsxs("div", { className: "tm-message-context", "data-side": outgoing ? "out" : "in", children: [_jsxs("div", { className: "tm-tapback-picker", children: [picker.emojis.map((emoji, index) => (_jsx("span", { "data-picked": picker.selectedEmoji === emoji || undefined, children: emoji }, index))), _jsx(Glyph, { name: "plus", size: 19 })] }), _jsx("div", { className: "tm-bubble", "data-side": outgoing ? "out" : "in", "data-kind": message.kind, children: _jsx(MessageContent, { slots: slots, message: message, scene: scene, time: time }) }), picker.showMenu && (_jsxs("div", { className: "tm-message-menu", children: [_jsxs("span", { children: ["Reply", _jsx(NativeIcon, { name: "reply" })] }), scene.platform === "imessage" && (_jsxs("span", { children: ["Add Sticker", _jsx(Glyph, { name: "sticker", size: 17 })] })), _jsxs("span", { children: ["Copy", _jsx(Glyph, { name: "file", size: 17 })] }), outgoing && (_jsxs("span", { children: ["Edit", _jsx(NativeIcon, { name: "edit" })] })), _jsxs("span", { children: ["More\u2026", _jsx(Glyph, { name: "more", size: 17 })] })] }))] })] }));
+                                    .reduce((total, group) => total + group.names.length, 0)] }))] })), _jsxs("div", { className: "tm-message-context", "data-side": outgoing ? "out" : "in", children: [_jsxs("div", { className: "tm-tapback-picker", children: [picker.emojis.map((emoji, index) => (_jsx("span", { "data-picked": picker.selectedEmoji === emoji || undefined, children: emoji }, index))), _jsx(Glyph, { name: "plus", size: 19 })] }), _jsxs("div", { className: "tm-bubble", "data-side": outgoing ? "out" : "in", "data-kind": message.kind, "data-tail": scene.platform === "imessage" || undefined, "data-emoji": (scene.platform === "imessage" && message.kind === "text" && emojiOnly(message.text)) || undefined, "data-scheduled": (scene.platform === "imessage" && !!message.scheduledAt) || undefined, children: [_jsx(BubblePaint, { platform: scene.platform, message: message }), scene.platform === "imessage" &&
+                                    message.kind !== "sticker" &&
+                                    !emojiOnly(message.text) && (_jsx(BubbleTail, { platform: scene.platform, scheduled: !!message.scheduledAt })), _jsx(MessageContent, { slots: slots, message: message, scene: scene, time: time, tail: true })] }), picker.showMenu && (_jsxs("div", { className: "tm-message-menu", children: [_jsxs("span", { children: ["Reply", _jsx(NativeIcon, { name: "reply" })] }), scene.platform === "imessage" && (_jsxs("span", { children: ["Add Sticker", _jsx(Glyph, { name: "sticker", size: 17 })] })), _jsxs("span", { children: ["Copy", _jsx(Glyph, { name: "file", size: 17 })] }), outgoing && (_jsxs("span", { children: ["Edit", _jsx(NativeIcon, { name: "edit" })] })), _jsxs("span", { children: ["More\u2026", _jsx(Glyph, { name: "more", size: 17 })] })] }))] })] }));
     }
     const tray = scene.interactions?.attachmentTray;
     if (!tray?.visible)

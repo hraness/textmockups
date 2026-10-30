@@ -564,11 +564,9 @@
   color: var(--tm-ink);
   border: 1px dashed color-mix(in srgb, var(--tm-out) 55%, transparent);
 }
-.tm-phone[data-platform="imessage"] .tm-bubble[data-scheduled] .tm-tail {
-  fill: var(--tm-screen);
-  stroke: color-mix(in srgb, var(--tm-out) 55%, transparent);
+.tm-phone[data-platform="imessage"] .tm-scheduled-tail {
+  color: color-mix(in srgb, var(--tm-out) 55%, transparent);
   stroke-width: 0.7;
-  stroke-dasharray: 4 4;
 }
 .tm-row-avatar {
   width: 26px;
@@ -2002,6 +2000,8 @@
 .tm-phone[data-platform="imessage"][data-transport="sms"],
 .tm-phone[data-platform="imessage"][data-transport="rcs"] {
   --tm-out: #34c759;
+  --tm-out-top: var(--tm-out);
+  --tm-out-bottom: var(--tm-out);
 }
 .tm-phone[data-platform="imessage"][data-transport="sms"] .tm-send,
 .tm-phone[data-platform="imessage"][data-transport="rcs"] .tm-send {
@@ -4172,6 +4172,7 @@
    Measured from iOS 26 screenshots; geometry stays in logical points. */
 .tm-phone[data-platform="imessage"] {
   --tm-ink: #000;
+  --tm-receipt: #636368;
   --tm-out: #2457dc;
   --tm-in: #dedee0;
   --tm-glass: rgb(249 249 249 / 0.94);
@@ -4182,6 +4183,7 @@
 }
 .tm-phone[data-platform="imessage"][data-theme="dark"] {
   --tm-ink: #fff;
+  --tm-receipt: #98989f;
   --tm-in: #262629;
   --tm-glass: rgb(44 44 47 / 0.88);
   --tm-glass-shadow:
@@ -4500,6 +4502,17 @@
   padding: 9.86px 14.07px;
   line-height: 20.28px;
   letter-spacing: 0;
+}
+.tm-phone[data-platform="imessage"] .tm-bubble[data-emoji] {
+  min-width: 0;
+  min-height: 0;
+  padding: 1px 3px;
+  line-height: 1.14;
+}
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="sticker"] {
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
 }
 .tm-phone[data-platform="imessage"] .tm-bubble,
 .tm-phone[data-platform="imessage"] .tm-bubble[data-side="out"] {
@@ -5228,7 +5241,11 @@
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0;
-  color: #636368;
+  color: var(--tm-receipt);
+}
+.tm-phone[data-platform="imessage"] .tm-receipt.tm-incoming-edit {
+  padding-left: 14.07px;
+  padding-right: 0;
 }
 /* Messages offers the save button beside photos you receive, not ones you send. */
 .tm-bubble[data-side="out"] .tm-im-save {
