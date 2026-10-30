@@ -25,7 +25,7 @@ Install the compiled package from an immutable GitHub Release:
 ```json
 {
   "dependencies": {
-    "@hraness/textmockups": "https://github.com/hraness/textmockups/releases/download/v0.10.0/hraness-textmockups-0.10.0.tgz"
+    "@hraness/textmockups": "https://github.com/hraness/textmockups/releases/download/v0.10.1/hraness-textmockups-0.10.1.tgz"
   }
 }
 ```
@@ -146,6 +146,8 @@ function EditableText({ field, messageId, value, children }: PhoneTextProps) {
 
 <Phone scene={scene} text={EditableText} />
 ```
+
+If an editing slot overlays an input on its display, put `data-textmock-measure-text` on the display element. `fitBubbles` measures that element so the input does not affect message wrapping.
 
 `field` is `"message"`, `"contact"`, `"clock"`, `"date"` (the label above a message), or `"receipt"` (the line below one), and `messageId` names the message. Each bubble also carries `data-message-id`, so an editor can attach its own menus.
 

@@ -245,3 +245,72 @@ describe("Phone", () => {
     );
   });
 });
+
+describe("iMessage bubble paint", () => {
+  const renderMessage = (message: Record<string, unknown>, interactions?: Record<string, unknown>) =>
+    renderToStaticMarkup(
+      <Phone scene={parseScene({
+        ...defaultScene,
+        messages: [{ id: "one", senderId: "me", ...message }],
+        ...(interactions ? { interactions } : {}),
+      })} />,
+    );
+
+  test("enlarged emoji, standalone stickers, and photos stay free of bubble paint", () => {
+    for (const message of [
+      { text: "🎉" },
+      { text: "❤️ 👍" },
+      { kind: "sticker", sticker: { emoji: "🌻" } },
+      { kind: "image", media: { width: 800, height: 600 } },
+    ]) {
+      expect(renderMessage(message)).not.toContain('class="tm-bubble-paint"');
+    }
+  });
+
+  test("ordinary text, including inline emoji and four emoji, keeps its paint", () => {
+    for (const text of ["See you soon", "Coffee later? ☕", "🎉🎉🎉🎉"])
+      expect(renderMessage({ text })).toContain('class="tm-bubble-paint"');
+  });
+
+  test("Send Later has an unfilled bubble with an outlined dashed tail", () => {
+    const html = renderMessage({ text: "Good morning", scheduledAt: "Tomorrow, 9:00 AM" });
+    expect(html).not.toContain('class="tm-bubble-paint"');
+    expect(html).toContain('class="tm-ghost-tail tm-scheduled-tail"');
+    expect(html).toContain('stroke-dasharray="4 4"');
+  });
+
+  test("Tapback preview carries the message's paint and tail in both directions", () => {
+    for (const senderId of ["me", "jamie"]) {
+      const html = renderMessage({ senderId, text: "The usual spot?" }, { tapbackPicker: { messageId: "one" } });
+      const preview = html.slice(html.indexOf('class="tm-message-context"'));
+      expect(preview).toContain(`data-side="${senderId === "me" ? "out" : "in"}"`);
+      expect(preview).toContain('class="tm-bubble-paint"');
+      expect(preview).toContain('class="tm-tail"');
+    }
+  });
+
+  test("Tapback keeps an emoji preview transparent", () => {
+    const html = renderMessage({ text: "🎉" }, { tapbackPicker: { messageId: "one" } });
+    const preview = html.slice(html.indexOf('class="tm-message-context"'));
+    expect(preview).toContain('data-emoji="true"');
+    expect(preview).not.toContain('class="tm-bubble-paint"');
+    expect(preview).not.toContain('class="tm-tail"');
+  });
+
+  test("an incoming edit gets its own label without an outgoing delivery receipt", () => {
+    const html = renderMessage({ senderId: "jamie", text: "Tomorrow at nine", edited: true, editedAt: "9:42 AM" });
+    expect(html).toContain('class="tm-receipt tm-incoming-edit"');
+    expect(html).toContain("Edited 9:42 AM");
+    expect(html).not.toContain("Delivered");
+    expect(html).not.toContain("· Edited");
+    expect(renderMessage({ senderId: "jamie", text: "Tomorrow at nine" })).not.toContain("tm-incoming-edit");
+  });
+
+  test("an incoming edit preserves the audio Keep action in the same metadata row", () => {
+    const html = renderMessage({ senderId: "jamie", kind: "voice", media: { duration: 5 }, edited: true });
+    expect(html).toContain('class="tm-receipt tm-incoming-edit"');
+    expect(html).toContain('class="tm-audio-keep"');
+    expect(html.match(/class="tm-receipt-row"/g)).toHaveLength(1);
+    expect(html).not.toContain("Delivered");
+  });
+});

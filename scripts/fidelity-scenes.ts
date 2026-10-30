@@ -1,0 +1,67 @@
+import { defaultScene } from "../src/presets.js";
+import { parseScene, type Scene } from "../src/schema.js";
+
+const conversation = (id: string, changes: Record<string, unknown>): Scene =>
+  parseScene({
+    ...defaultScene,
+    id: `fidelity-${id}`,
+    title: `iMessage ${id}`,
+    device: { model: "iphone-17-pro-max", frame: "none" },
+    timeline: { duration: 8, loop: false, fps: 30, tracks: [] },
+    messages: [],
+    ...changes,
+  });
+
+/** Synthetic fixtures for the drawing states most easily missed by a text-only preset. */
+export const fidelityScenes: Scene[] = [
+  conversation("incoming-edit", {
+    messages: [
+      { id: "edited", senderId: "jamie", text: "Tomorrow at nine", dateLabel: "Today 9:41 AM", edited: true, editedAt: "9:42 AM" },
+      { id: "followup", senderId: "jamie", text: "At the usual spot." },
+      { id: "reply", senderId: "me", text: "See you there.", status: "read", statusText: "Read 9:43 AM" },
+    ],
+  }),
+  conversation("emoji-stickers", {
+    messages: [
+      { id: "intro", senderId: "jamie", text: "A few favorites", dateLabel: "Today 9:41 AM" },
+      { id: "emoji-in", senderId: "jamie", text: "🎉" },
+      { id: "emoji-out", senderId: "me", text: "❤️ 👍" },
+      { id: "sticker-in", senderId: "jamie", kind: "sticker", sticker: { emoji: "🌻" } },
+      { id: "sticker-out", senderId: "me", kind: "sticker", sticker: { emoji: "✨" } },
+      { id: "read", senderId: "me", text: "See you soon", status: "read", statusText: "Read 9:42 AM" },
+    ],
+  }),
+  ...(["sms", "rcs"] as const).map((transport) =>
+    conversation(transport, {
+      header: { transport },
+      messages: [
+        { id: "in", senderId: "jamie", text: "On your way?", dateLabel: "Today 9:41 AM" },
+        { id: "out", senderId: "me", text: "Just leaving now." },
+        { id: "last", senderId: "me", text: "See you in ten minutes.", status: "read" },
+      ],
+      composer: { text: "Almost there" },
+    }),
+  ),
+  conversation("scheduled", {
+    messages: [
+      { id: "in", senderId: "jamie", text: "Coffee tomorrow?", dateLabel: "Today 9:41 AM" },
+      { id: "out", senderId: "me", text: "Sounds good." },
+      { id: "later", senderId: "me", text: "Good morning! Still on for coffee?", scheduledAt: "Tomorrow, 9:00 AM" },
+    ],
+  }),
+  ...(["in", "out"] as const).map((side) =>
+    conversation(`tapback-${side}`, {
+      messages: [
+        { id: "selected", senderId: side === "in" ? "jamie" : "me", text: "The usual spot?", dateLabel: "Today 9:41 AM" },
+      ],
+      interactions: { tapbackPicker: { messageId: "selected" } },
+    }),
+  ),
+  conversation("wrapping", {
+    messages: [
+      { id: "long", senderId: "jamie", text: "Meet me by the little bookstore around the corner. I'll bring coffee.", dateLabel: "Today 9:41 AM" },
+      { id: "short", senderId: "me", text: "Perfect!", reactions: [{ id: "heart", emoji: "❤️", participantId: "jamie" }] },
+      { id: "last", senderId: "me", text: "See you there.", status: "read", statusText: "Read 9:42 AM" },
+    ],
+  }),
+];

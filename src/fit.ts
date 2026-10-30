@@ -58,7 +58,9 @@ function textRects(bubble: HTMLElement) {
   const text = bubble.querySelector(":scope > .tm-bubble-text");
   if (!text) return [];
   const range = bubble.ownerDocument.createRange();
-  range.selectNodeContents(text);
+  // Editable slots can keep a transparent input over their native display.
+  // Measure only the display when the consumer identifies it explicitly.
+  range.selectNodeContents(text.querySelector("[data-textmock-measure-text]") ?? text);
   return [...range.getClientRects()].filter((rect) => rect.width > 0);
 }
 
