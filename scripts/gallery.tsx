@@ -5,6 +5,7 @@
 //   bun run gallery --docs                # regenerates the README images in docs/
 //   bun run gallery --shots .gallery --fidelity # synthetic iMessage edge states
 //   bun run gallery --shots .gallery --fidelity --only fidelity-incoming-edit
+//   bun run gallery --shots .gallery --fidelity --only fidelity-card- --check-card-stacking
 //
 // Screenshots use the Chromium build provisioned for the pinned playwright-core
 // (`PLAYWRIGHT_SKIP_BROWSER_GC=1 bun node_modules/playwright-core/cli.js install chromium`).
@@ -17,6 +18,7 @@ import { presets } from "../src/presets.js";
 import { heroScenes } from "./hero-scenes.js";
 import { fidelityScenes } from "./fidelity-scenes.js";
 import { chromiumLaunchOptions, provisionedChromium } from "./browser.js";
+import { inspectCardStacking } from "./card-stacking.js";
 
 const root = resolve(import.meta.dir, "..");
 const args = process.argv.slice(2);
@@ -85,10 +87,23 @@ if (shotsDir) {
     const page = await context.newPage();
     await page.goto(`file://${join(out, "index.html")}`);
     await page.waitForFunction(() => document.documentElement.dataset.fitted === "true");
+    const cardChecks: { id: string; result: ReturnType<typeof inspectCardStacking> }[] = [];
     for (const { id } of entries) {
       const path = join(shotsDir, `${id}.png`);
       await page.locator(`[data-shot="${id}"] .tm-device-stage`).screenshot({ path, omitBackground: true });
       console.log(path);
+      if (args.includes("--check-card-stacking"))
+        cardChecks.push({ id, result: await page.locator(`[data-shot="${id}"]`).evaluate(inspectCardStacking) });
+    }
+    if (cardChecks.length) {
+      await writeFile(join(shotsDir, "card-stacking.json"), JSON.stringify(cardChecks, null, 2));
+      const bad = cardChecks.flatMap(({ id, result }) => [
+        ...result.cards.filter((card) => !card.layered || card.occluded.length || !card.reactionsAbove).map((card) => `${id}: ${card.kind}/${card.side}/${card.content}: ${card.occluded.join("; ") || "invalid layer order"}`),
+        ...result.edited.filter((label) => label.color === label.receiptColor).map(() => `${id}: Edited needs its blue link color`),
+      ]);
+      if (!cardChecks.some(({ result }) => result.cards.length)) bad.push("No rendered card content was inspected");
+      if (bad.length) throw new Error(`Card stacking failed:\n${bad.join("\n")}`);
+      console.log(`Card stacking: ${cardChecks.reduce((sum, item) => sum + item.result.cards.length, 0)} visible content layers; reactions and Edited link colors checked.`);
     }
   } finally {
     await context?.close();

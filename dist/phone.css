@@ -4520,10 +4520,17 @@
 }
 .tm-bubble-paint {
   position: absolute;
+  z-index: 0;
   inset: 0;
   border-radius: inherit;
   clip-path: inset(0 round var(--tm-radius));
   background: var(--tm-in);
+}
+/* Keep every card's static text and icons above the screen-anchored paint, without
+   changing the bubble's stacking context or the layer of its tails and reactions. */
+.tm-phone[data-platform="imessage"] .tm-bubble > .tm-bubble-content {
+  position: relative;
+  z-index: 1;
 }
 .tm-paint {
   display: none;
@@ -5246,6 +5253,12 @@
 .tm-phone[data-platform="imessage"] .tm-receipt.tm-incoming-edit {
   padding-left: 14.07px;
   padding-right: 0;
+}
+.tm-phone[data-platform="imessage"] .tm-edited {
+  color: #007aff;
+}
+.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-edited {
+  color: #0a84ff;
 }
 /* Messages offers the save button beside photos you receive, not ones you send. */
 .tm-bubble[data-side="out"] .tm-im-save {

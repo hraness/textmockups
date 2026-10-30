@@ -677,7 +677,7 @@ export function Phone({
                           )}
                           {editing ? (
                             <>
-                              <span className="tm-inline-edit-text">
+                              <span className="tm-inline-edit-text tm-bubble-content">
                                 <ComposerText scene={scene} time={playhead} />
                               </span>
                               <span className="tm-edit-cancel">
@@ -784,17 +784,17 @@ export function Phone({
                                 {message.edited && (
                                   <span>
                                     {" "}
-                                    · Edited
-                                    {message.editedAt
-                                      ? ` ${message.editedAt}`
-                                      : ""}
+                                    ·{" "}
+                                    <span className={scene.platform === "imessage" ? "tm-edited" : undefined}>
+                                      Edited{message.editedAt ? ` ${message.editedAt}` : ""}
+                                    </span>
                                   </span>
                                 )}
                               </div>
                             )}
                             {incomingEdited && (
                               <div className="tm-receipt tm-incoming-edit">
-                                Edited{message.editedAt ? ` ${message.editedAt}` : ""}
+                                <span className="tm-edited">Edited{message.editedAt ? ` ${message.editedAt}` : ""}</span>
                               </div>
                             )}
                             {scene.platform === "imessage" &&
@@ -1544,7 +1544,7 @@ function MessageContent({ slots,
     const [width, height] = mediaBox(media?.width ?? 4, media?.height ?? 3);
     content = (
       <div
-        className="tm-media tm-im-media"
+        className="tm-media tm-im-media tm-bubble-content"
         style={{
           width,
           height,
@@ -1579,7 +1579,7 @@ function MessageContent({ slots,
   } else if (message.kind === "image" || message.kind === "video")
     content = (
       <div
-        className="tm-media"
+        className="tm-media tm-bubble-content"
         style={{ aspectRatio: `${media?.width ?? 4} / ${media?.height ?? 3}` }}
       >
         {message.kind === "video" && media?.videoUrl ? (
@@ -1622,7 +1622,7 @@ function MessageContent({ slots,
     content = <VoiceMessage slots={slots} message={message} scene={scene} />;
   if (message.kind === "file")
     content = (
-      <div className="tm-file">
+      <div className="tm-file tm-bubble-content">
         <span className="tm-file-icon">
           <Glyph name="file" size={28} />
         </span>
@@ -1645,7 +1645,7 @@ function MessageContent({ slots,
   )
     // A text post (an X post, say): its words, then the author under a small picture.
     content = (
-      <div className="tm-link-post">
+      <div className="tm-link-post tm-bubble-content">
         <p>{message.link.description}</p>
         <div>
           <slots.Image
@@ -1667,7 +1667,7 @@ function MessageContent({ slots,
     !message.link.image
   )
     content = (
-      <div className="tm-link-compact">
+      <div className="tm-link-compact tm-bubble-content">
         <slots.Image
           src={message.link.icon}
           alt=""
@@ -1681,7 +1681,7 @@ function MessageContent({ slots,
     );
   else if (message.kind === "link")
     content = (
-      <div className="tm-link-card">
+      <div className="tm-link-card tm-bubble-content">
         {message.link?.image ? (
           <slots.Image
             src={message.link.image}
@@ -1703,7 +1703,7 @@ function MessageContent({ slots,
     );
   if (message.kind === "location")
     content = (
-      <div className="tm-location">
+      <div className="tm-location tm-bubble-content">
         <div className="tm-map">
           <i />
           <i />
@@ -1721,7 +1721,7 @@ function MessageContent({ slots,
     );
   if (message.kind === "contact")
     content = (
-      <div className="tm-contact-card">
+      <div className="tm-contact-card tm-bubble-content">
         <Avatar slots={slots}
           name={message.sharedContact?.name ?? "Contact"}
           url={message.sharedContact?.avatar}
@@ -1734,17 +1734,17 @@ function MessageContent({ slots,
   if (message.kind === "sticker")
     content = message.sticker?.url ? (
       <slots.Image
-        className="tm-sticker"
+        className="tm-sticker tm-bubble-content"
         src={message.sticker.url}
         alt={message.sticker.alt}
         referrerPolicy="no-referrer"
       />
     ) : (
-      <span className="tm-sticker-emoji">{message.sticker?.emoji}</span>
+      <span className="tm-sticker-emoji tm-bubble-content">{message.sticker?.emoji}</span>
     );
   if (message.kind === "poll")
     content = (
-      <div className="tm-poll">
+      <div className="tm-poll tm-bubble-content">
         <strong>{message.poll?.question}</strong>
         <small>Poll</small>
         {message.poll?.options.map((option) => (
@@ -1770,7 +1770,7 @@ function MessageContent({ slots,
     );
   if (message.kind === "payment")
     content = (
-      <div className="tm-payment">
+      <div className="tm-payment tm-bubble-content">
         <span>{scene.platform === "imessage" ? "Cash" : "Payment"}</span>
         <strong>
           {new Intl.NumberFormat("en-US", {
@@ -2068,7 +2068,7 @@ function ImGallery({
     const [front, ...rest] = gallery.items;
     const [width, height] = mediaBox(front!.width, front!.height);
     return (
-      <div className="tm-im-deck">
+      <div className="tm-im-deck tm-bubble-content">
         <div className="tm-im-deck-label">
           <svg width="10.33" height="10" viewBox="0 0 10.33 10" aria-hidden="true">
             <rect x="0" y="0" width="4.67" height="4.5" rx="1.2" />
@@ -2097,7 +2097,7 @@ function ImGallery({
     );
   }
   return (
-    <div className="tm-im-collage">
+      <div className="tm-im-collage tm-bubble-content">
       {gallery.items.slice(0, 4).map((item, index) => {
         const [width, height] = mediaBox(item.width, item.height, [220.67, 229]);
         return (
@@ -2326,7 +2326,7 @@ function VoiceMessage({ slots, message, scene }: {
   return (
     <>
       <div
-        className="tm-voice"
+        className="tm-voice tm-bubble-content"
         data-wa={scene.platform === "whatsapp" || undefined}
         data-playing={media.playing || undefined}
       >
@@ -2373,7 +2373,7 @@ function VoiceMessage({ slots, message, scene }: {
         )}
       </div>
       {media.transcript && (
-        <span className="tm-audio-transcript">{media.transcript}</span>
+        <span className="tm-audio-transcript tm-bubble-content">{media.transcript}</span>
       )}
     </>
   );
