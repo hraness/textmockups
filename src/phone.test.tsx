@@ -313,4 +313,12 @@ describe("iMessage bubble paint", () => {
     expect(html.match(/class="tm-receipt-row"/g)).toHaveLength(1);
     expect(html).not.toContain("Delivered");
   });
+
+  test("Edited has its own link class while the outgoing receipt separator stays outside it", () => {
+    const outgoing = renderMessage({ text: "Tomorrow at nine", edited: true, status: "read", statusText: "Read 9:42 AM" });
+    expect(outgoing).toContain('· <span class="tm-edited">Edited</span>');
+    expect(outgoing).toContain('Read<span> 9:42\u202fAM</span>');
+    const incoming = renderMessage({ senderId: "jamie", text: "Tomorrow at nine", edited: true });
+    expect(incoming).toContain('<span class="tm-edited">Edited</span>');
+  });
 });

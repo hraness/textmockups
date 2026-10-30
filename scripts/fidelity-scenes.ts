@@ -14,6 +14,22 @@ const conversation = (id: string, changes: Record<string, unknown>): Scene =>
 
 /** Synthetic fixtures for the drawing states most easily missed by a text-only preset. */
 export const fidelityScenes: Scene[] = [
+  ...[
+    { kind: "voice", media: { duration: 12, transcript: "Meet me at the station." } },
+    { kind: "link", link: { url: "https://example.com/coffee", title: "A good coffee spot", description: "A small place near the station." } },
+    { kind: "file", file: { name: "Coffee plans.pdf", size: 24576, mimeType: "application/pdf" } },
+    { kind: "location", location: { latitude: 40.758, longitude: -73.986, label: "Station Square", address: "12 Example Street" } },
+    { kind: "contact", sharedContact: { name: "Alex Morgan", phone: "555-0100" } },
+    { kind: "poll", poll: { question: "Coffee or tea?", options: [{ id: "coffee", text: "Coffee", votes: 2 }, { id: "tea", text: "Tea", votes: 1 }], totalVotes: 3 } },
+    { kind: "payment", payment: { amount: 12.5, currency: "USD", note: "For the coffee" } },
+  ].map((card) => conversation(`card-${card.kind}`, {
+    messages: [
+      { id: "intro", senderId: "jamie", text: "Here you go.", dateLabel: "Today 9:41 AM", edited: true, editedAt: "9:42 AM" },
+      { ...card, id: "card-in", senderId: "jamie" },
+      { ...card, id: "card-out", senderId: "me", reactions: [{ id: "heart", emoji: "❤️", participantId: "jamie" }] },
+      { id: "reply", senderId: "me", text: "Thanks!", status: "read", statusText: "Read 9:43 AM", edited: true },
+    ],
+  })),
   conversation("incoming-edit", {
     messages: [
       { id: "edited", senderId: "jamie", text: "Tomorrow at nine", dateLabel: "Today 9:41 AM", edited: true, editedAt: "9:42 AM" },
