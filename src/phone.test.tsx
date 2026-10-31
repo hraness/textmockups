@@ -244,6 +244,24 @@ describe("Phone", () => {
       'viewBox="0 0 65 45"',
     );
   });
+  test("non-iMessage link tints retain their v1 midtone and alpha classification", () => {
+    for (const platform of ["whatsapp", "telegram", "instagram", "google-messages"] as const) {
+      for (const [tint, tone] of [["#ff0000", "dark"], ["#777777", "dark"], ["#ffffff00", "light"], ["#00000000", "dark"]]) {
+        const scene = parseScene({
+          ...defaultScene,
+          platform,
+          device: { model: "pixel-11-pro" },
+          messages: [{ id: "one", senderId: "me", kind: "link", link: { url: "https://example.com", title: "A link", tint } }],
+        });
+        const html = renderToStaticMarkup(<Phone scene={scene} />);
+        expect(html).toContain(`data-tint="${tone}"`);
+        expect(html).not.toContain("--tm-link-surface");
+        expect(html).not.toContain("--tm-link-domain");
+        const preview = renderToStaticMarkup(<Phone scene={parseScene({ ...scene, interactions: { tapbackPicker: { messageId: "one" } } })} />);
+        expect(preview.slice(preview.indexOf('class="tm-message-context"'))).not.toContain("data-tint=");
+      }
+    }
+  });
 });
 
 describe("iMessage bubble paint", () => {

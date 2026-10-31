@@ -8,6 +8,7 @@ import type { Message, MessageTextRun, Participant, Scene } from "./schema.js";
 import { evaluateScene, sceneTime } from "./timeline.js";
 import { Glyph } from "./glyph.js";
 import { PhoneText, type PhoneTextSlot } from "./text.js";
+import { legacyLinkTone, linkColors } from "./link-colors.js";
 import {
   AndroidKeyboard,
   AndroidNavBar,
@@ -332,6 +333,7 @@ export function Phone({
                   (participant) => participant.id === message.senderId,
                 )!;
                 const outgoing = person.isSelf;
+                const link = scene.platform === "imessage" && message.link?.tint ? linkColors(message.link.tint, scene) : undefined;
                 const previous = threadMessages[index - 1];
                 const next = threadMessages[index + 1];
                 const editing =
@@ -596,15 +598,11 @@ export function Phone({
                             ),
                             ...(message.link?.tint && {
                               "--tm-link-tint": message.link.tint,
+                              "--tm-link-surface": link?.surface,
+                              "--tm-link-domain": link?.domain,
                             }),
                           }}
-                          data-tint={
-                            message.link?.tint
-                              ? luminance(message.link.tint) < 0.45
-                                ? "dark"
-                                : "light"
-                              : undefined
-                          }
+                          data-tint={link?.tone ?? (message.link?.tint ? legacyLinkTone(message.link.tint) : undefined)}
                           role={
                             onSelectMessage && !exporting ? "button" : undefined
                           }
@@ -2642,6 +2640,7 @@ function NativeInteraction({ slots, scene, time }: {
     const outgoing = !!scene.participants.find(
       (person) => person.id === message.senderId,
     )?.isSelf;
+    const link = scene.platform === "imessage" && message.link?.tint ? linkColors(message.link.tint, scene) : undefined;
     const groups = groupedReactions(message, scene);
     return (
       <div
@@ -2724,6 +2723,8 @@ function NativeInteraction({ slots, scene, time }: {
             data-tail={scene.platform === "imessage" || undefined}
             data-emoji={(scene.platform === "imessage" && message.kind === "text" && emojiOnly(message.text)) || undefined}
             data-scheduled={(scene.platform === "imessage" && !!message.scheduledAt) || undefined}
+            data-tint={link?.tone}
+            style={link ? css({ "--tm-link-tint": message.link?.tint, "--tm-link-surface": link.surface, "--tm-link-domain": link.domain }) : undefined}
           >
             <BubblePaint platform={scene.platform} message={message} />
             {scene.platform === "imessage" &&
@@ -3452,15 +3453,6 @@ function messageStyle(
         ? undefined
         : `translate(${x}px, ${y}px) scale(${scale}) rotate(${rotate}deg)`,
   };
-}
-
-/** Relative luminance of a #rrggbb color, 0 to 1. */
-function luminance(hex: string): number {
-  const [r, g, b] = [1, 3, 5].map((at) => {
-    const c = parseInt(hex.slice(at, at + 2), 16) / 255;
-    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
 }
 
 function emojiOnly(text: string): boolean {

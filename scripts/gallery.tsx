@@ -116,7 +116,7 @@ if (shotsDir) {
       const bad: string[] = [];
       for (const { id, result } of finalChecks) {
         for (const link of result.links)
-          if (link.titleContrast < 4.5 || link.domainContrast < 4.5) bad.push(`${id}: unreadable ${link.tint} link footer`);
+          if (link.backgroundAlpha !== 1 || link.titleContrast < 4.5 || link.domainContrast < 4.5) bad.push(`${id}: unreadable or unresolved ${link.tint} link footer`);
         for (const glyph of result.glyphs) {
           if (palettes[glyph.kind] && glyph.body !== palettes[glyph.kind]) bad.push(`${id}: wrong ${glyph.kind} palette`);
           if (["like", "dislike"].includes(glyph.kind) && (glyph.svg || glyph.text !== (glyph.kind === "like" ? "👍" : "👎"))) bad.push(`${id}: thumb must be native emoji`);

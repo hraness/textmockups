@@ -2,6 +2,7 @@ import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-run
 import { evaluateScene, sceneTime } from "./timeline.js";
 import { Glyph } from "./glyph.js";
 import { PhoneText } from "./text.js";
+import { legacyLinkTone, linkColors } from "./link-colors.js";
 import { AndroidKeyboard, AndroidNavBar, AndroidStatusBar, MatIcon, } from "./android.js";
 import { deviceProfile, deviceStage, sceneOs, } from "./devices.js";
 import { conversationMembers, isGroupConversation, receiptReaders, } from "./conversation.js";
@@ -129,6 +130,7 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                     (os === "android" ? (_jsx("div", { className: "tm-cutout", "aria-hidden": "true" })) : (_jsx("div", { className: "tm-island", "aria-hidden": "true", children: _jsx("i", {}) })))) : (scene.device.frame === "iphone" && (_jsx("div", { className: "tm-island", "aria-hidden": "true", children: _jsx("i", {}) })))), _jsx(PhoneHeader, { slots: slots, scene: scene, person: other }), scene.platform !== "imessage" && pinned?.visible && (_jsx(PinnedBanner, { slots: slots, scene: scene })), _jsx("div", { className: "tm-thread", "data-textmock-thread": true, "data-has-pinned": (scene.platform !== "imessage" && pinned?.visible) || undefined, children: _jsxs("div", { className: "tm-thread-content", children: [threadMessages.map((message, index) => {
                                             const person = scene.participants.find((participant) => participant.id === message.senderId);
                                             const outgoing = person.isSelf;
+                                            const link = scene.platform === "imessage" && message.link?.tint ? linkColors(message.link.tint, scene) : undefined;
                                             const previous = threadMessages[index - 1];
                                             const next = threadMessages[index + 1];
                                             const editing = scene.platform === "imessage" &&
@@ -231,12 +233,10 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                                             ...messageStyle(message, playhead, time !== undefined),
                                                                             ...(message.link?.tint && {
                                                                                 "--tm-link-tint": message.link.tint,
+                                                                                "--tm-link-surface": link?.surface,
+                                                                                "--tm-link-domain": link?.domain,
                                                                             }),
-                                                                        }, "data-tint": message.link?.tint
-                                                                            ? luminance(message.link.tint) < 0.45
-                                                                                ? "dark"
-                                                                                : "light"
-                                                                            : undefined, role: onSelectMessage && !exporting ? "button" : undefined, tabIndex: onSelectMessage && !exporting ? 0 : undefined, "data-message-id": message.id, "aria-label": `${person.name}: ${message.text || message.kind}${message.status === "read" ? ", read" : ""}`, onClick: onSelectMessage && !exporting
+                                                                        }, "data-tint": link?.tone ?? (message.link?.tint ? legacyLinkTone(message.link.tint) : undefined), role: onSelectMessage && !exporting ? "button" : undefined, tabIndex: onSelectMessage && !exporting ? 0 : undefined, "data-message-id": message.id, "aria-label": `${person.name}: ${message.text || message.kind}${message.status === "read" ? ", read" : ""}`, onClick: onSelectMessage && !exporting
                                                                             ? () => onSelectMessage(message.id)
                                                                             : undefined, onKeyDown: onSelectMessage && !exporting
                                                                             ? (event) => {
@@ -786,6 +786,7 @@ function NativeInteraction({ slots, scene, time }) {
     const message = scene.messages.find((message) => message.id === picker?.messageId);
     if (picker?.visible && message) {
         const outgoing = !!scene.participants.find((person) => person.id === message.senderId)?.isSelf;
+        const link = scene.platform === "imessage" && message.link?.tint ? linkColors(message.link.tint, scene) : undefined;
         const groups = groupedReactions(message, scene);
         return (_jsxs("div", { className: "tm-native-overlay tm-reaction-overlay", "data-native-interaction": "tapback", "aria-hidden": "true", children: [scene.platform === "imessage" && groups.length > 0 && (_jsxs("div", { className: "tm-reaction-attributions", children: [groups.slice(0, 3).map((group) => (_jsxs("div", { title: `${group.emoji}: ${group.names.join(", ")}`, children: [_jsxs("span", { children: [group.emoji, group.names.length > 1 && (_jsx("small", { children: group.names.length }))] }), _jsxs("div", { children: [message.reactions
                                             .filter((reaction) => reaction.emoji === group.emoji)
@@ -798,7 +799,7 @@ function NativeInteraction({ slots, scene, time }) {
                                 .map((group) => `${group.emoji}: ${group.names.join(", ")}`)
                                 .join("; "), children: ["+", groups
                                     .slice(3)
-                                    .reduce((total, group) => total + group.names.length, 0)] }))] })), _jsxs("div", { className: "tm-message-context", "data-side": outgoing ? "out" : "in", children: [_jsxs("div", { className: "tm-tapback-picker", children: [picker.emojis.map((emoji, index) => (_jsx("span", { "data-picked": picker.selectedEmoji === emoji || undefined, "data-tapback": scene.platform === "imessage" ? TAPBACKS[emoji] : undefined, children: scene.platform === "imessage" ? (_jsx("span", { className: "tm-tapback-glyph", children: _jsx(TapbackSymbol, { emoji: emoji }) })) : emoji }, index))), _jsx(Glyph, { name: "plus", size: 19 })] }), _jsxs("div", { className: "tm-bubble", "data-side": outgoing ? "out" : "in", "data-kind": message.kind, "data-tail": scene.platform === "imessage" || undefined, "data-emoji": (scene.platform === "imessage" && message.kind === "text" && emojiOnly(message.text)) || undefined, "data-scheduled": (scene.platform === "imessage" && !!message.scheduledAt) || undefined, children: [_jsx(BubblePaint, { platform: scene.platform, message: message }), scene.platform === "imessage" &&
+                                    .reduce((total, group) => total + group.names.length, 0)] }))] })), _jsxs("div", { className: "tm-message-context", "data-side": outgoing ? "out" : "in", children: [_jsxs("div", { className: "tm-tapback-picker", children: [picker.emojis.map((emoji, index) => (_jsx("span", { "data-picked": picker.selectedEmoji === emoji || undefined, "data-tapback": scene.platform === "imessage" ? TAPBACKS[emoji] : undefined, children: scene.platform === "imessage" ? (_jsx("span", { className: "tm-tapback-glyph", children: _jsx(TapbackSymbol, { emoji: emoji }) })) : emoji }, index))), _jsx(Glyph, { name: "plus", size: 19 })] }), _jsxs("div", { className: "tm-bubble", "data-side": outgoing ? "out" : "in", "data-kind": message.kind, "data-tail": scene.platform === "imessage" || undefined, "data-emoji": (scene.platform === "imessage" && message.kind === "text" && emojiOnly(message.text)) || undefined, "data-scheduled": (scene.platform === "imessage" && !!message.scheduledAt) || undefined, "data-tint": link?.tone, style: link ? css({ "--tm-link-tint": message.link?.tint, "--tm-link-surface": link.surface, "--tm-link-domain": link.domain }) : undefined, children: [_jsx(BubblePaint, { platform: scene.platform, message: message }), scene.platform === "imessage" &&
                                     message.kind !== "sticker" &&
                                     !emojiOnly(message.text) && (_jsx(BubbleTail, { platform: scene.platform, scheduled: !!message.scheduledAt })), _jsx(MessageContent, { slots: slots, message: message, scene: scene, time: time, tail: true })] }), picker.showMenu && (_jsxs("div", { className: "tm-message-menu", children: [_jsxs("span", { children: ["Reply", _jsx(NativeIcon, { name: "reply" })] }), scene.platform === "imessage" && (_jsxs("span", { children: ["Add Sticker", _jsx(Glyph, { name: "sticker", size: 17 })] })), _jsxs("span", { children: ["Copy", _jsx(Glyph, { name: "file", size: 17 })] }), outgoing && (_jsxs("span", { children: ["Edit", _jsx(NativeIcon, { name: "edit" })] })), _jsxs("span", { children: ["More\u2026", _jsx(Glyph, { name: "more", size: 17 })] })] }))] })] }));
     }
@@ -1042,14 +1043,6 @@ function messageStyle(message, time, animate) {
             ? undefined
             : `translate(${x}px, ${y}px) scale(${scale}) rotate(${rotate}deg)`,
     };
-}
-/** Relative luminance of a #rrggbb color, 0 to 1. */
-function luminance(hex) {
-    const [r, g, b] = [1, 3, 5].map((at) => {
-        const c = parseInt(hex.slice(at, at + 2), 16) / 255;
-        return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-    });
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 function emojiOnly(text) {
     if (!text.trim() ||

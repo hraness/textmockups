@@ -44,6 +44,12 @@ export const fidelityScenes: Scene[] = [
     { id: "untinted", tint: "" },
     { id: "light-tint", tint: "#f4e4c8" },
     { id: "dark-tint", tint: "#263544" },
+    { id: "transparent-white", tint: "#ffffff00" },
+    { id: "transparent-black", tint: "#00000000" },
+    { id: "half-white", tint: "#ffffff80" },
+    { id: "half-black", tint: "#00000080" },
+    { id: "red", tint: "#ff0000" },
+    { id: "midgray", tint: "#777777" },
   ].map(({ id, tint }) => conversation(`final-link-${id}`, {
     messages: [
       { id: "intro", senderId: "jamie", text: "A place for coffee", dateLabel: "Today 9:41 AM" },

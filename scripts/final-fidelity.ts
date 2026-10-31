@@ -22,6 +22,7 @@ export function inspectFinalFidelity(figure: Element) {
       tint: bubble.dataset.tint ?? "default",
       sampledTint: bubble.style.getPropertyValue("--tm-link-tint"),
       background,
+      backgroundAlpha: rgba(background)[3] ?? 1,
       titleColor: getComputedStyle(title).color,
       domainColor: getComputedStyle(domain).color,
       titleContrast: contrast(getComputedStyle(title).color, background),
