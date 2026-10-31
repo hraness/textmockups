@@ -4492,6 +4492,13 @@
 .tm-phone[data-platform="imessage"] .tm-message-block[data-reply] + .tm-message-block {
   margin-top: 32px;
 }
+/* Inside a run, a change of sender leaves 14pt for the spine. */
+.tm-phone[data-platform="imessage"] .tm-message-block[data-reply] + .tm-message-block[data-thread] {
+  margin-top: 4px;
+}
+.tm-phone[data-platform="imessage"] .tm-message-block[data-reply] + .tm-message-block[data-thread][data-first] {
+  margin-top: 14px;
+}
 .tm-phone[data-platform="imessage"] .tm-message-stack {
   max-width: calc(100% - 89.67px);
 }
@@ -4802,10 +4809,18 @@
 }
 .tm-reply-ghost {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   margin-bottom: 9px;
 }
 .tm-reply-ghost[data-side="out"] {
-  justify-content: flex-end;
+  align-items: flex-end;
+}
+.tm-reply-ghost[data-count] {
+  margin-bottom: 5px;
+}
+.tm-reply-ghost > .tm-reply-count {
+  padding: 0 14px;
 }
 .tm-phone[data-platform="imessage"] .tm-reply-ghost[data-side="in"] {
   padding-left: var(--tm-avatar-gutter, 0px);
@@ -4849,6 +4864,128 @@
 }
 .tm-message-row[data-side="out"] .tm-reply-count {
   text-align: right;
+}
+
+/* A quoted text original is compact: 12pt (0.71 of the body) on one line, outlined and
+   written in its sender's color. Link and media originals keep the full-size ghost. */
+.tm-phone[data-platform="imessage"] .tm-bubble.tm-ghost[data-compact] {
+  min-width: 0;
+  min-height: 0;
+  padding: 7.5px 10.5px;
+  font-size: calc(var(--tm-type) * 0.71);
+  line-height: calc(var(--tm-type) * 0.84);
+}
+.tm-phone[data-platform="imessage"] .tm-bubble.tm-ghost[data-compact][data-side="out"] {
+  color: #0a7aff;
+}
+.tm-ghost[data-compact] > .tm-bubble-text {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 1;
+  color: inherit;
+}
+.tm-ghost[data-compact] > .tm-ghost-tail {
+  transform: scale(0.71);
+  transform-origin: 100% 0;
+}
+.tm-ghost[data-compact][data-side="in"] > .tm-ghost-tail {
+  transform: translateX(17.04px) scale(-0.71, 0.71);
+  transform-origin: 0 0;
+}
+
+/* The spine of a reply run, 14pt in from the left: an arc from the quote, a loop beside
+   each of my replies, and an arc into my last one. It stops 6pt above their replies. */
+.tm-thread-arc,
+.tm-thread-spine,
+.tm-thread-end,
+.tm-thread-loop {
+  position: absolute;
+  z-index: -1;
+  box-sizing: border-box;
+  border: 0 solid #9e9e9e;
+  pointer-events: none;
+}
+.tm-thread-arc,
+.tm-thread-end {
+  width: 33px;
+  border-radius: 13px 0 0 0;
+  border-width: 4px 0 0 4px;
+}
+.tm-thread-arc {
+  top: calc(50% - 2px);
+  bottom: -9px;
+}
+.tm-reply-ghost[data-count] .tm-thread-arc {
+  bottom: -24px;
+}
+.tm-thread-arc[data-gap] {
+  bottom: -3px;
+}
+.tm-reply-ghost[data-count] .tm-thread-arc[data-gap] {
+  bottom: -18px;
+}
+.tm-thread-end {
+  top: -4px;
+  height: calc(50% + 6px);
+  border-radius: 0 0 0 13px;
+  border-width: 0 0 4px 4px;
+}
+.tm-thread-spine {
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #9e9e9e;
+}
+.tm-thread-spine[data-gap] {
+  border-radius: 0 0 2px 2px;
+}
+.tm-message-row:has(> .tm-thread-spine) {
+  position: relative;
+}
+/* Between messages: from the one above to this one's top, short of their bubble. */
+.tm-thread-spine[data-at="top"] {
+  top: auto;
+  bottom: auto;
+  height: 12px;
+  margin-top: -12px;
+}
+.tm-thread-spine[data-at="top"][data-gap] {
+  height: 6px;
+}
+.tm-date:has(> .tm-thread-spine) {
+  position: relative;
+}
+/* A date inside the run does not break it. */
+.tm-thread-spine[data-at="date"] {
+  top: -16px;
+}
+.tm-message-row[data-reactions] .tm-thread-end {
+  top: -32px;
+  height: calc(50% + 34px);
+}
+/* Their original sits on the spine's side, so the spine starts under its quote. */
+.tm-ghost[data-side="in"] > .tm-thread-arc {
+  top: calc(100% + 6px);
+  width: 4px;
+  border-radius: 0;
+}
+.tm-reply-ghost[data-count] > .tm-ghost[data-side="in"] > .tm-thread-arc {
+  display: none;
+}
+.tm-thread-loop {
+  top: calc(50% - 6.5px);
+  width: 13px;
+  height: 13px;
+  border-width: 3.5px;
+  border-radius: 50%;
+}
+.tm-phone[data-theme="dark"] :is(.tm-thread-arc, .tm-thread-end, .tm-thread-loop) {
+  border-color: #5a5a5e;
+}
+.tm-phone[data-theme="dark"] .tm-thread-spine {
+  background: #5a5a5e;
 }
 
 /* Link previews: a compact card for a site icon, a large card with a sampled footer for an image. */
@@ -5287,4 +5424,7 @@
 /* Messages offers the save button beside photos you receive, not ones you send. */
 .tm-bubble[data-side="out"] .tm-im-save {
   display: none;
+}
+.tm-message-block:has(> .tm-thread-spine) {
+  position: relative;
 }
