@@ -23,6 +23,22 @@ export const fidelityScenes: Scene[] = [
       { id: "sticker", senderId: "me", kind: "sticker", sticker: { emoji: "✨" } },
     ],
   })),
+  // iOS 26 reply runs: one compact quote of a text original, a spine with loops past my
+  // replies and an arc into my last one, and a single reply bracketed to its quote.
+  conversation("reply-runs", {
+    messages: [
+      { id: "o", senderId: "me", text: "Textmock visual check", dateLabel: "Yesterday 10:43 PM" },
+      { id: "x", senderId: "jamie", text: "Textmock visual check" },
+      { id: "r1", senderId: "jamie", text: "Nine works for me", replyTo: "o" },
+      { id: "r2", senderId: "me", text: "Nine works for me.", replyTo: "o", edited: true },
+      { id: "r3", senderId: "jamie", text: "Nine works for me", replyTo: "o" },
+      { id: "r4", senderId: "jamie", text: "reply check", replyTo: "o", dateLabel: "Today 4:08 PM" },
+      { id: "r5", senderId: "me", text: "reply check", replyTo: "o" },
+      { id: "a", senderId: "me", text: "single A" },
+      { id: "b", senderId: "me", text: "single B" },
+      { id: "c", senderId: "me", text: "reply to A", replyTo: "a" },
+    ],
+  }),
   ...(["me", "jamie"] as const).flatMap((actor) => {
     const symbols = ["❤️", "👍", "👎", "HAHA", "‼️", "❓", "👍🏽", "😂"];
     const messages = symbols.map((emoji, index) => ({

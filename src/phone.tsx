@@ -397,6 +397,17 @@ export function Phone({
                   scene.platform === "imessage" && next?.replyTo === message.id
                     ? next
                     : undefined;
+                // Consecutive replies to one original form a run: one quote of the original
+                // above the first, and a spine down the left past the rest.
+                const thread =
+                  scene.platform === "imessage" && !!reply ? reply.id : undefined;
+                const runStart = !!thread && previous?.replyTo !== thread;
+                const runEnd = !!thread && next?.replyTo !== thread;
+                const spine = !!thread && !(runStart && runEnd && replyAdjacent);
+                const spineInset = 14 + (rowAvatars ? 39 : 0);
+                const quoteCount = thread
+                  ? threadMessages.filter((item) => item.replyTo === thread).length
+                  : 0;
                 const replyCount =
                   scene.platform === "imessage"
                     ? threadMessages.filter(
@@ -445,6 +456,7 @@ export function Phone({
                     data-first={first || undefined}
                     data-last={last || undefined}
                     data-reply={(scene.platform === "imessage" && !!reply) || undefined}
+                    data-thread={(thread && !runStart) || undefined}
                     data-tapback={tapback || undefined}
                   >
                     {scene.platform !== "imessage" &&
@@ -458,6 +470,14 @@ export function Phone({
                       )}
                     {message.dateLabel && (
                       <div className="tm-date">
+                        {spine && !runStart && (
+                          <i
+                            className="tm-thread-spine"
+                            data-at="date"
+                            aria-hidden="true"
+                            style={{ left: spineInset }}
+                          />
+                        )}
                         <slots.Text field="date" messageId={message.id} value={message.dateLabel}>
                           <DateLabel
                             label={message.dateLabel}
@@ -477,47 +497,64 @@ export function Phone({
                           </span>
                         </div>
                       )}
-                    {scene.platform === "imessage" &&
-                      reply &&
-                      !replyAdjacent && (
+                    {thread && runStart && !replyAdjacent && reply && (
+                      <div
+                        className="tm-reply-ghost"
+                        data-side={reply.senderId === self.id ? "out" : "in"}
+                        data-count={quoteCount > 1 || undefined}
+                      >
                         <div
-                          className="tm-reply-ghost"
-                          data-side={
-                            reply.senderId === self.id ? "out" : "in"
-                          }
+                          className="tm-bubble tm-ghost"
+                          data-side={reply.senderId === self.id ? "out" : "in"}
+                          data-kind={reply.kind}
+                          data-compact={reply.kind === "text" || undefined}
+                          data-tail
+                          aria-hidden="true"
                         >
-                          <div
-                            className="tm-bubble tm-ghost"
-                            data-side={
-                              reply.senderId === self.id ? "out" : "in"
-                            }
-                            data-kind={reply.kind}
-                            data-tail
+                          <GhostTail />
+                          <MessageContent
+                            slots={slots}
+                            message={{ ...reply, effect: "none" }}
+                            scene={scene}
+                            time={playhead}
+                          />
+                          <i
+                            className="tm-thread-arc"
+                            data-gap={!outgoing || undefined}
                             aria-hidden="true"
-                          >
-                            <GhostTail />
-                            <MessageContent
-                              slots={slots}
-                              message={{ ...reply, effect: "none" }}
-                              scene={scene}
-                              time={playhead}
-                            />
-                            <ReplyHook
-                              from={reply.senderId === self.id ? "out" : "in"}
-                              to={outgoing ? "out" : "in"}
-                              drop={
-                                9 + (message.reactions.length ? 27.33 : 0) - 5
-                              }
-                              offset={!outgoing && rowAvatars ? 39 : 0}
-                            />
-                          </div>
+                            style={
+                              reply.senderId === self.id
+                                ? { right: `calc(var(--tm-thread-w) - ${spineInset + 33}px)` }
+                                : { left: `calc(${spineInset}px - var(--tm-avatar-gutter, 0px))` }
+                            }
+                          />
                         </div>
-                      )}
+                        {quoteCount > 1 && (
+                          <div className="tm-reply-count">{quoteCount} Replies</div>
+                        )}
+                      </div>
+                    )}
+                    {spine && !runStart && (
+                      <i
+                        className="tm-thread-spine"
+                        data-at="top"
+                        data-gap={!outgoing || undefined}
+                        aria-hidden="true"
+                        style={{ left: spineInset }}
+                      />
+                    )}
                     <div
                       className="tm-message-row"
                       data-side={outgoing ? "out" : "in"}
                       data-reactions={message.reactions.length > 0 || undefined}
                     >
+                      {spine && !runEnd && (
+                        <i
+                          className="tm-thread-spine"
+                          aria-hidden="true"
+                          style={{ left: spineInset }}
+                        />
+                      )}
                       {!outgoing && rowAvatars && (
                         <Avatar slots={slots}
                           name={person.name}
@@ -638,6 +675,15 @@ export function Phone({
                             !emojiOnly(message.text) && (
                               <BubbleTail platform={scene.platform} scheduled={!!message.scheduledAt} />
                             )}
+                          {spine && outgoing && (
+                            <i
+                              className={runEnd ? "tm-thread-end" : "tm-thread-loop"}
+                              aria-hidden="true"
+                              style={{
+                                right: `calc(var(--tm-thread-w) - ${spineInset + (runEnd ? 33 : 18.5)}px)`,
+                              }}
+                            />
+                          )}
                           {repliedBy && (
                             <ReplyHook
                               from={outgoing ? "out" : "in"}

@@ -19,6 +19,38 @@ describe("Phone", () => {
       expect(html).toContain(`data-platform="${preset.scene.platform}"`);
     }
   });
+  test("iMessage quotes a reply run's original once and threads a spine past the run", () => {
+    const me = "me";
+    const ben = "ben";
+    const scene = parseScene({
+      ...defaultScene,
+      platform: "imessage",
+      participants: [
+        { id: me, name: "Me", isSelf: true },
+        { id: ben, name: "Ben" },
+      ],
+      contact: { kind: "direct", name: "Ben", participantIds: [ben] },
+      messages: [
+        { id: "o", senderId: me, text: "Original" },
+        { id: "x", senderId: ben, text: "Between" },
+        { id: "r1", senderId: ben, text: "First", replyTo: "o" },
+        { id: "r2", senderId: me, text: "Second", replyTo: "o" },
+        { id: "r3", senderId: ben, text: "Third", replyTo: "o", dateLabel: "Today 4:08 PM" },
+        { id: "r4", senderId: me, text: "Fourth", replyTo: "o" },
+        { id: "l", senderId: ben, text: "", kind: "link", link: { url: "https://example.com", title: "Example" } },
+        { id: "y", senderId: me, text: "Between" },
+        { id: "lr", senderId: me, text: "On the link", replyTo: "l" },
+      ],
+    });
+    const html = renderToStaticMarkup(<Phone scene={scene} />);
+    // One compact quote for the text run, a full ghost for the link.
+    expect(html.match(/tm-reply-ghost"/g)).toHaveLength(2);
+    expect(html.match(/data-compact="true"/g)).toHaveLength(1);
+    expect(html).toContain("4 Replies");
+    expect(html.match(/tm-thread-loop/g)).toHaveLength(1);
+    expect(html.match(/tm-thread-end/g)).toHaveLength(2);
+    expect(html).toContain('data-at="date"');
+  });
   test("is deterministic for a fixed playhead", () => {
     const render = () =>
       renderToStaticMarkup(<Phone scene={defaultScene} time={2.5} />);
