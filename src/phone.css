@@ -2637,7 +2637,7 @@
   max-height: none;
   padding: 18px 0 0;
   border-radius: 28px;
-  background: #f6f6f8;
+  background: #f9f9f9;
   box-shadow: 0 8px 30px rgb(0 0 0 / 0.14);
 }
 .tm-phone[data-platform="imessage"][data-theme="dark"]
