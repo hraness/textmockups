@@ -458,6 +458,9 @@ export function Phone({
                     data-reply={(scene.platform === "imessage" && !!reply) || undefined}
                     data-thread={(thread && !runStart) || undefined}
                     data-tapback={tapback || undefined}
+                    data-lifted={(scene.platform === "imessage" &&
+                      scene.interactions?.tapbackPicker?.visible &&
+                      scene.interactions.tapbackPicker.messageId === message.id) || undefined}
                   >
                     {scene.platform !== "imessage" &&
                       scene.conversation?.unread?.visible &&
@@ -2572,6 +2575,70 @@ function NativeIcon({
   );
 }
 
+const DEFAULT_PICKER = ["❤️", "👍", "👎", "😂", "‼️", "❓"];
+// iOS 26 offers the six tapbacks, with HA HA in place of 😂, then recent emoji clipped at the bar's end.
+const IMESSAGE_PICKER = ["❤️", "👍", "👎", "HAHA", "‼️", "❓", "😂", "❤️"];
+
+function pickerEmojis(scene: Scene, emojis: string[]) {
+  return scene.platform === "imessage" &&
+    emojis.length === DEFAULT_PICKER.length &&
+    emojis.every((emoji, index) => emoji === DEFAULT_PICKER[index])
+    ? IMESSAGE_PICKER
+    : emojis;
+}
+
+function MenuIcon({
+  name,
+}: {
+  name: "reply" | "sticker" | "copy" | "translate" | "select" | "more";
+}) {
+  return (
+    <svg
+      width="23"
+      height="23"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {name === "reply" ? (
+        <path d="M10 5.5 3.5 11.5 10 17.5v-3.6c4.6-.6 7.6.9 10.5 4.6-.7-6-4.1-9.6-10.5-9.9V5.5Z" />
+      ) : name === "sticker" ? (
+        <>
+          <path d="M21 12a9 9 0 1 0-9.4 9" />
+          <path d="M21 12c-5 0-9.4 4-9.4 9 1.3 0 2.4-.3 3.5-.8C18.4 18.6 20.6 15.6 21 12Z" />
+          <circle cx="5.5" cy="18.5" r="4" fill="var(--tm-menu-fill, #fff)" />
+          <path d="M5.5 16.4v4.2M3.4 18.5h4.2" />
+        </>
+      ) : name === "copy" ? (
+        <>
+          <path d="M8.5 7V5.5a2 2 0 0 1 2-2h4.8l4.2 4.2v8.8a2 2 0 0 1-2 2h-1.5" />
+          <path d="M4.5 9.5a2 2 0 0 1 2-2h4.8l4.2 4.2v7.8a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2v-10Z" />
+        </>
+      ) : name === "translate" ? (
+        <>
+          <rect x="2.5" y="3.5" width="11" height="10" rx="2" />
+          <path d="M5.5 11 8 5.5l2.5 5.5M6.3 9.3h3.4" />
+          <rect x="10.5" y="10.5" width="11" height="10" rx="2" fill="currentColor" />
+          <path d="m14 13.5 4 4m0-4-4 4" stroke="var(--tm-menu-fill, #fff)" />
+        </>
+      ) : name === "select" ? (
+        <path d="M7 2.5v14.5h14.5M3 7h11.5v14.5" />
+      ) : (
+        <>
+          <circle cx="12" cy="12" r="9.5" />
+          <circle cx="7.8" cy="12" r="0.6" fill="currentColor" />
+          <circle cx="12" cy="12" r="0.6" fill="currentColor" />
+          <circle cx="16.2" cy="12" r="0.6" fill="currentColor" />
+        </>
+      )}
+    </svg>
+  );
+}
+
 function FocusStatus({ scene }: { scene: Scene }) {
   const focus = scene.conversation?.focus;
   if (scene.platform !== "imessage" || !focus?.visible) return null;
@@ -2749,19 +2816,34 @@ function NativeInteraction({ slots, scene, time }: {
         )}
         <div className="tm-message-context" data-side={outgoing ? "out" : "in"}>
           <div className="tm-tapback-picker">
-            {picker.emojis.map((emoji, index) => (
+            {pickerEmojis(scene, picker.emojis).map((emoji, index, list) => {
+              const recent = list === IMESSAGE_PICKER && index >= DEFAULT_PICKER.length;
+              return (
               <span
                 key={index}
-                data-picked={picker.selectedEmoji === emoji || undefined}
-                data-tapback={scene.platform === "imessage" ? TAPBACKS[emoji] : undefined}
+                data-picked={(!recent && picker.selectedEmoji === emoji) || undefined}
+                data-tapback={scene.platform === "imessage" && !recent ? TAPBACKS[emoji] : undefined}
+                data-recent={recent || undefined}
               >
-                {scene.platform === "imessage" ? (
+                {scene.platform === "imessage" && !recent ? (
                   <span className="tm-tapback-glyph"><TapbackSymbol emoji={emoji} /></span>
                 ) : emoji}
               </span>
-            ))}
-            <Glyph name="plus" size={19} />
+              );
+            })}
+            {scene.platform !== "imessage" && <Glyph name="plus" size={19} />}
           </div>
+          <div className="tm-lifted">
+          {scene.platform === "imessage" && (
+            <span className="tm-emoji-button">
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="11" fill="currentColor" />
+                <ellipse cx="8.6" cy="9.3" rx="1.4" ry="1.9" fill="var(--tm-menu-fill)" />
+                <ellipse cx="15.4" cy="9.3" rx="1.4" ry="1.9" fill="var(--tm-menu-fill)" />
+                <path d="M6.6 13.4h10.8a5.4 5.4 0 0 1-10.8 0Z" fill="var(--tm-menu-fill)" />
+              </svg>
+            </span>
+          )}
           <div
             className="tm-bubble"
             data-side={outgoing ? "out" : "in"}
@@ -2780,18 +2862,28 @@ function NativeInteraction({ slots, scene, time }: {
               )}
             <MessageContent slots={slots} message={message} scene={scene} time={time} tail />
           </div>
-          {picker.showMenu && (
+          </div>
+          {picker.showMenu && scene.platform === "imessage" && (
+            <div className="tm-message-menu">
+              <span><MenuIcon name="reply" />Reply</span>
+              <span><MenuIcon name="sticker" />Attach Sticker</span>
+              <hr />
+              <span><MenuIcon name="copy" />Copy</span>
+              {message.kind === "text" && (
+                <>
+                  <span><MenuIcon name="translate" />Translate</span>
+                  <span><MenuIcon name="select" />Select</span>
+                </>
+              )}
+              <span><MenuIcon name="more" />More…</span>
+            </div>
+          )}
+          {picker.showMenu && scene.platform !== "imessage" && (
             <div className="tm-message-menu">
               <span>
                 Reply
                 <NativeIcon name="reply" />
               </span>
-              {scene.platform === "imessage" && (
-                <span>
-                  Add Sticker
-                  <Glyph name="sticker" size={17} />
-                </span>
-              )}
               <span>
                 Copy
                 <Glyph name="file" size={17} />

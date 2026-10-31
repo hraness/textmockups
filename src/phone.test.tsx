@@ -339,6 +339,18 @@ describe("iMessage bubble paint", () => {
     }
   });
 
+  test("iMessage long-press lifts the message with the iOS 26 bar and menu", () => {
+    const html = renderMessage({ text: "The usual spot?" }, { tapbackPicker: { messageId: "one" } });
+    const preview = html.slice(html.indexOf('class="tm-message-context"'));
+    expect(html).toContain('data-lifted="true"');
+    expect(preview.match(/data-tapback="haha"/g)).toHaveLength(1);
+    expect(preview.match(/data-recent="true"/g)).toHaveLength(2);
+    expect(preview).toContain('class="tm-emoji-button"');
+    const menu = /class="tm-message-menu">(.*?)<\/div>/.exec(preview)?.[1] ?? "";
+    expect(menu.replace(/<[^>]+>/g, "|").split("|").filter(Boolean)).toEqual(["Reply", "Attach Sticker", "Copy", "Translate", "Select", "More…"]);
+    expect(menu).toContain("<hr/>");
+  });
+
   test("Tapback keeps an emoji preview transparent", () => {
     const html = renderMessage({ text: "🎉" }, { tapbackPicker: { messageId: "one" } });
     const preview = html.slice(html.indexOf('class="tm-message-context"'));
