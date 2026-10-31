@@ -210,6 +210,8 @@ export const InteractionStateSchema = z.strictObject({
         .max(16)
         .default(["❤️", "👍", "👎", "😂", "‼️", "❓"]),
       showMenu: z.boolean().default(true),
+      /** iMessage adds Edit and Undo Send for a message you just sent. */
+      undoable: z.boolean().default(false),
     })
     .optional(),
   editHistory: z

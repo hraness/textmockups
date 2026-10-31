@@ -351,6 +351,18 @@ describe("iMessage bubble paint", () => {
     expect(menu).toContain("<hr/>");
   });
 
+  test("iMessage long-press on a just-sent message offers Edit and Undo Send", () => {
+    const labels = (html: string) => {
+      const preview = html.slice(html.indexOf('class="tm-message-context"'));
+      const menu = /class="tm-message-menu">(.*?)<\/div>/.exec(preview)?.[1] ?? "";
+      return menu.replace(/<hr\/>/g, "|—|").replace(/<[^>]+>/g, "|").split("|").filter(Boolean);
+    };
+    expect(labels(renderMessage({ text: "Running late" }, { tapbackPicker: { messageId: "one", undoable: true } }))).toEqual([
+      "Reply", "Attach Sticker", "—", "Edit", "Undo Send", "—", "Copy", "Translate", "Select", "More…",
+    ]);
+    expect(labels(renderMessage({ senderId: "jamie", text: "Running late" }, { tapbackPicker: { messageId: "one", undoable: true } }))).not.toContain("Edit");
+  });
+
   test("Tapback keeps an emoji preview transparent", () => {
     const html = renderMessage({ text: "🎉" }, { tapbackPicker: { messageId: "one" } });
     const preview = html.slice(html.indexOf('class="tm-message-context"'));
