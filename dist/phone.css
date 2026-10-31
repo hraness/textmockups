@@ -4500,7 +4500,8 @@
   min-height: 40px;
   box-sizing: border-box;
   padding: 9.86px 14.07px;
-  line-height: 20.28px;
+  /* Keep the measured 20.28pt line at 17pt, including when Dynamic Type grows it. */
+  line-height: calc(var(--tm-type) * 1.1929411765);
   letter-spacing: 0;
 }
 .tm-phone[data-platform="imessage"] .tm-bubble[data-emoji] {
@@ -4688,6 +4689,34 @@
   inset: 0;
   background: linear-gradient(var(--tm-out-top), var(--tm-out-bottom));
 }
+.tm-phone[data-platform="imessage"] .tm-tapback-glyph {
+  display: grid;
+  place-items: center;
+  line-height: 1;
+}
+.tm-phone[data-platform="imessage"] [data-tapback="question"] > .tm-tapback-glyph {
+  --tm-puff-edge: #8250bf;
+  --tm-puff-body: #bc8ce8;
+  --tm-puff-hi: #edd8ff;
+}
+.tm-phone[data-platform="imessage"] [data-tapback="emphasize"] > .tm-tapback-glyph {
+  --tm-puff-edge: #d54d54;
+  --tm-puff-body: #ff7c78;
+  --tm-puff-hi: #ffd6c8;
+}
+.tm-phone[data-platform="imessage"] [data-tapback="haha"] > .tm-tapback-glyph {
+  --tm-puff-edge: #278fae;
+  --tm-puff-body: #61d5ee;
+  --tm-puff-hi: #d0f7ff;
+}
+.tm-phone[data-platform="imessage"] .tm-tapback-picker .tm-tapback-glyph {
+  width: 100%;
+  height: 100%;
+}
+.tm-phone[data-platform="imessage"] .tm-tapback-picker .tm-tapback-glyph > svg {
+  width: 26px;
+  height: 26px;
+}
 /* Outranks `.tm-reaction > span`, whose flex row would push the glyph to the left. */
 .tm-tapback.tm-reaction > .tm-tapback-glyph {
   position: absolute;
@@ -4703,20 +4732,9 @@
   color: #fff;
   filter: drop-shadow(0 0.6px 0.5px rgb(0 20 110 / 0.3));
 }
-.tm-tapback:not([data-self]) > .tm-tapback-glyph {
-  color: #8d8d93;
-  filter: none;
-}
-.tm-tapback[data-self] > .tm-tapback-glyph {
-  --tm-puff-edge: #b6d4f5;
-  --tm-puff-body: #d6e8fc;
-  --tm-puff-hi: #fff;
-  --tm-glove-hi: #fff;
-  --tm-glove-body: #cfe6f4;
-  --tm-glove-edge: #9ccbe6;
-  filter: none;
-}
 .tm-tapback[data-tapback="heart"] > .tm-tapback-glyph,
+.tm-tapback[data-tapback="like"] > .tm-tapback-glyph,
+.tm-tapback[data-tapback="dislike"] > .tm-tapback-glyph,
 .tm-tapback:not([data-tapback]) > .tm-tapback-glyph {
   filter: none;
 }
@@ -4958,7 +4976,7 @@
 }
 .tm-phone[data-platform="imessage"] .tm-link-card > div:last-child {
   padding: 7.3px 16px 8.5px;
-  background: var(--tm-link-tint);
+  background: var(--tm-link-surface, var(--tm-link-tint));
 }
 .tm-phone[data-platform="imessage"] .tm-link-card strong {
   display: -webkit-box;
@@ -4979,7 +4997,7 @@
   font-size: 13px;
   line-height: 16px;
   letter-spacing: 0;
-  color: rgb(60 60 67 / 0.8);
+  color: var(--tm-link-domain, rgb(60 60 67 / 0.8));
   opacity: 1;
 }
 .tm-bubble[data-tint="dark"] .tm-link-card,
@@ -4987,7 +5005,13 @@
   color: #fff;
 }
 .tm-phone[data-platform="imessage"] .tm-bubble[data-tint="dark"] .tm-link-card small {
+  color: var(--tm-link-domain, rgb(235 235 245 / 0.7));
+}
+.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-bubble:not([data-tint]) .tm-link-card small {
   color: rgb(235 235 245 / 0.7);
+}
+.tm-phone[data-platform="imessage"] .tm-bubble[data-tint="light"] .tm-link-card {
+  color: #000;
 }
 
 /* iOS 26 groups: 32pt monograms lit from above, level with the tail, and gray 11pt names

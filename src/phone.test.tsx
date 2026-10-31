@@ -244,6 +244,24 @@ describe("Phone", () => {
       'viewBox="0 0 65 45"',
     );
   });
+  test("non-iMessage link tints retain their v1 midtone and alpha classification", () => {
+    for (const platform of ["whatsapp", "telegram", "instagram", "google-messages"] as const) {
+      for (const [tint, tone] of [["#ff0000", "dark"], ["#777777", "dark"], ["#ffffff00", "light"], ["#00000000", "dark"]]) {
+        const scene = parseScene({
+          ...defaultScene,
+          platform,
+          device: { model: "pixel-11-pro" },
+          messages: [{ id: "one", senderId: "me", kind: "link", link: { url: "https://example.com", title: "A link", tint } }],
+        });
+        const html = renderToStaticMarkup(<Phone scene={scene} />);
+        expect(html).toContain(`data-tint="${tone}"`);
+        expect(html).not.toContain("--tm-link-surface");
+        expect(html).not.toContain("--tm-link-domain");
+        const preview = renderToStaticMarkup(<Phone scene={parseScene({ ...scene, interactions: { tapbackPicker: { messageId: "one" } } })} />);
+        expect(preview.slice(preview.indexOf('class="tm-message-context"'))).not.toContain("data-tint=");
+      }
+    }
+  });
 });
 
 describe("iMessage bubble paint", () => {
@@ -320,5 +338,28 @@ describe("iMessage bubble paint", () => {
     expect(outgoing).toContain('Read<span> 9:42\u202fAM</span>');
     const incoming = renderMessage({ senderId: "jamie", text: "Tomorrow at nine", edited: true });
     expect(incoming).toContain('<span class="tm-edited">Edited</span>');
+  });
+
+  test("standard thumbs and custom skin tones use native emoji for either reactor", () => {
+    for (const participantId of ["me", "jamie"]) {
+      for (const emoji of ["👍", "👎", "👍🏽", "👎🏻"]) {
+        const html = renderMessage({ text: "A reaction", reactions: [{ id: "r", emoji, participantId }] });
+        expect(html).toContain(`<span class="tm-tapback-glyph">${emoji}</span>`);
+        expect(html).not.toContain("tm-glove");
+      }
+    }
+  });
+
+  test("the iMessage picker shares the badge symbols and keeps HA HA distinct from 😂", () => {
+    const html = renderMessage({ text: "A reaction" }, {
+      tapbackPicker: { messageId: "one", emojis: ["❤️", "👍", "👎", "HAHA", "‼️", "❓", "😂", "👍🏽"] },
+    });
+    const start = html.indexOf('class="tm-tapback-picker"');
+    const picker = html.slice(start, html.indexOf('<div class="tm-bubble"', start));
+    for (const kind of ["heart", "like", "dislike", "haha", "emphasize", "question"])
+      expect(picker).toContain(`data-tapback="${kind}"`);
+    expect(picker).toContain('<span class="tm-tapback-glyph">😂</span>');
+    expect(picker).toContain('<span class="tm-tapback-glyph">👍🏽</span>');
+    expect(picker).not.toContain("tm-glove");
   });
 });

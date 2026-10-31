@@ -6,6 +6,7 @@
 //   bun run gallery --shots .gallery --fidelity # synthetic iMessage edge states
 //   bun run gallery --shots .gallery --fidelity --only fidelity-incoming-edit
 //   bun run gallery --shots .gallery --fidelity --only fidelity-card- --check-card-stacking
+//   bun run gallery --shots .gallery --fidelity --only fidelity-final- --check-final-fidelity
 //
 // Screenshots use the Chromium build provisioned for the pinned playwright-core
 // (`PLAYWRIGHT_SKIP_BROWSER_GC=1 bun node_modules/playwright-core/cli.js install chromium`).
@@ -19,6 +20,7 @@ import { heroScenes } from "./hero-scenes.js";
 import { fidelityScenes } from "./fidelity-scenes.js";
 import { chromiumLaunchOptions, provisionedChromium } from "./browser.js";
 import { inspectCardStacking } from "./card-stacking.js";
+import { inspectFinalFidelity } from "./final-fidelity.js";
 
 const root = resolve(import.meta.dir, "..");
 const args = process.argv.slice(2);
@@ -88,12 +90,15 @@ if (shotsDir) {
     await page.goto(`file://${join(out, "index.html")}`);
     await page.waitForFunction(() => document.documentElement.dataset.fitted === "true");
     const cardChecks: { id: string; result: ReturnType<typeof inspectCardStacking> }[] = [];
+    const finalChecks: { id: string; result: ReturnType<typeof inspectFinalFidelity> }[] = [];
     for (const { id } of entries) {
       const path = join(shotsDir, `${id}.png`);
       await page.locator(`[data-shot="${id}"] .tm-device-stage`).screenshot({ path, omitBackground: true });
       console.log(path);
       if (args.includes("--check-card-stacking"))
         cardChecks.push({ id, result: await page.locator(`[data-shot="${id}"]`).evaluate(inspectCardStacking) });
+      if (args.includes("--check-final-fidelity"))
+        finalChecks.push({ id, result: await page.locator(`[data-shot="${id}"]`).evaluate(inspectFinalFidelity) });
     }
     if (cardChecks.length) {
       await writeFile(join(shotsDir, "card-stacking.json"), JSON.stringify(cardChecks, null, 2));
@@ -104,6 +109,34 @@ if (shotsDir) {
       if (!cardChecks.some(({ result }) => result.cards.length)) bad.push("No rendered card content was inspected");
       if (bad.length) throw new Error(`Card stacking failed:\n${bad.join("\n")}`);
       console.log(`Card stacking: ${cardChecks.reduce((sum, item) => sum + item.result.cards.length, 0)} visible content layers; reactions and Edited link colors checked.`);
+    }
+    if (finalChecks.length) {
+      await writeFile(join(shotsDir, "final-fidelity.json"), JSON.stringify(finalChecks, null, 2));
+      const palettes: Record<string, string> = { haha: "rgb(97, 213, 238)", emphasize: "rgb(255, 124, 120)", question: "rgb(188, 140, 232)" };
+      const bad: string[] = [];
+      for (const { id, result } of finalChecks) {
+        for (const link of result.links)
+          if (link.backgroundAlpha !== 1 || link.titleContrast < 4.5 || link.domainContrast < 4.5) bad.push(`${id}: unreadable or unresolved ${link.tint} link footer`);
+        for (const glyph of result.glyphs) {
+          if (palettes[glyph.kind] && glyph.body !== palettes[glyph.kind]) bad.push(`${id}: wrong ${glyph.kind} palette`);
+          if (["like", "dislike"].includes(glyph.kind) && (glyph.svg || glyph.text !== (glyph.kind === "like" ? "👍" : "👎"))) bad.push(`${id}: thumb must be native emoji`);
+          if (!glyph.kind && ["👍🏽", "😂"].includes(glyph.text) && glyph.svg) bad.push(`${id}: custom emoji was replaced`);
+          if (glyph.filter.includes("grayscale")) bad.push(`${id}: reaction was desaturated`);
+          if (!glyph.picker && (glyph.width !== 34 || glyph.height !== 34)) bad.push(`${id}: badge geometry changed`);
+        }
+        if (result.type) {
+          const expected = Number(/final-type-(\d+)/.exec(id)?.[1]);
+          if (result.type.fontSize !== expected || Math.abs(result.type.lineHeight - expected * 20.28 / 17) > 0.01) bad.push(`${id}: Dynamic Type metrics are fixed`);
+          if (result.type.emojiSize !== 47 || result.type.stickerSize !== 97) bad.push(`${id}: emoji or sticker size changed`);
+        }
+      }
+      for (const theme of ["light", "dark"]) {
+        const normal = finalChecks.find((item) => item.id === `fidelity-final-type-17-${theme}`)?.result.type;
+        const large = finalChecks.find((item) => item.id === `fidelity-final-type-21-${theme}`)?.result.type;
+        if (!normal || !large || large.lines <= normal.lines) bad.push(`${theme}: larger text did not reflow`);
+      }
+      if (bad.length) throw new Error(`Final fidelity failed:\n${bad.join("\n")}`);
+      console.log("Final fidelity: link footer contrast, native thumbs, actor-independent puff colors, badge geometry and17/21px wrapping passed.");
     }
   } finally {
     await context?.close();
