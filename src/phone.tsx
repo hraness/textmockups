@@ -1918,11 +1918,7 @@ function ReactionBadges({ slots,
               <i className="tm-paint" />
             </i>
             <span className="tm-tapback-glyph">
-              {TAPBACKS[group.emoji] ? (
-                <TapbackGlyph kind={TAPBACKS[group.emoji]!} />
-              ) : (
-                group.emoji
-              )}
+              <TapbackSymbol emoji={group.emoji} />
             </span>
             {group.names.length > 1 && (
               <b className="tm-reaction-count">{group.names.length}</b>
@@ -2191,7 +2187,7 @@ function GhostTail({ scheduled = false }: { scheduled?: boolean }) {
   );
 }
 
-/** The six classic tapbacks draw as iOS 26's puffy glyphs; any other emoji draws as itself. */
+/** Classic tapbacks mix native emoji with colored puffy symbols; other emoji stay native. */
 const TAPBACKS: Record<string, TapbackKind | undefined> = {
   "❤️": "heart",
   "❤": "heart",
@@ -2204,6 +2200,11 @@ const TAPBACKS: Record<string, TapbackKind | undefined> = {
   "❓": "question",
 };
 type TapbackKind = "heart" | "like" | "dislike" | "haha" | "emphasize" | "question";
+
+function TapbackSymbol({ emoji }: { emoji: string }) {
+  const kind = TAPBACKS[emoji];
+  return kind ? <TapbackGlyph kind={kind} /> : emoji;
+}
 
 function TapbackGlyph({ kind }: { kind: TapbackKind }) {
   if (kind === "heart")
@@ -2229,45 +2230,9 @@ function TapbackGlyph({ kind }: { kind: TapbackKind }) {
         <ellipse cx="28" cy="15" rx="7" ry="5" fill="url(#tm-heart-shine)" />
       </svg>
     );
-  // A white glove: a round cuff, the thumb leaning left, and four stepped fingers,
-  // shaded light blue along their lower edges. Thumbs down turns it over.
   if (kind === "like" || kind === "dislike")
-    return (
-      <svg
-        viewBox="0 0 17 18"
-        width="17"
-        height="18"
-        aria-hidden="true"
-        style={kind === "dislike" ? { transform: "scale(-1, -1)" } : undefined}
-      >
-        <defs>
-          <linearGradient id="tm-glove" x1="0.8" y1="0" x2="0.5" y2="1">
-            <stop offset="0.55" stopColor="var(--tm-glove-hi, currentColor)" />
-            <stop offset="1" stopColor="var(--tm-glove-body, currentColor)" />
-          </linearGradient>
-          <linearGradient id="tm-glove-cuff" x1="1" y1="0.3" x2="0" y2="0.8">
-            <stop offset="0.4" stopColor="var(--tm-glove-hi, currentColor)" />
-            <stop offset="1" stopColor="var(--tm-glove-body, currentColor)" />
-          </linearGradient>
-        </defs>
-        <ellipse cx="2.6" cy="13.1" rx="2.6" ry="3.85" transform="rotate(-10 2.6 13.1)" fill="url(#tm-glove-cuff)" />
-        <g fill="url(#tm-glove)">
-          <path d="M3.9 9.6C5.3 8.5 6.7 6.1 7.6 3.7l.5-2.1C8.4.6 9 0 9.7 0c1 0 1.7.9 1.5 2.2l-.6 4.1c-.1.9.5 1.6 1.5 1.6h.9v9.9H8.6c-1.9 0-3.4-.5-4.7-1.3Z" />
-          <rect x="10.8" y="7.9" width="6.1" height="2.6" rx="1.3" />
-          <rect x="10.8" y="10.4" width="5.7" height="2.6" rx="1.3" />
-          <rect x="10.6" y="12.9" width="5.3" height="2.6" rx="1.3" />
-          <rect x="9.8" y="15.3" width="5.3" height="2.6" rx="1.3" />
-        </g>
-        <path
-          d="M13.2 10.45h2.9M13.2 12.95h2.5M12.8 15.4h2.3M9.4 17.85h4.6"
-          fill="none"
-          stroke="var(--tm-glove-edge, none)"
-          strokeWidth="0.5"
-          strokeLinecap="round"
-        />
-      </svg>
-    );
-  // iOS 26 draws the rest as puffy white letters, lit from the top left.
+    return kind === "like" ? "👍" : "👎";
+  // iOS 26's question, emphasis and HA HA keep their own colored puff palettes.
   const strokes: Record<Exclude<TapbackKind, "heart" | "like" | "dislike">, [string, string, number]> = {
     haha: [
       "0 0 20 19",
@@ -2743,8 +2708,11 @@ function NativeInteraction({ slots, scene, time }: {
               <span
                 key={index}
                 data-picked={picker.selectedEmoji === emoji || undefined}
+                data-tapback={scene.platform === "imessage" ? TAPBACKS[emoji] : undefined}
               >
-                {emoji}
+                {scene.platform === "imessage" ? (
+                  <span className="tm-tapback-glyph"><TapbackSymbol emoji={emoji} /></span>
+                ) : emoji}
               </span>
             ))}
             <Glyph name="plus" size={19} />

@@ -14,6 +14,47 @@ const conversation = (id: string, changes: Record<string, unknown>): Scene =>
 
 /** Synthetic fixtures for the drawing states most easily missed by a text-only preset. */
 export const fidelityScenes: Scene[] = [
+  ...[17, 21].map((textSize) => conversation(`final-type-${textSize}`, {
+    appearance: { textSize },
+    messages: [
+      { id: "sized", senderId: "jamie", text: "Meet me at the little coffee shop near the station tomorrow morning. I will bring our tickets and a spare umbrella, then we can find a quiet table by the window.", dateLabel: "Today 9:41 AM" },
+      { id: "reply", senderId: "me", text: "See you there." },
+      { id: "emoji", senderId: "jamie", text: "🎉" },
+      { id: "sticker", senderId: "me", kind: "sticker", sticker: { emoji: "✨" } },
+    ],
+  })),
+  ...(["me", "jamie"] as const).flatMap((actor) => {
+    const symbols = ["❤️", "👍", "👎", "HAHA", "‼️", "❓", "👍🏽", "😂"];
+    const messages = symbols.map((emoji, index) => ({
+      id: `tapback-${index}`,
+      senderId: actor === "me" ? "jamie" : "me",
+      text: ["Heart", "Thumbs up", "Thumbs down", "HA HA", "Emphasis", "Question", "Custom skin tone", "Laughing emoji"][index],
+      dateLabel: index === 0 ? "Today 9:41 AM" : "",
+      reactions: [{ id: `reaction-${index}`, emoji, participantId: actor }],
+    }));
+    return [
+      conversation(`final-tapbacks-${actor}`, { messages }),
+      conversation(`final-picker-${actor}`, {
+        messages,
+        interactions: { tapbackPicker: { messageId: "tapback-3", emojis: symbols, selectedEmoji: "HAHA" } },
+      }),
+    ];
+  }),
+  ...[
+    { id: "untinted", tint: "" },
+    { id: "light-tint", tint: "#f4e4c8" },
+    { id: "dark-tint", tint: "#263544" },
+  ].map(({ id, tint }) => conversation(`final-link-${id}`, {
+    messages: [
+      { id: "intro", senderId: "jamie", text: "A place for coffee", dateLabel: "Today 9:41 AM" },
+      ...(["jamie", "me"] as const).map((senderId) => ({
+        id: `link-${senderId}`,
+        senderId,
+        kind: "link",
+        link: { url: "https://example.com/coffee", title: "The coffee shop", ...(tint ? { tint } : {}) },
+      })),
+    ],
+  })),
   ...[
     { kind: "voice", media: { duration: 12, transcript: "Meet me at the station." } },
     { kind: "link", link: { url: "https://example.com/coffee", title: "A good coffee spot", description: "A small place near the station." } },

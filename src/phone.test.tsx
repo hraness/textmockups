@@ -321,4 +321,27 @@ describe("iMessage bubble paint", () => {
     const incoming = renderMessage({ senderId: "jamie", text: "Tomorrow at nine", edited: true });
     expect(incoming).toContain('<span class="tm-edited">Edited</span>');
   });
+
+  test("standard thumbs and custom skin tones use native emoji for either reactor", () => {
+    for (const participantId of ["me", "jamie"]) {
+      for (const emoji of ["👍", "👎", "👍🏽", "👎🏻"]) {
+        const html = renderMessage({ text: "A reaction", reactions: [{ id: "r", emoji, participantId }] });
+        expect(html).toContain(`<span class="tm-tapback-glyph">${emoji}</span>`);
+        expect(html).not.toContain("tm-glove");
+      }
+    }
+  });
+
+  test("the iMessage picker shares the badge symbols and keeps HA HA distinct from 😂", () => {
+    const html = renderMessage({ text: "A reaction" }, {
+      tapbackPicker: { messageId: "one", emojis: ["❤️", "👍", "👎", "HAHA", "‼️", "❓", "😂", "👍🏽"] },
+    });
+    const start = html.indexOf('class="tm-tapback-picker"');
+    const picker = html.slice(start, html.indexOf('<div class="tm-bubble"', start));
+    for (const kind of ["heart", "like", "dislike", "haha", "emphasize", "question"])
+      expect(picker).toContain(`data-tapback="${kind}"`);
+    expect(picker).toContain('<span class="tm-tapback-glyph">😂</span>');
+    expect(picker).toContain('<span class="tm-tapback-glyph">👍🏽</span>');
+    expect(picker).not.toContain("tm-glove");
+  });
 });
