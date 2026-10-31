@@ -2590,7 +2590,7 @@ function pickerEmojis(scene: Scene, emojis: string[]) {
 function MenuIcon({
   name,
 }: {
-  name: "reply" | "sticker" | "copy" | "translate" | "select" | "more";
+  name: "reply" | "sticker" | "edit" | "undo" | "copy" | "translate" | "select" | "more";
 }) {
   return (
     <svg
@@ -2612,6 +2612,18 @@ function MenuIcon({
           <path d="M21 12c-5 0-9.4 4-9.4 9 1.3 0 2.4-.3 3.5-.8C18.4 18.6 20.6 15.6 21 12Z" />
           <circle cx="5.5" cy="18.5" r="4" fill="var(--tm-menu-fill, #fff)" />
           <path d="M5.5 16.4v4.2M3.4 18.5h4.2" />
+        </>
+      ) : name === "edit" ? (
+        <path
+          d="m4.6 19.4.9-3.1L16.3 5.5a1.4 1.4 0 0 1 2 2L7.5 18.4Z"
+          fill="currentColor"
+          stroke="none"
+        />
+      ) : name === "undo" ? (
+        <>
+          <circle cx="12" cy="12" r="9.5" />
+          <path d="M8.8 9.6h4.6a3.1 3.1 0 0 1 0 6.2h-2" />
+          <path d="m10.9 7.4-2.2 2.2 2.2 2.2" />
         </>
       ) : name === "copy" ? (
         <>
@@ -2868,6 +2880,13 @@ function NativeInteraction({ slots, scene, time }: {
               <span><MenuIcon name="reply" />Reply</span>
               <span><MenuIcon name="sticker" />Attach Sticker</span>
               <hr />
+              {outgoing && picker.undoable && message.kind === "text" && (
+                <>
+                  <span><MenuIcon name="edit" />Edit</span>
+                  <span><MenuIcon name="undo" />Undo Send</span>
+                  <hr />
+                </>
+              )}
               <span><MenuIcon name="copy" />Copy</span>
               {message.kind === "text" && (
                 <>
@@ -2915,8 +2934,8 @@ function NativeInteraction({ slots, scene, time }: {
           ["Stickers", "sticker"],
           ["Apple Cash", "gift"],
           ["Audio", "wave"],
+          ["Store", "more"],
           ["Location", "pin"],
-          ["More", "more"],
         ] as const)
       : scene.platform === "whatsapp"
         ? ([
@@ -2947,6 +2966,9 @@ function NativeInteraction({ slots, scene, time }: {
           <div className="tm-app-tray">
             {apps.map(([label, icon], index) => (
               <div key={label}>
+                {scene.platform === "imessage" ? (
+                  <TrayIcon index={index} />
+                ) : (
                 <span
                   style={{
                     background: [
@@ -2962,6 +2984,7 @@ function NativeInteraction({ slots, scene, time }: {
                 >
                   <Glyph name={icon} size={24} />
                 </span>
+                )}
                 <b>{label}</b>
               </div>
             ))}
@@ -3018,6 +3041,68 @@ function NativeInteraction({ slots, scene, time }: {
         )}
       </div>
     </div>
+  );
+}
+
+/** Original round drawings for the iOS 26 iMessage "+" menu, in list order. */
+function TrayIcon({ index }: { index: number }) {
+  const white = "#fff";
+  const art = [
+    <>
+      <circle cx="18" cy="18" r="18" fill="#c4c4c9" />
+      <circle cx="18" cy="18" r="14.5" fill="#26272c" />
+      <circle cx="18" cy="18" r="10.5" fill="#33448f" />
+      <circle cx="18" cy="18" r="6.5" fill="#0c1024" />
+      <circle cx="15" cy="14.5" r="2.4" fill="#b7c4ff" opacity=".85" />
+    </>,
+    <>
+      <circle cx="18" cy="18" r="18" fill={white} />
+      {["#f6b73c", "#f38a2e", "#ec4d5a", "#b54ec3", "#6b62d6", "#3fa1e8", "#5cc46c", "#c5d94a"].map(
+        (fill, petal) => (
+          <ellipse key={fill} cx="18" cy="11.5" rx="3.6" ry="6.2" fill={fill} opacity=".88"
+            transform={`rotate(${petal * 45} 18 18)`} />
+        ),
+      )}
+    </>,
+    <>
+      <defs>
+        <linearGradient id="tm-tray-sticker" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#dccff7" />
+          <stop offset="1" stopColor="#8fa6ee" />
+        </linearGradient>
+      </defs>
+      <path d="M18 0a18 18 0 1 0 18 18H24a6 6 0 0 1-6-6Z" fill="url(#tm-tray-sticker)" />
+      <path d="M18 0v12a6 6 0 0 0 6 6h12A18 18 0 0 0 18 0Z" fill="#eeeaf8" />
+    </>,
+    <>
+      <circle cx="18" cy="18" r="17.5" fill="#1c1c1e" stroke="#4a4a4e" />
+      <text x="18" y="25" textAnchor="middle" fontSize="21" fontWeight="600" fill={white}>$</text>
+    </>,
+    <>
+      <circle cx="18" cy="18" r="18" fill="#ee6e57" />
+      {[3, 7, 11, 7, 4, 9, 5].map((h, bar) => (
+        <rect key={bar} x={10.6 + bar * 2.2} y={18 - h / 2} width="1.3" height={h} rx=".65" fill={white} />
+      ))}
+    </>,
+    <>
+      <defs>
+        <linearGradient id="tm-tray-store" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#21b3fb" />
+          <stop offset="1" stopColor="#1868ef" />
+        </linearGradient>
+      </defs>
+      <circle cx="18" cy="18" r="18" fill="url(#tm-tray-store)" />
+      <path d="M11.5 25 18 12.5M24.5 25 18 12.5M10.5 21h15" stroke={white} strokeWidth="1.9" strokeLinecap="round" />
+    </>,
+    <>
+      <circle cx="18" cy="18" r="18" fill={white} />
+      <path d="m10 17.5 15-6.5-6.5 15-1.8-6.7Z" fill="#1a7cf5" />
+    </>,
+  ];
+  return (
+    <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true" focusable="false">
+      {art[index]}
+    </svg>
   );
 }
 

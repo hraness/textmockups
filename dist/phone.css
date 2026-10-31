@@ -2620,12 +2620,31 @@
   font-weight: 500;
 }
 .tm-phone[data-platform="imessage"]
+  .tm-attachment-overlay[data-tray-kind="apps"] {
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.tm-phone[data-platform="imessage"]
   .tm-attachment-overlay[data-tray-kind="apps"]
   .tm-attachment-sheet {
-  background: transparent;
+  left: 10px;
+  right: auto;
+  bottom: 42px;
+  width: 292px;
+  height: 417px;
   min-height: 0;
   max-height: none;
-  padding: 20px 28px 50px;
+  padding: 18px 0 0;
+  border-radius: 28px;
+  background: #f6f6f8;
+  box-shadow: 0 8px 30px rgb(0 0 0 / 0.14);
+}
+.tm-phone[data-platform="imessage"][data-theme="dark"]
+  .tm-attachment-overlay[data-tray-kind="apps"]
+  .tm-attachment-sheet {
+  background: #141414;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
 }
 .tm-phone[data-platform="imessage"]
   .tm-attachment-overlay[data-tray-kind="apps"]
@@ -2635,17 +2654,25 @@
 .tm-phone[data-platform="imessage"] .tm-app-tray {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 0;
 }
 .tm-phone[data-platform="imessage"] .tm-app-tray > div {
   flex-direction: row;
-  gap: 19px;
-  font-size: 21px;
+  flex: none;
+  height: 60.5px;
+  padding-left: 30px;
+  gap: 24px;
+  font-size: 23px;
+  color: #1c1c1e;
 }
-.tm-phone[data-platform="imessage"] .tm-app-tray > div > span {
-  width: 47px;
-  height: 47px;
-  border-radius: 15px;
+.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-app-tray > div {
+  color: #d4d4d4;
+}
+.tm-phone[data-platform="imessage"] .tm-app-tray > div > svg {
+  flex: none;
+}
+.tm-phone[data-platform="imessage"] .tm-app-tray b {
+  font-weight: 400;
 }
 .tm-tray-heading {
   display: flex;
@@ -4842,6 +4869,11 @@
   border-radius: 26px;
   background: var(--tm-menu-fill);
   box-shadow: 0 8px 30px rgb(0 0 0 / 0.14);
+}
+.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-message-menu {
+  background: rgb(36 36 38 / 0.82);
+  backdrop-filter: blur(16px) brightness(0.55);
+  -webkit-backdrop-filter: blur(16px) brightness(0.55);
 }
 .tm-phone[data-platform="imessage"] .tm-message-menu > span {
   position: relative;

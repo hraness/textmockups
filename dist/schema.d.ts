@@ -147,6 +147,7 @@ export declare const InteractionStateSchema: z.ZodObject<{
         selectedEmoji: z.ZodDefault<z.ZodString>;
         emojis: z.ZodDefault<z.ZodArray<z.ZodString>>;
         showMenu: z.ZodDefault<z.ZodBoolean>;
+        undoable: z.ZodDefault<z.ZodBoolean>;
     }, z.core.$strict>>;
     editHistory: z.ZodOptional<z.ZodObject<{
         visible: z.ZodDefault<z.ZodBoolean>;
@@ -489,6 +490,7 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
             selectedEmoji: z.ZodDefault<z.ZodString>;
             emojis: z.ZodDefault<z.ZodArray<z.ZodString>>;
             showMenu: z.ZodDefault<z.ZodBoolean>;
+            undoable: z.ZodDefault<z.ZodBoolean>;
         }, z.core.$strict>>;
         editHistory: z.ZodOptional<z.ZodObject<{
             visible: z.ZodDefault<z.ZodBoolean>;
@@ -1007,6 +1009,7 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
             selectedEmoji: string;
             emojis: string[];
             showMenu: boolean;
+            undoable: boolean;
         } | undefined;
         editHistory?: {
             visible: boolean;
@@ -1275,6 +1278,7 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
             selectedEmoji: string;
             emojis: string[];
             showMenu: boolean;
+            undoable: boolean;
         } | undefined;
         editHistory?: {
             visible: boolean;
@@ -1418,6 +1422,7 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
             selectedEmoji: z.ZodDefault<z.ZodString>;
             emojis: z.ZodDefault<z.ZodArray<z.ZodString>>;
             showMenu: z.ZodDefault<z.ZodBoolean>;
+            undoable: z.ZodDefault<z.ZodBoolean>;
         }, z.core.$strict>>;
         editHistory: z.ZodOptional<z.ZodObject<{
             visible: z.ZodDefault<z.ZodBoolean>;
@@ -1936,6 +1941,7 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
             selectedEmoji: string;
             emojis: string[];
             showMenu: boolean;
+            undoable: boolean;
         } | undefined;
         editHistory?: {
             visible: boolean;
@@ -2204,6 +2210,7 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
             selectedEmoji: string;
             emojis: string[];
             showMenu: boolean;
+            undoable: boolean;
         } | undefined;
         editHistory?: {
             visible: boolean;
