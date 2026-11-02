@@ -51,6 +51,21 @@ describe("Phone", () => {
     expect(html.match(/tm-thread-end/g)).toHaveLength(2);
     expect(html).toContain('data-at="date"');
   });
+  test("the iOS keyboard suggests words for what is typed and starts sentences fresh", () => {
+    const bar = (text: string) => {
+      const scene = parseScene({
+        ...defaultScene,
+        platform: "imessage",
+        composer: { ...defaultScene.composer, text, focused: true, keyboard: "alphabetic" },
+      });
+      const html = renderToStaticMarkup(<Phone scene={scene} />);
+      return [...(/<div class="tm-kb-predict">(.*?)<\/div>/.exec(html)?.[1] ?? "").matchAll(/<span>(.*?)<\/span>/g)].map((m) => m[1]);
+    };
+    expect(bar("")).toEqual(["I", "The", "I&#x27;m"]);
+    expect(bar("Help with?")).toEqual(["I", "The", "I&#x27;m"]);
+    expect(bar("see you ")).toEqual(["I", "the", "and"]);
+    expect(bar("see you th")[0]).toBe("“th”");
+  });
   test("is deterministic for a fixed playhead", () => {
     const render = () =>
       renderToStaticMarkup(<Phone scene={defaultScene} time={2.5} />);

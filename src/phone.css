@@ -26,9 +26,13 @@
   --tm-tint: #0085ff;
   --tm-field: rgb(255 255 255 / 0.8);
   --tm-line: rgb(60 60 67 / 0.17);
-  --tm-keyboard: #d3d5db;
+  --tm-keyboard: #e2e4e8;
   --tm-key: #fff;
-  --tm-key-mod: #aeb3be;
+  --tm-key-mod: #fff;
+  --tm-key-down: #c4c7cd;
+  --tm-kb-divider: #d0d2d7;
+  --tm-kb-predict: #36383b;
+  --tm-kb-rim: #ffffff;
   position: relative;
   display: block;
   box-sizing: border-box;
@@ -90,9 +94,13 @@
   --tm-tint: #2d9aff;
   --tm-field: rgb(30 30 32 / 0.84);
   --tm-line: rgb(160 160 166 / 0.28);
-  --tm-keyboard: #28292d;
-  --tm-key: #606166;
-  --tm-key-mod: #414248;
+  --tm-keyboard: #1b1b1d;
+  --tm-key: #404041;
+  --tm-key-mod: #404041;
+  --tm-key-down: #6c6c6e;
+  --tm-kb-divider: #36363a;
+  --tm-kb-predict: #b0b0b2;
+  --tm-kb-rim: #ffffff17;
   border-color: #696b73;
   background: linear-gradient(
     120deg,
@@ -5714,4 +5722,160 @@
 }
 .tm-phone[data-platform="imessage"] .tm-link-map {
   width: calc(var(--tm-thread-w) - 89.67px);
+}
+
+/* iOS 26 keyboard, measured from iOS 26 Simulator captures of the 17 Pro Max and 17 Pro: a panel
+   with 30pt top corners, an empty predictive bar split in thirds, four rows of evenly rounded keys
+   all one color, and the emoji and dictation buttons below. */
+.tm-phone:not([data-os="android"]) .tm-alphabetic-keyboard {
+  --tm-kb-pad: 7px;
+  --tm-kb-gap: 7px;
+  --tm-kb-tools: 26px;
+  --tm-kb-key-h: 45px;
+  --tm-kb-bar: 51px;
+  --tm-kb-font: 22px;
+  /* Resolved against each row, which is always the full width between the side margins. */
+  --tm-kb-key-w: calc((100% - 9 * var(--tm-kb-gap)) / 10);
+  --tm-kb-pitch: calc(var(--tm-kb-key-w) + var(--tm-kb-gap));
+  position: relative;
+  box-sizing: border-box;
+  padding: var(--tm-kb-bar) var(--tm-kb-pad) 0;
+  border-radius: 30px 30px 0 0;
+  box-shadow: inset 0 1px 0 var(--tm-kb-rim);
+}
+.tm-phone[data-model="iphone-17-pro"] .tm-alphabetic-keyboard {
+  --tm-kb-pad: 6.67px;
+  --tm-kb-gap: 6px;
+  --tm-kb-key-h: 43px;
+  --tm-kb-bar: 50px;
+  --tm-kb-tools: 24px;
+}
+.tm-phone:not([data-os="android"]) .tm-alphabetic-keyboard::before,
+.tm-phone:not([data-os="android"]) .tm-alphabetic-keyboard::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--tm-kb-bar) / 2 - 13.5px);
+  left: calc(100% / 3 - 1px);
+  width: 1px;
+  height: 24px;
+  background: var(--tm-kb-divider);
+}
+.tm-phone:not([data-os="android"]) .tm-alphabetic-keyboard::after {
+  left: calc(200% / 3 - 1px);
+}
+.tm-phone:not([data-os="android"]) .tm-alphabetic-keyboard .tm-key-row {
+  justify-content: flex-start;
+  gap: var(--tm-kb-gap);
+  margin-bottom: 11px;
+}
+.tm-phone:not([data-os="android"]) .tm-alphabetic-keyboard .tm-key-row:nth-child(2) {
+  justify-content: center;
+  padding: 0;
+}
+.tm-phone:not([data-os="android"]) .tm-alphabetic-keyboard .tm-key {
+  flex: 0 0 var(--tm-kb-key-w);
+  height: var(--tm-kb-key-h);
+  box-sizing: border-box;
+  padding-bottom: 4px;
+  border-radius: 8.5px;
+  background: var(--tm-key);
+  box-shadow: none;
+  font-size: var(--tm-kb-font);
+  font-weight: 400;
+}
+.tm-phone:not([data-os="android"]) .tm-alphabetic-keyboard .tm-key-row:nth-child(3) .tm-key-mod {
+  flex: 1 1 0;
+  padding: 0;
+}
+.tm-phone:not([data-os="android"]) .tm-alphabetic-keyboard .tm-key-row:nth-child(3) .tm-key-mod:first-child {
+  margin-right: calc(var(--tm-kb-gap) + 1.33px);
+}
+.tm-phone:not([data-os="android"]) .tm-alphabetic-keyboard .tm-key-row:nth-child(3) .tm-key-mod:last-child {
+  margin-left: calc(var(--tm-kb-gap) + 1.33px);
+}
+.tm-phone:not([data-os="android"]) .tm-alphabetic-keyboard .tm-key-bottom .tm-key {
+  flex: 100 1 0;
+  padding: 0;
+  font-size: 18px;
+}
+.tm-phone:not([data-os="android"]) .tm-alphabetic-keyboard .tm-key-bottom .tm-key-space {
+  flex-grow: 208.67;
+}
+.tm-phone:not([data-os="android"]) .tm-alphabetic-keyboard .tm-key-mod,
+.tm-phone:not([data-os="android"]) .tm-alphabetic-keyboard .tm-key-return {
+  background: var(--tm-key-mod);
+}
+.tm-phone:not([data-os="android"]) .tm-alphabetic-keyboard .tm-key-space[data-pressed] {
+  background: var(--tm-key-down);
+}
+.tm-phone:not([data-os="android"]) .tm-alphabetic-keyboard .tm-keyboard-bottom {
+  position: absolute;
+  left: 29.33px;
+  right: 34px;
+  top: calc(var(--tm-kb-bar) + 4 * var(--tm-kb-key-h) + 33px + var(--tm-kb-tools));
+  align-items: center;
+  padding: 0;
+  height: 28px;
+}
+.tm-phone:not([data-os="android"]) .tm-kb-predict {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--tm-kb-bar) - 3.5px);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+  text-align: center;
+  font-size: 17px;
+  letter-spacing: -0.2px;
+  color: var(--tm-kb-predict);
+}
+.tm-phone:not([data-os="android"]) .tm-kb-predict > span {
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 0 6px;
+}
+.tm-kb-face {
+  fill: none;
+  stroke: currentColor;
+}
+.tm-kb-features {
+  fill: currentColor;
+}
+.tm-kb-teeth {
+  fill: var(--tm-keyboard);
+}
+.tm-phone[data-theme="dark"] .tm-kb-face {
+  fill: currentColor;
+  stroke: none;
+}
+.tm-phone[data-theme="dark"] .tm-kb-features {
+  fill: var(--tm-keyboard);
+}
+.tm-phone[data-theme="dark"] .tm-kb-teeth {
+  fill: currentColor;
+}
+/* With the keyboard up the bar tightens over it, as in the iOS 26 Simulator: a 38pt add button,
+   21pt side margins, and 17pt above the keyboard's panel. */
+.tm-phone[data-platform="imessage"] .tm-screen[data-keyboard] .tm-composer {
+  gap: 13.67px;
+  padding: 10px 21px 17px;
+}
+.tm-phone[data-platform="imessage"] .tm-screen[data-keyboard] .tm-add {
+  width: 38px;
+  height: 38px;
+  margin-bottom: 1px;
+}
+.tm-kb-capsule {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+.tm-phone[data-theme="dark"] .tm-kb-capsule {
+  fill: currentColor;
+}
+/* An empty field draws the caret at its leading edge, just before the placeholder. */
+.tm-composer-placeholder > .tm-caret {
+  margin: 0 1px 0 -1px;
 }

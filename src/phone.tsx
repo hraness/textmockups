@@ -204,7 +204,10 @@ export function Phone({
           : 272
         : 300
       : scene.composer.keyboard === "alphabetic"
-        ? 252
+        ? // iOS 26: the predictive bar, four rows of keys and the emoji and dictation row.
+          scene.device.model === "iphone-17-pro"
+          ? 333
+          : 344
         : 286;
   const threadMessages =
     scene.platform === "imessage" && mode === "reply"
@@ -3387,10 +3390,10 @@ function Composer({ scene, time }: { scene: Scene; time: number }) {
                 <ComposerText scene={scene} time={time} />
               ) : (
                 <>
+                  {scene.composer.focused && <i className="tm-caret" />}
                   {placeholder === "iMessage" || placeholder === "Message"
                     ? "Message…"
                     : placeholder}
-                  {scene.composer.focused && <i className="tm-caret" />}
                 </>
               )}
             </span>
@@ -3467,10 +3470,10 @@ function Composer({ scene, time }: { scene: Scene; time: number }) {
               <ComposerText scene={scene} time={time} />
             ) : (
               <>
-                {placeholder}
                 {!nativeEdit && scene.composer.focused && (
                   <i className="tm-caret" />
                 )}
+                {placeholder}
               </>
             )}
           </span>
@@ -3583,8 +3586,8 @@ function AndroidComposer({ scene, time }: { scene: Scene; time: number }) {
               <ComposerText scene={scene} time={time} />
             ) : (
               <>
-                {placeholder}
                 {scene.composer.focused && <i className="tm-caret" />}
+                {placeholder}
               </>
             )}
           </span>
@@ -3695,7 +3698,7 @@ function Keyboard({ scene }: { scene: Scene }) {
         <div className="tm-key-row" key={row}>
           {index === 2 && (
             <span className="tm-key tm-key-mod" data-on={shifted || undefined}>
-              <Glyph name={shifted ? "shiftOn" : "shift"} size={19} />
+              <Glyph name={shifted ? "shiftOn" : "shift"} size={21} />
             </span>
           )}
           {[...row].map((letter) => (
@@ -3721,17 +3724,63 @@ function Keyboard({ scene }: { scene: Scene }) {
       ))}
       <div className="tm-key-row tm-key-bottom">
         <span className="tm-key tm-key-mod">123</span>
-        <span className="tm-key tm-key-space" data-pressed={pressed === " " || undefined}>
-          space
+        <span className="tm-key tm-key-space" data-pressed={pressed === " " || undefined} />
+        <span className="tm-key tm-key-return">
+          <svg width="19.67" height="17" viewBox="0 0 19.67 17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18.7 1v7.6a3 3 0 0 1-3 3H1M6 6.6 1 11.6l5 5" />
+          </svg>
         </span>
-        <span className="tm-key tm-key-return">return</span>
+      </div>
+      <div className="tm-kb-predict">
+        {predictions(scene).map((word, index) => (
+          <span key={index}>{word}</span>
+        ))}
       </div>
       <div className="tm-keyboard-bottom">
-        <Glyph name="smile" size={27} />
-        <Glyph name="mic" size={24} />
+        {/* Light draws the face in outline; dark fills it and cuts the features out. */}
+        <svg className="tm-kb-emoji" width="26.67" height="26.67" viewBox="0 0 28 28">
+          <circle className="tm-kb-face" cx="14" cy="14" r="13.05" strokeWidth="1.9" />
+          <g className="tm-kb-features">
+            <ellipse cx="9.8" cy="10.4" rx="1.7" ry="2.4" />
+            <ellipse cx="18.2" cy="10.4" rx="1.7" ry="2.4" />
+            <path d="M6.9 15.4h14.2c.5 0 .8.4.7.9C21 20.3 17.9 23 14 23s-7-2.7-7.8-6.7c-.1-.5.2-.9.7-.9Z" />
+          </g>
+          <path className="tm-kb-teeth" d="M8.2 16.9h11.6c-.2.6-.4 1.1-.7 1.5H8.9c-.3-.4-.5-.9-.7-1.5Z" />
+        </svg>
+        <svg className="tm-kb-mic" width="18.33" height="28" viewBox="0 0 18.33 28">
+          <rect className="tm-kb-capsule" x="5.17" y="1" width="8" height="16.5" rx="4" />
+          <path
+            d="M1 12.6a8.17 8.17 0 0 0 16.33 0M9.17 21v5.6M5.2 26.6h7.93"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+        </svg>
       </div>
     </div>
   );
+}
+
+const COMMON_WORDS =
+  "the to and a i you it in that is was for on are with be at this have but not they so what can just we my me if your there no all out about get like how do up one know go now see when then there's think come time good here going them back yeah want really today tonight tomorrow love okay thanks thank sure sounds still well where why who will would could should right been did had has some more much very need make take let lol omg maybe because before after again also always never every first last next new nice great home work later soon morning night dinner lunch coffee call text talk tell meet hey hi hello yes yep nope wait were what's that's i'm i'll don't can't it's you're we're they're".split(
+    " ",
+  );
+
+/** The three suggestions above the keys: openers at the start of a sentence, the word as typed
+ *  and two completions mid-word, and common next words after a space. English scenes only. */
+function predictions(scene: Scene): string[] {
+  if (!(scene.locale ?? "en").toLowerCase().startsWith("en")) return ["", "", ""];
+  const text = scene.composer.text;
+  if (/(^|[.!?]\s*)$/.test(text)) return ["I", "The", "I'm"];
+  const word = /([\p{L}']+)$/u.exec(text)?.[1];
+  if (!word) return ["I", "the", "and"];
+  const lower = word.toLowerCase();
+  const capital = word[0] !== word[0]!.toLowerCase();
+  const done = COMMON_WORDS.filter((candidate) => candidate.startsWith(lower) && candidate !== lower)
+    .slice(0, 2)
+    .map((candidate) => (capital || candidate === "i" || candidate.startsWith("i'") ? candidate[0]!.toUpperCase() + candidate.slice(1) : candidate));
+  return [`\u201c${word}\u201d`, done[0] ?? "", done[1] ?? ""];
 }
 
 function TypingDots({ time }: { time: number }) {

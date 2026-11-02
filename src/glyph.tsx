@@ -136,8 +136,8 @@ export function Glyph({
       </>
     ),
     close: <path d="m6 6 12 12M6 18 18 6" />,
-    shift: <path d="m3 11 9-9 9 9h-5v11H8V11H3Z" />,
-    shiftOn: <path d="m3 11 9-9 9 9h-5v11H8V11H3Z" fill="currentColor" />,
+    shift: <path d="M12 3.2 1.6 13.4h5.6v6.9h9.6v-6.9h5.6Z" />,
+    shiftOn: <path d="M12 3.2 1.6 13.4h5.6v6.9h9.6v-6.9h5.6Z" fill="currentColor" />,
     backspace: (
       <>
         <path d="m9 4-7 8 7 8h13V4H9Z" />
