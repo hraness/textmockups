@@ -6,6 +6,9 @@ import { legacyLinkTone, linkColors } from "./link-colors.js";
 import { AndroidKeyboard, AndroidNavBar, AndroidStatusBar, MatIcon, } from "./android.js";
 import { deviceProfile, deviceStage, sceneOs, } from "./devices.js";
 import { conversationMembers, isGroupConversation, receiptReaders, } from "./conversation.js";
+import { fill, stringsFor } from "./strings.js";
+/** iMessage's own words in the scene's language; other apps draw English. */
+const wordsOf = (scene) => stringsFor(scene.platform === "imessage" ? scene.locale : undefined);
 const LOCAL_REFERENCE = /^local:/;
 /** Plain image slot. Browser-local `local:` references have no URL here, so they render empty. */
 export function PhoneImage({ src, alt = "Photo", ...props }) {
@@ -217,7 +220,7 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                             const incomingEdited = scene.platform === "imessage" && !outgoing && message.edited;
                                             if (message.kind === "system" || message.unsent)
                                                 return (_jsx("div", { className: "tm-system-message", "data-message-id": message.id, children: message.unsent
-                                                        ? `${outgoing ? "You" : person.name} unsent a message`
+                                                        ? outgoing ? wordsOf(scene).youUnsent : fill(wordsOf(scene).theyUnsent, { name: person.name })
                                                         : message.text }, message.id));
                                             return (_jsxs("div", { className: "tm-message-block", "data-message-id": message.id, "data-side": outgoing ? "out" : "in", "data-editing": editing || undefined, "data-first": first || undefined, "data-last": last || undefined, "data-reply": (scene.platform === "imessage" && !!reply) || undefined, "data-thread": (thread && !runStart) || undefined, "data-tapback": tapback || undefined, "data-lifted": (scene.platform === "imessage" &&
                                                     scene.interactions?.tapbackPicker?.visible &&
@@ -228,14 +231,14 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                             : "Unread Messages" })), message.dateLabel && (_jsxs("div", { className: "tm-date", children: [spine && !runStart && (_jsx("i", { className: "tm-thread-spine", "data-at": "date", "aria-hidden": "true", style: { left: spineInset } })), _jsx(slots.Text, { field: "date", messageId: message.id, value: message.dateLabel, children: _jsx(DateLabel, { label: message.dateLabel, platform: scene.platform }) })] })), scene.platform === "imessage" &&
                                                         message.scheduledAt &&
                                                         (!previous?.scheduledAt ||
-                                                            previous.scheduledAt !== message.scheduledAt) && (_jsxs("div", { className: "tm-scheduled-label", children: [_jsx("span", { children: "Send Later" }), _jsxs("span", { children: [message.scheduledAt, " ", _jsx("b", { children: "Edit" })] })] })), thread && runStart && !replyAdjacent && reply && (_jsxs("div", { className: "tm-reply-ghost", "data-side": reply.senderId === self.id ? "out" : "in", "data-count": quoteCount > 1 || undefined, children: [_jsxs("div", { className: "tm-bubble tm-ghost", "data-side": reply.senderId === self.id ? "out" : "in", "data-kind": reply.kind, "data-compact": reply.kind === "text" || undefined, "data-tail": true, "aria-hidden": "true", children: [_jsx(GhostTail, {}), _jsx(MessageContent, { slots: slots, message: { ...reply, effect: "none" }, scene: scene, time: playhead }), _jsx("i", { className: "tm-thread-arc", "data-gap": !outgoing || undefined, "aria-hidden": "true", style: reply.senderId === self.id
+                                                            previous.scheduledAt !== message.scheduledAt) && (_jsxs("div", { className: "tm-scheduled-label", children: [_jsx("span", { children: wordsOf(scene).sendLater }), _jsxs("span", { children: [message.scheduledAt, " ", _jsx("b", { children: wordsOf(scene).edit })] })] })), thread && runStart && !replyAdjacent && reply && (_jsxs("div", { className: "tm-reply-ghost", "data-side": reply.senderId === self.id ? "out" : "in", "data-count": quoteCount > 1 || undefined, children: [_jsxs("div", { className: "tm-bubble tm-ghost", "data-side": reply.senderId === self.id ? "out" : "in", "data-kind": reply.kind, "data-compact": reply.kind === "text" || undefined, "data-tail": true, "aria-hidden": "true", children: [_jsx(GhostTail, {}), _jsx(MessageContent, { slots: slots, message: { ...reply, effect: "none" }, scene: scene, time: playhead }), _jsx("i", { className: "tm-thread-arc", "data-gap": !outgoing || undefined, "aria-hidden": "true", style: reply.senderId === self.id
                                                                             ? { right: `calc(var(--tm-thread-w) - ${spineInset + 33}px)` }
                                                                             : { left: `calc(${spineInset}px - var(--tm-avatar-gutter, 0px))` } })] }), quoteCount > 1 && (_jsxs("div", { className: "tm-reply-count", children: [quoteCount, " Replies"] }))] })), spine && !runStart && (_jsx("i", { className: "tm-thread-spine", "data-at": "top", "data-gap": !outgoing || undefined, "aria-hidden": "true", style: { left: spineInset } })), _jsxs("div", { className: "tm-message-row", "data-side": outgoing ? "out" : "in", "data-reactions": message.reactions.length > 0 || undefined, children: [spine && !runEnd && (_jsx("i", { className: "tm-thread-spine", "aria-hidden": "true", style: { left: spineInset } })), !outgoing && rowAvatars && (_jsx(Avatar, { slots: slots, name: person.name, url: person.avatar, color: person.color, className: "tm-row-avatar", hidden: !last || collage })), _jsxs("div", { className: "tm-message-stack", children: [scene.platform === "imessage" &&
                                                                         pinned?.visible &&
                                                                         pinned.messageId === message.id && (_jsxs("div", { className: "tm-pinned-item", children: [_jsx(NativeIcon, { name: "pin" }), pinned.label] })), scene.platform === "imessage" &&
                                                                         scene.interactions?.editHistory?.visible &&
                                                                         scene.interactions.editHistory.messageId ===
-                                                                            message.id && (_jsxs("div", { className: "tm-edit-history", children: [message.editHistory?.versions.map((version) => (_jsxs("div", { className: "tm-history-version", children: [_jsx("small", { children: version.editedAt }), _jsx("span", { children: version.text })] }, version.id))), _jsx("small", { children: "Hide Edits" })] })), !outgoing && named && group && (_jsx("div", { className: "tm-sender-name", style: {
+                                                                            message.id && (_jsxs("div", { className: "tm-edit-history", children: [message.editHistory?.versions.map((version) => (_jsxs("div", { className: "tm-history-version", children: [_jsx("small", { children: version.editedAt }), _jsx("span", { children: version.text })] }, version.id))), _jsx("small", { children: wordsOf(scene).hideEdits })] })), !outgoing && named && group && (_jsx("div", { className: "tm-sender-name", style: {
                                                                             color: scene.platform === "imessage"
                                                                                 ? undefined
                                                                                 : person.color,
@@ -276,7 +279,7 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                                                             `${reply.kind[0]?.toUpperCase()}${reply.kind.slice(1)}` })] })), editing ? (_jsxs(_Fragment, { children: [_jsx("span", { className: "tm-inline-edit-text tm-bubble-content", children: _jsx(ComposerText, { scene: scene, time: playhead }) }), _jsx("span", { className: "tm-edit-cancel", children: _jsx(Glyph, { name: "close", size: 20 }) }), _jsx("span", { className: "tm-edit-confirm", children: _jsx(Glyph, { name: "check", size: 21 }) }), scene.composer.selection &&
                                                                                         scene.composer.selection.visible !== false &&
                                                                                         scene.composer.selection.end >
-                                                                                            scene.composer.selection.start && (_jsxs("div", { className: "tm-selection-menu", children: [_jsx("span", { children: "Cut" }), _jsx("span", { children: "Copy" }), _jsx("span", { children: "Paste" }), _jsx("span", { children: "Replace\u2026" }), _jsx(Glyph, { name: "chevron", size: 15 })] }))] })) : (_jsx(MessageContent, { slots: slots, message: message, scene: scene, time: playhead, tail: last })), (scene.platform === "whatsapp" ||
+                                                                                            scene.composer.selection.start && (_jsxs("div", { className: "tm-selection-menu", children: [_jsx("span", { children: wordsOf(scene).cut }), _jsx("span", { children: wordsOf(scene).copy }), _jsx("span", { children: wordsOf(scene).paste }), _jsx("span", { children: wordsOf(scene).replace }), _jsx(Glyph, { name: "chevron", size: 15 })] }))] })) : (_jsx(MessageContent, { slots: slots, message: message, scene: scene, time: playhead, tail: last })), (scene.platform === "whatsapp" ||
                                                                                 scene.platform === "telegram") && (_jsxs("span", { className: "tm-inline-meta", "data-status": message.status, children: [message.edited && _jsx("span", { children: "edited " }), message.timestamp ||
                                                                                         (scene.appearance.showTimestamps
                                                                                             ? scene.statusBar.time
@@ -288,10 +291,10 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                                                     top: `${sticker.y * 100}%`,
                                                                                     zIndex: 5 + sticker.zIndex,
                                                                                     transform: `translate(-50%, -50%) rotate(${sticker.rotation}deg) scale(${sticker.scale})`,
-                                                                                }, children: sticker.url ? (_jsx(slots.Image, { src: sticker.url, alt: "Attached sticker", referrerPolicy: "no-referrer", draggable: false })) : (sticker.emoji) }, sticker.id)))] }), replyCount > 0 && (_jsxs("div", { className: "tm-reply-count", children: [replyCount, " ", replyCount === 1 ? "Reply" : "Replies"] })), (receipt || incomingEdited ||
+                                                                                }, children: sticker.url ? (_jsx(slots.Image, { src: sticker.url, alt: "Attached sticker", referrerPolicy: "no-referrer", draggable: false })) : (sticker.emoji) }, sticker.id)))] }), replyCount > 0 && (_jsx("div", { className: "tm-reply-count", children: wordsOf(scene).replies(replyCount) })), (receipt || incomingEdited ||
                                                                         (scene.platform === "imessage" &&
-                                                                            message.kind === "voice")) && (_jsxs("div", { className: "tm-receipt-row", children: [receipt && (_jsxs("div", { className: "tm-receipt", "data-status": message.status, children: [_jsx(slots.Text, { field: "receipt", messageId: message.id, value: message.statusText || nativeReceipt(scene, message), children: _jsx(ReceiptLabel, { label: message.statusText || nativeReceipt(scene, message), platform: scene.platform }) }), message.edited && (_jsxs("span", { children: [" ", "\u00B7", " ", _jsxs("span", { className: scene.platform === "imessage" ? "tm-edited" : undefined, children: ["Edited", message.editedAt ? ` ${message.editedAt}` : ""] })] }))] })), incomingEdited && (_jsx("div", { className: "tm-receipt tm-incoming-edit", children: _jsxs("span", { className: "tm-edited", children: ["Edited", message.editedAt ? ` ${message.editedAt}` : ""] }) })), scene.platform === "imessage" &&
-                                                                                message.kind === "voice" && (_jsx("span", { className: "tm-audio-keep", "data-kept": message.media?.keep || undefined, children: message.media?.keep ? "Kept" : "Keep" }))] })), scene.platform === "instagram" &&
+                                                                            message.kind === "voice")) && (_jsxs("div", { className: "tm-receipt-row", children: [receipt && (_jsxs("div", { className: "tm-receipt", "data-status": message.status, children: [_jsx(slots.Text, { field: "receipt", messageId: message.id, value: message.statusText || nativeReceipt(scene, message), children: _jsx(ReceiptLabel, { label: message.statusText || nativeReceipt(scene, message), platform: scene.platform }) }), message.edited && (_jsxs("span", { children: [" ", "\u00B7", " ", _jsxs("span", { className: scene.platform === "imessage" ? "tm-edited" : undefined, children: [wordsOf(scene).edited, message.editedAt ? ` ${message.editedAt}` : ""] })] }))] })), incomingEdited && (_jsx("div", { className: "tm-receipt tm-incoming-edit", children: _jsxs("span", { className: "tm-edited", children: [wordsOf(scene).edited, message.editedAt ? ` ${message.editedAt}` : ""] }) })), scene.platform === "imessage" &&
+                                                                                message.kind === "voice" && (_jsx("span", { className: "tm-audio-keep", "data-kept": message.media?.keep || undefined, children: message.media?.keep ? wordsOf(scene).kept : wordsOf(scene).keep }))] })), scene.platform === "instagram" &&
                                                                         message.edited &&
                                                                         !receipt && (_jsx("div", { className: "tm-ig-edited", children: "Edited" })), scene.platform === "imessage" &&
                                                                         !receipt &&
@@ -340,18 +343,20 @@ function nativeReceipt(scene, message) {
         const readers = isGroupConversation(scene) && scene.platform === "instagram"
             ? receiptReaders(scene, message)
             : [];
-        const verb = scene.platform === "instagram" ? "Seen" : "Read";
+        const words = wordsOf(scene);
+        const verb = scene.platform === "instagram" ? "Seen" : words.read;
         if (readers.length)
             return `${verb} by ${readers.slice(0, 2).join(", ")}${readers.length > 2 ? ` +${readers.length - 2}` : ""}`;
         return `${verb}${scene.platform !== "instagram" && message.timestamp ? ` ${message.timestamp}` : ""}`;
     }
     if (message.status === "failed")
-        return scene.platform === "instagram" ? "Not sent" : "Not Delivered";
+        return scene.platform === "instagram" ? "Not sent" : wordsOf(scene).notDelivered;
+    const words = wordsOf(scene);
     if (message.status === "sending")
-        return "Sending…";
+        return words.sending;
     return scene.platform === "instagram" || message.status === "sent"
-        ? "Sent"
-        : "Delivered";
+        ? words.sent
+        : words.delivered;
 }
 function InstagramReply({ scene, message, reply, }) {
     const person = scene.participants.find((p) => p.id === message.senderId);
@@ -509,9 +514,9 @@ function MessageContent({ slots, message, scene, time, tail = false, }) {
     if (message.kind === "sticker")
         content = message.sticker?.url ? (_jsx(slots.Image, { className: "tm-sticker tm-bubble-content", src: message.sticker.url, alt: message.sticker.alt, referrerPolicy: "no-referrer" })) : (_jsx("span", { className: "tm-sticker-emoji tm-bubble-content", children: message.sticker?.emoji }));
     if (message.kind === "poll")
-        content = (_jsxs("div", { className: "tm-poll tm-bubble-content", children: [_jsx("strong", { children: message.poll?.question }), _jsx("small", { children: "Poll" }), message.poll?.options.map((option) => (_jsxs("div", { className: "tm-poll-option", children: [_jsx("i", { style: {
+        content = (_jsxs("div", { className: "tm-poll tm-bubble-content", children: [_jsx("strong", { children: message.poll?.question }), _jsx("small", { children: wordsOf(scene).poll }), message.poll?.options.map((option) => (_jsxs("div", { className: "tm-poll-option", children: [_jsx("i", { style: {
                                 width: `${clamp(option.votes / Math.max(1, message.poll?.totalVotes ?? 1)) * 100}%`,
-                            } }), _jsx("span", { children: option.text }), _jsxs("b", { children: [Math.round(clamp(option.votes / Math.max(1, message.poll?.totalVotes ?? 1)) * 100), "%"] })] }, option.id))), _jsxs("small", { children: [message.poll?.totalVotes, " votes"] })] }));
+                            } }), _jsx("span", { children: option.text }), _jsxs("b", { children: [Math.round(clamp(option.votes / Math.max(1, message.poll?.totalVotes ?? 1)) * 100), "%"] })] }, option.id))), _jsx("small", { children: wordsOf(scene).votes(message.poll?.totalVotes ?? 0) })] }));
     if (message.kind === "payment")
         content = (_jsxs("div", { className: "tm-payment tm-bubble-content", children: [_jsx("span", { children: scene.platform === "imessage" ? "Cash" : "Payment" }), _jsx("strong", { children: new Intl.NumberFormat("en-US", {
                         style: "currency",
@@ -789,7 +794,7 @@ function FocusStatus({ scene }) {
     const focus = scene.conversation?.focus;
     if (scene.platform !== "imessage" || !focus?.visible)
         return null;
-    return (_jsxs("div", { className: "tm-focus-status", children: [_jsxs("span", { children: [_jsx(NativeIcon, { name: "moon" }), focus.name, " has notifications silenced"] }), focus.notifyAnyway && _jsx("b", { children: "Notify Anyway" })] }));
+    return (_jsxs("div", { className: "tm-focus-status", children: [_jsxs("span", { children: [_jsx(NativeIcon, { name: "moon" }), fill(wordsOf(scene).silenced, { name: focus.name ?? "" })] }), focus.notifyAnyway && _jsx("b", { children: wordsOf(scene).notifyAnyway })] }));
 }
 function PinnedBanner({ slots, scene }) {
     const pin = scene.conversation?.pinned;
@@ -809,6 +814,7 @@ function RecordingComposer({ scene }) {
     return (_jsxs("div", { className: "tm-recording", "data-locked": state.locked || undefined, "data-paused": state.paused || undefined, "aria-hidden": "true", children: [_jsxs("div", { className: "tm-recording-meter", children: [_jsx("span", { className: "tm-recording-dot" }), _jsx("span", { className: "tm-recording-time", children: duration(state.duration) }), state.locked || scene.platform === "imessage" ? (_jsx("div", { className: "tm-recording-wave", children: waveform.map((height, index) => (_jsx("i", { style: { height: `${3 + height * 29}px` } }, index))) })) : (_jsx("span", { className: "tm-slide-cancel", children: "\u2039 slide to cancel" })), !state.locked && scene.platform !== "imessage" && (_jsxs("span", { className: "tm-recording-lock", children: [_jsx(Glyph, { name: "lock", size: 16 }), _jsx(Glyph, { name: "chevron", size: 12 })] })), _jsx("span", { className: "tm-recording-stop", children: state.locked ? (_jsx(Glyph, { name: state.paused ? "mic" : "pause", size: 22 })) : scene.platform === "imessage" ? (_jsx("i", {})) : (_jsx(Glyph, { name: "mic", size: 23 })) })] }), state.locked && (_jsxs("div", { className: "tm-recording-actions", children: [_jsx(NativeIcon, { name: "trash" }), _jsx("span", { children: state.paused ? "Resume recording" : "Pause" }), _jsx("span", { className: "tm-send", children: _jsx(Glyph, { name: scene.platform === "telegram" ? "send" : "arrow-up", size: 20 }) })] }))] }));
 }
 function NativeInteraction({ slots, scene, time }) {
+    const words = wordsOf(scene);
     const picker = scene.interactions?.tapbackPicker;
     const message = scene.messages.find((message) => message.id === picker?.messageId);
     if (picker?.visible && message) {
@@ -831,7 +837,7 @@ function NativeInteraction({ slots, scene, time }) {
                                     return (_jsx("span", { "data-picked": (!recent && picker.selectedEmoji === emoji) || undefined, "data-tapback": scene.platform === "imessage" && !recent ? TAPBACKS[emoji] : undefined, "data-recent": recent || undefined, children: scene.platform === "imessage" && !recent ? (_jsx("span", { className: "tm-tapback-glyph", children: _jsx(TapbackSymbol, { emoji: emoji }) })) : emoji }, index));
                                 }), scene.platform !== "imessage" && _jsx(Glyph, { name: "plus", size: 19 })] }), _jsxs("div", { className: "tm-lifted", children: [scene.platform === "imessage" && (_jsx("span", { className: "tm-emoji-button", children: _jsxs("svg", { width: "22", height: "22", viewBox: "0 0 24 24", "aria-hidden": "true", children: [_jsx("circle", { cx: "12", cy: "12", r: "11", fill: "currentColor" }), _jsx("ellipse", { cx: "8.6", cy: "9.3", rx: "1.4", ry: "1.9", fill: "var(--tm-menu-fill)" }), _jsx("ellipse", { cx: "15.4", cy: "9.3", rx: "1.4", ry: "1.9", fill: "var(--tm-menu-fill)" }), _jsx("path", { d: "M6.6 13.4h10.8a5.4 5.4 0 0 1-10.8 0Z", fill: "var(--tm-menu-fill)" })] }) })), _jsxs("div", { className: "tm-bubble", "data-side": outgoing ? "out" : "in", "data-kind": message.kind, "data-tail": scene.platform === "imessage" || undefined, "data-emoji": (scene.platform === "imessage" && message.kind === "text" && emojiOnly(message.text)) || undefined, "data-scheduled": (scene.platform === "imessage" && !!message.scheduledAt) || undefined, "data-tint": link?.tone, style: link ? css({ "--tm-link-tint": message.link?.tint, "--tm-link-surface": link.surface, "--tm-link-domain": link.domain }) : undefined, children: [_jsx(BubblePaint, { platform: scene.platform, message: message }), scene.platform === "imessage" &&
                                             message.kind !== "sticker" &&
-                                            !emojiOnly(message.text) && (_jsx(BubbleTail, { platform: scene.platform, scheduled: !!message.scheduledAt })), _jsx(MessageContent, { slots: slots, message: message, scene: scene, time: time, tail: true })] })] }), picker.showMenu && scene.platform === "imessage" && (_jsxs("div", { className: "tm-message-menu", children: [_jsxs("span", { children: [_jsx(MenuIcon, { name: "reply" }), "Reply"] }), _jsxs("span", { children: [_jsx(MenuIcon, { name: "sticker" }), "Attach Sticker"] }), _jsx("hr", {}), outgoing && picker.undoable && message.kind === "text" && (_jsxs(_Fragment, { children: [_jsxs("span", { children: [_jsx(MenuIcon, { name: "edit" }), "Edit"] }), _jsxs("span", { children: [_jsx(MenuIcon, { name: "undo" }), "Undo Send"] }), _jsx("hr", {})] })), _jsxs("span", { children: [_jsx(MenuIcon, { name: "copy" }), "Copy"] }), message.kind === "text" && (_jsxs(_Fragment, { children: [_jsxs("span", { children: [_jsx(MenuIcon, { name: "translate" }), "Translate"] }), _jsxs("span", { children: [_jsx(MenuIcon, { name: "select" }), "Select"] })] })), _jsxs("span", { children: [_jsx(MenuIcon, { name: "more" }), "More\u2026"] })] })), picker.showMenu && scene.platform !== "imessage" && (_jsxs("div", { className: "tm-message-menu", children: [_jsxs("span", { children: ["Reply", _jsx(NativeIcon, { name: "reply" })] }), _jsxs("span", { children: ["Copy", _jsx(Glyph, { name: "file", size: 17 })] }), outgoing && (_jsxs("span", { children: ["Edit", _jsx(NativeIcon, { name: "edit" })] })), _jsxs("span", { children: ["More\u2026", _jsx(Glyph, { name: "more", size: 17 })] })] }))] })] }));
+                                            !emojiOnly(message.text) && (_jsx(BubbleTail, { platform: scene.platform, scheduled: !!message.scheduledAt })), _jsx(MessageContent, { slots: slots, message: message, scene: scene, time: time, tail: true })] })] }), picker.showMenu && scene.platform === "imessage" && (_jsxs("div", { className: "tm-message-menu", children: [_jsxs("span", { children: [_jsx(MenuIcon, { name: "reply" }), words.reply] }), _jsxs("span", { children: [_jsx(MenuIcon, { name: "sticker" }), words.attachSticker] }), _jsx("hr", {}), outgoing && picker.undoable && message.kind === "text" && (_jsxs(_Fragment, { children: [_jsxs("span", { children: [_jsx(MenuIcon, { name: "edit" }), words.edit] }), _jsxs("span", { children: [_jsx(MenuIcon, { name: "undo" }), words.undoSend] }), _jsx("hr", {})] })), _jsxs("span", { children: [_jsx(MenuIcon, { name: "copy" }), words.copy] }), message.kind === "text" && (_jsxs(_Fragment, { children: [_jsxs("span", { children: [_jsx(MenuIcon, { name: "translate" }), words.translate] }), _jsxs("span", { children: [_jsx(MenuIcon, { name: "select" }), words.select] })] })), _jsxs("span", { children: [_jsx(MenuIcon, { name: "more" }), words.more] })] })), picker.showMenu && scene.platform !== "imessage" && (_jsxs("div", { className: "tm-message-menu", children: [_jsxs("span", { children: ["Reply", _jsx(NativeIcon, { name: "reply" })] }), _jsxs("span", { children: ["Copy", _jsx(Glyph, { name: "file", size: 17 })] }), outgoing && (_jsxs("span", { children: ["Edit", _jsx(NativeIcon, { name: "edit" })] })), _jsxs("span", { children: ["More\u2026", _jsx(Glyph, { name: "more", size: 17 })] })] }))] })] }));
     }
     const tray = scene.interactions?.attachmentTray;
     if (!tray?.visible)
@@ -839,13 +845,13 @@ function NativeInteraction({ slots, scene, time }) {
     const items = tray.items ?? [];
     const apps = scene.platform === "imessage"
         ? [
-            ["Camera", "camera"],
-            ["Photos", "camera"],
-            ["Stickers", "sticker"],
+            [words.camera, "camera"],
+            [words.photos, "camera"],
+            [words.stickers, "sticker"],
             ["Apple Cash", "gift"],
-            ["Audio", "wave"],
-            ["Store", "more"],
-            ["Location", "pin"],
+            [words.audio, "wave"],
+            [words.store, "more"],
+            [words.location, "pin"],
         ]
         : scene.platform === "whatsapp"
             ? [
@@ -873,7 +879,7 @@ function NativeInteraction({ slots, scene, time }) {
                                         "#398af1",
                                         "#85858c",
                                     ][index],
-                                }, children: _jsx(Glyph, { name: icon, size: 24 }) })), _jsx("b", { children: label })] }, label))) })) : (_jsxs(_Fragment, { children: [_jsxs("div", { className: "tm-tray-heading", children: [_jsx("span", { children: tray.kind === "photos" ? "Photos" : "Stickers" }), _jsx(Glyph, { name: "close", size: 20 })] }), _jsx("div", { className: "tm-tray-tabs", children: tray.kind === "photos" ? (_jsxs(_Fragment, { children: [_jsx("span", { children: "Library" }), _jsx("span", { children: "Albums" })] })) : (_jsxs(_Fragment, { children: [_jsx(Glyph, { name: "clock", size: 20 }), _jsx(Glyph, { name: "sticker", size: 20 }), _jsx(Glyph, { name: "smile", size: 20 })] })) }), items.length ? (_jsx("div", { className: "tm-asset-tray", children: items.map((item) => (_jsxs("div", { children: [item.url ? (_jsx(slots.Image, { src: item.url, alt: item.label, referrerPolicy: "no-referrer" })) : (_jsx("span", { children: item.emoji })), item.label && _jsx("small", { children: item.label })] }, item.id))) })) : (_jsxs("div", { className: "tm-tray-empty", children: [_jsx(Glyph, { name: tray.kind === "photos" ? "camera" : "sticker", size: 40 }), _jsx("strong", { children: tray.kind === "photos" ? "No Photos" : "No Recent Stickers" })] }))] }))] }) }));
+                                }, children: _jsx(Glyph, { name: icon, size: 24 }) })), _jsx("b", { children: label })] }, label))) })) : (_jsxs(_Fragment, { children: [_jsxs("div", { className: "tm-tray-heading", children: [_jsx("span", { children: tray.kind === "photos" ? words.photos : words.stickers }), _jsx(Glyph, { name: "close", size: 20 })] }), _jsx("div", { className: "tm-tray-tabs", children: tray.kind === "photos" ? (_jsxs(_Fragment, { children: [_jsx("span", { children: words.library }), _jsx("span", { children: words.albums })] })) : (_jsxs(_Fragment, { children: [_jsx(Glyph, { name: "clock", size: 20 }), _jsx(Glyph, { name: "sticker", size: 20 }), _jsx(Glyph, { name: "smile", size: 20 })] })) }), items.length ? (_jsx("div", { className: "tm-asset-tray", children: items.map((item) => (_jsxs("div", { children: [item.url ? (_jsx(slots.Image, { src: item.url, alt: item.label, referrerPolicy: "no-referrer" })) : (_jsx("span", { children: item.emoji })), item.label && _jsx("small", { children: item.label })] }, item.id))) })) : (_jsxs("div", { className: "tm-tray-empty", children: [_jsx(Glyph, { name: tray.kind === "photos" ? "camera" : "sticker", size: 40 }), _jsx("strong", { children: tray.kind === "photos" ? words.noPhotos : words.noStickers })] }))] }))] }) }));
 }
 /** Original round drawings for the iOS 26 iMessage "+" menu, in list order. */
 function TrayIcon({ index }) {
@@ -922,13 +928,15 @@ function Composer({ scene, time }) {
     const referenced = scene.messages.find((message) => message.id === context?.messageId);
     const person = scene.participants.find((participant) => participant.id === referenced?.senderId);
     const placeholder = mode === "reply" && scene.platform === "imessage"
-        ? "Reply"
+        ? wordsOf(scene).reply
         : scene.platform === "imessage" &&
             scene.composer.placeholder === "iMessage" &&
             scene.header?.transport !== undefined &&
             scene.header.transport !== "imessage"
-            ? `Text Message · ${scene.header.transport.toUpperCase()}`
-            : scene.composer.placeholder;
+            ? fill(wordsOf(scene).textMessage, { transport: scene.header.transport.toUpperCase() })
+            : scene.platform === "imessage" && scene.composer.placeholder === "iMessage"
+                ? wordsOf(scene).placeholder
+                : scene.composer.placeholder;
     if (mode === "recording" && context)
         return _jsx(RecordingComposer, { scene: scene });
     if (scene.platform === "instagram")
@@ -979,7 +987,7 @@ function Keyboard({ scene }) {
     if (sceneOs(scene) === "android")
         return _jsx(AndroidKeyboard, { scene: scene });
     if (scene.composer.keyboard === "emoji")
-        return (_jsxs("div", { className: "tm-keyboard tm-emoji-keyboard", "aria-hidden": "true", children: [_jsxs("div", { className: "tm-emoji-search", children: [_jsx(Glyph, { name: "smile", size: 17 }), _jsx("span", { children: "Search Emoji" })] }), _jsx("span", { className: "tm-emoji-heading", children: "SMILEYS & PEOPLE" }), _jsx("div", { className: "tm-emoji-grid", children: [
+        return (_jsxs("div", { className: "tm-keyboard tm-emoji-keyboard", "aria-hidden": "true", children: [_jsxs("div", { className: "tm-emoji-search", children: [_jsx(Glyph, { name: "smile", size: 17 }), _jsx("span", { children: wordsOf(scene).searchEmoji })] }), _jsx("span", { className: "tm-emoji-heading", children: "SMILEYS & PEOPLE" }), _jsx("div", { className: "tm-emoji-grid", children: [
                         "😀",
                         "😃",
                         "😄",
