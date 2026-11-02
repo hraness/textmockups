@@ -396,14 +396,19 @@ describe("iMessage bubble paint", () => {
     expect(incoming).toContain('<span class="tm-edited">Edited</span>');
   });
 
-  test("standard thumbs and custom skin tones use native emoji for either reactor", () => {
-    for (const participantId of ["me", "jamie"]) {
-      for (const emoji of ["👍", "👎", "👍🏽", "👎🏻"]) {
-        const html = renderMessage({ text: "A reaction", reactions: [{ id: "r", emoji, participantId }] });
-        expect(html).toContain(`<span class="tm-tapback-glyph">${emoji}</span>`);
-        expect(html).not.toContain("tm-glove");
-      }
+  test("their thumbs are native emoji; yours are the white glove; skin tones stay emoji", () => {
+    for (const emoji of ["👍", "👎", "👍🏽", "👎🏻"]) {
+      const theirs = renderMessage({ text: "A reaction", reactions: [{ id: "r", emoji, participantId: "jamie" }] });
+      expect(theirs).toContain(`<span class="tm-tapback-glyph">${emoji}</span>`);
+      expect(theirs).not.toContain("tm-glove");
     }
+    for (const emoji of ["👍", "👎"]) {
+      const mine = renderMessage({ text: "A reaction", reactions: [{ id: "r", emoji, participantId: "me" }] });
+      expect(mine).toContain('class="tm-glove"');
+      expect(mine).not.toContain(`>${emoji}<`);
+    }
+    const toned = renderMessage({ text: "A reaction", reactions: [{ id: "r", emoji: "👍🏽", participantId: "me" }] });
+    expect(toned).toContain('<span class="tm-tapback-glyph">👍🏽</span>');
   });
 
   test("the iMessage picker shares the badge symbols and keeps HA HA distinct from 😂", () => {

@@ -66,7 +66,9 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
     const rowAvatars = scene.appearance.showAvatars || (scene.platform === "imessage" && group);
     const self = scene.participants.find((person) => person.isSelf);
     const other = scene.participants.find((person) => scene.contact.participantIds.includes(person.id) && !person.isSelf);
+    const reveal = scene.composer.keyboardReveal ?? 1;
     const keyboard = scene.composer.keyboard !== "hidden" &&
+        reveal > 0 &&
         scene.composer.context?.mode !== "recording";
     const selected = exporting ? undefined : selectedMessageId;
     const mode = scene.composer.context?.mode ?? "normal";
@@ -109,7 +111,8 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                     "--tm-thread-w": `${scene.device.width - 40}px`,
                     "--tm-radius": `${scene.appearance.bubbleRadius}px`,
                     "--tm-composer-extra": `${extraComposerHeight}px`,
-                    "--tm-keyboard-height": `${keyboardHeight}px`,
+                    "--tm-keyboard-height": `${keyboardHeight * reveal}px`,
+                    "--tm-keyboard-full": `${keyboardHeight}px`,
                     "--tm-bezel": model ? `${model.bezel}px` : undefined,
                     "--tm-screen-radius": model ? `${model.radius}px` : undefined,
                     "--tm-cutout-w": model ? `${model.cutout.width}px` : undefined,
@@ -245,7 +248,7 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                                         }, children: person.name })), reply && scene.platform === "instagram" && (_jsx(InstagramReply, { scene: scene, message: message, reply: reply })), _jsxs("div", { className: "tm-bubble", "data-side": outgoing ? "out" : "in", "data-tail": last || undefined, "data-first": first || undefined, "data-kind": message.kind, "data-emoji": (message.kind === "text" &&
                                                                             emojiOnly(message.text)) ||
                                                                             undefined, "data-selected": selected === message.id || undefined, "data-effect": message.effect, "data-scheduled": !!message.scheduledAt || undefined, "data-interactive": (!!onSelectMessage && !exporting) || undefined, style: {
-                                                                            ...messageStyle(message, playhead, time !== undefined),
+                                                                            ...messageStyle(message, playhead, time !== undefined, scene.platform === "imessage" ? (outgoing ? "out" : "in") : undefined),
                                                                             ...(message.link?.tint && {
                                                                                 "--tm-link-tint": message.link.tint,
                                                                                 "--tm-link-surface": link?.surface,
@@ -286,7 +289,7 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                                                             : ""), outgoing && (_jsx(DeliveryGlyph, { status: message.status }))] })), scene.platform === "google-messages" &&
                                                                                 outgoing &&
                                                                                 message.kind !== "sticker" &&
-                                                                                !emojiOnly(message.text) && (_jsx(GoogleReceipt, { status: message.status })), message.reactions.length > 0 && (_jsx(ReactionBadges, { slots: slots, message: message, scene: scene })), message.stickers?.map((sticker) => (_jsx("span", { className: "tm-attached-sticker", "data-sticker-id": sticker.id, style: {
+                                                                                !emojiOnly(message.text) && (_jsx(GoogleReceipt, { status: message.status })), message.reactions.length > 0 && (_jsx(ReactionBadges, { slots: slots, message: message, scene: scene, time: time !== undefined ? playhead : undefined })), message.stickers?.map((sticker) => (_jsx("span", { className: "tm-attached-sticker", "data-sticker-id": sticker.id, style: {
                                                                                     left: `${sticker.x * 100}%`,
                                                                                     top: `${sticker.y * 100}%`,
                                                                                     zIndex: 5 + sticker.zIndex,
@@ -318,7 +321,21 @@ function Avatar({ slots, name, url, color, className = "", hidden = false, }) {
 }
 function StatusBar({ scene, Text = PhoneText, }) {
     const { statusBar: status } = scene;
-    return (_jsxs("div", { className: "tm-status-bar", "aria-hidden": "true", children: [_jsxs("span", { className: "tm-status-left", children: [_jsx("span", { className: "tm-clock", children: _jsx(Text, { field: "clock", value: status.time, children: status.time }) }), status.silent && (_jsxs("svg", { className: "tm-silent", width: "15.33", height: "16.67", viewBox: "0 0 46 50", children: [_jsxs("mask", { id: "tm-silent-cut", children: [_jsx("rect", { width: "46", height: "50", fill: "#fff" }), _jsx("path", { d: "M3.5 4.5 41.5 43.5", stroke: "#000", strokeWidth: "10" })] }), _jsxs("g", { fill: "currentColor", mask: "url(#tm-silent-cut)", children: [_jsx("path", { d: "M22.5 2C15.5 2 11 7 9.6 13L8 24c-.7 3.5-3.5 5.5-5.5 7.5-1.3 1.5-.7 5.5 2.5 5.5h35c3.2 0 3.8-4 2.5-5.5-2-2-4.8-4-5.5-7.5l-1.6-11C34 7 29.5 2 22.5 2Z" }), _jsx("path", { d: "M16 41h13c0 3.2-2.9 5.3-6.5 5.3S16 44.2 16 41Z" })] }), _jsx("path", { d: "M3.5 4.5 41.5 43.5", stroke: "currentColor", strokeWidth: "3.6", strokeLinecap: "round" })] }))] }), _jsxs("span", { className: "tm-status-right", children: [status.cellular2 === undefined ? (_jsx("svg", { className: "tm-cellular", width: "21.67", height: "13", viewBox: "0 0 65 39", children: [0, 1, 2, 3].map((bar) => (_jsx("rect", { x: bar * 18, y: 27 - bar * 8, width: "11", height: 12 + bar * 8, rx: "3.3", fill: "currentColor", opacity: bar < status.cellular ? 1 : 0.2 }, bar))) })) : (_jsx("svg", { className: "tm-cellular", width: "21.67", height: "15", viewBox: "0 0 65 45", children: [0, 1, 2, 3].map((bar) => (_jsxs("g", { fill: "currentColor", children: [_jsx("rect", { x: bar * 18, y: 14 - bar * 4.6, width: "11", height: 13 + bar * 4.6, rx: "4.2", opacity: bar < status.cellular ? 1 : 0.2 }), _jsx("rect", { x: bar * 18, y: "33", width: "11", height: "11.7", rx: "4.2", opacity: bar < (status.cellular2 ?? 0) ? 1 : 0.2 })] }, bar))) })), status.wifi > 0 ? (_jsx("svg", { className: "tm-wifi", width: "17.67", height: "13.67", viewBox: "0 0 53 41", children: _jsxs("g", { fill: "none", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round", children: [_jsx("path", { opacity: status.wifi >= 3 ? 1 : 0.2, strokeWidth: "9", d: "M2.1 13.9a36.5 36.5 0 0 1 48.8 0" }), _jsx("path", { opacity: status.wifi >= 2 ? 1 : 0.2, strokeWidth: "8", d: "M11.8 24.6a22 22 0 0 1 29.4 0" }), _jsx("path", { opacity: status.wifi >= 1 ? 1 : 0.2, fill: "currentColor", strokeWidth: "2.4", d: "M26.5 39.6 18.8 31.9a10.8 10.8 0 0 1 15.4 0Z" })] }) })) : (status.carrier && _jsx("span", { className: "tm-network", children: status.carrier })), _jsxs("span", { className: "tm-battery", "data-low": status.battery <= 20 || undefined, "data-charging": status.charging || undefined, children: [_jsx("i", { style: { width: `${status.battery}%` } }), status.charging && _jsx("b", { children: "\u03DF" })] })] })] }));
+    return (_jsxs("div", { className: "tm-status-bar", "aria-hidden": "true", children: [_jsxs("span", { className: "tm-status-left", children: [_jsx("span", { className: "tm-clock", children: _jsx(Text, { field: "clock", value: status.time, children: status.time }) }), status.silent && (_jsxs("svg", { className: "tm-silent", width: "15.33", height: "16.67", viewBox: "0 0 46 50", children: [_jsxs("mask", { id: "tm-silent-cut", children: [_jsx("rect", { width: "46", height: "50", fill: "#fff" }), _jsx("path", { d: "M3.5 4.5 41.5 43.5", stroke: "#000", strokeWidth: "10" })] }), _jsxs("g", { fill: "currentColor", mask: "url(#tm-silent-cut)", children: [_jsx("path", { d: "M22.5 2C15.5 2 11 7 9.6 13L8 24c-.7 3.5-3.5 5.5-5.5 7.5-1.3 1.5-.7 5.5 2.5 5.5h35c3.2 0 3.8-4 2.5-5.5-2-2-4.8-4-5.5-7.5l-1.6-11C34 7 29.5 2 22.5 2Z" }), _jsx("path", { d: "M16 41h13c0 3.2-2.9 5.3-6.5 5.3S16 44.2 16 41Z" })] }), _jsx("path", { d: "M3.5 4.5 41.5 43.5", stroke: "currentColor", strokeWidth: "3.6", strokeLinecap: "round" })] }))] }), _jsxs("span", { className: "tm-status-right", children: [status.cellular2 === undefined ? (_jsx("svg", { className: "tm-cellular", width: "21.67", height: "13.67", viewBox: "0 0 65 41", preserveAspectRatio: "none", children: [0, 1, 2, 3].map((bar) => (_jsx("rect", { x: bar * 18, y: 41 - [16, 23, 32, 41][bar], width: "11", height: [16, 23, 32, 41][bar], rx: "3.9", fill: "currentColor", opacity: bar < status.cellular ? 1 : 0.2 }, bar))) })) : (_jsx("svg", { className: "tm-cellular", width: "21.67", height: "15", viewBox: "0 0 65 45", children: [0, 1, 2, 3].map((bar) => (_jsxs("g", { fill: "currentColor", children: [_jsx("rect", { x: bar * 18, y: 14 - bar * 4.6, width: "11", height: 13 + bar * 4.6, rx: "4.2", opacity: bar < status.cellular ? 1 : 0.2 }), _jsx("rect", { x: bar * 18, y: "33", width: "11", height: "11.7", rx: "4.2", opacity: bar < (status.cellular2 ?? 0) ? 1 : 0.2 })] }, bar))) })), status.wifi > 0 ? (_jsx("svg", { className: "tm-wifi", width: "19.67", height: "14", viewBox: "0 0 19.67 14", preserveAspectRatio: "none", children: _jsx("g", { fill: "currentColor", stroke: "currentColor", strokeWidth: "0.8", strokeLinejoin: "round", children: [
+                                [10.85, 14.05],
+                                [6.05, 9.3],
+                                [0, 4.45],
+                            ].map(([inner, outer], band) => (_jsx("path", { opacity: status.wifi >= 3 - band ? 1 : 0.2, d: wifiBand(inner, outer) }, band))) }) })) : (status.carrier && _jsx("span", { className: "tm-network", children: status.carrier })), _jsxs("span", { className: "tm-battery", "data-low": status.battery <= 20 || undefined, "data-charging": status.charging || undefined, children: [_jsx("i", { style: { width: `${status.battery}%` } }), status.charging && (_jsxs("svg", { className: "tm-bolt", viewBox: "-6 -8 12 16", children: [_jsx("path", { className: "tm-bolt-cut", d: BOLT, strokeWidth: "2.4", strokeLinejoin: "round" }), _jsx("path", { d: BOLT, fill: "currentColor", stroke: "currentColor", strokeWidth: "0.7", strokeLinejoin: "round" })] }))] })] })] }));
+}
+const BOLT = "M2.1 -7.2 L-4.7 0.9 H-0.25 L-2.3 7.2 L4.7 -0.9 H0.25 Z";
+/** One wifi band: the ring between two radii about the apex, 45° either side of up. */
+function wifiBand(inner, outer) {
+    const [x, y] = [9.835, 14.15];
+    const point = (r, side) => `${(x + side * r * Math.SQRT1_2).toFixed(3)} ${(y - r * Math.SQRT1_2).toFixed(3)}`;
+    const [r, R] = [Math.max(0, inner + 0.6), outer - 0.6];
+    return r > 0
+        ? `M${point(R, -1)}A${R} ${R} 0 0 1 ${point(R, 1)}L${point(r, 1)}A${r} ${r} 0 0 0 ${point(r, -1)}Z`
+        : `M${point(R, -1)}A${R} ${R} 0 0 1 ${point(R, 1)}L${x} ${y - 0.75}Z`;
 }
 function ConversationAvatar({ slots, scene, person, }) {
     if (!isGroupConversation(scene) || scene.contact.avatar)
@@ -505,9 +522,9 @@ function MessageContent({ slots, message, scene, time, tail = false, }) {
         !message.link.image)
         content = (_jsxs("div", { className: "tm-link-compact tm-bubble-content", children: [_jsx(slots.Image, { src: message.link.icon, alt: "", referrerPolicy: "no-referrer" }), _jsxs("span", { children: [_jsx("strong", { children: message.link.title }), _jsx("small", { children: safeHostname(message.link.url) })] })] }));
     else if (message.kind === "link")
-        content = (_jsxs("div", { className: "tm-link-card tm-bubble-content", children: [message.link?.image ? (_jsx(slots.Image, { src: message.link.image, alt: "", referrerPolicy: "no-referrer" })) : (_jsxs("div", { className: "tm-link-art", children: [_jsx("span", { children: "\u2197" }), _jsx("span", { children: safeHostname(message.link?.url) })] })), _jsxs("div", { children: [_jsx("strong", { children: message.link?.title }), message.link?.description && _jsx("p", { children: message.link.description }), _jsx("small", { children: safeHostname(message.link?.url) })] })] }));
+        content = (_jsxs("div", { className: "tm-link-card tm-bubble-content", children: [message.link?.image ? (_jsx(slots.Image, { src: message.link.image, alt: "", referrerPolicy: "no-referrer" })) : isMapLink(message.link?.url) ? (_jsx("div", { className: "tm-link-map", children: _jsx(MapArt, { seed: message.link.url }) })) : (_jsxs("div", { className: "tm-link-art", children: [_jsx("span", { children: "\u2197" }), _jsx("span", { children: safeHostname(message.link?.url) })] })), _jsxs("div", { children: [_jsx("strong", { children: message.link?.title }), message.link?.description && _jsx("p", { children: message.link.description }), _jsx("small", { children: safeHostname(message.link?.url) })] })] }));
     if (message.kind === "location")
-        content = (_jsxs("div", { className: "tm-location tm-bubble-content", children: [_jsxs("div", { className: "tm-map", children: [_jsx("i", {}), _jsx("i", {}), _jsx("i", {}), _jsx("span", { children: _jsx(Glyph, { name: "pin", size: 29 }) })] }), _jsx("strong", { children: message.location?.label }), _jsx("small", { children: message.location?.address ||
+        content = (_jsxs("div", { className: "tm-location tm-bubble-content", children: [_jsx("div", { className: "tm-map", children: _jsx(MapArt, { seed: `${message.location?.latitude},${message.location?.longitude}` }) }), _jsx("strong", { children: message.location?.label }), _jsx("small", { children: message.location?.address ||
                         `${message.location?.latitude}, ${message.location?.longitude}` })] }));
     if (message.kind === "contact")
         content = (_jsxs("div", { className: "tm-contact-card tm-bubble-content", children: [_jsx(Avatar, { slots: slots, name: message.sharedContact?.name ?? "Contact", url: message.sharedContact?.avatar }), _jsx("strong", { children: message.sharedContact?.name }), _jsx("small", { children: message.sharedContact?.phone }), _jsx("span", { children: "Contact card" })] }));
@@ -547,6 +564,18 @@ function EmojiText({ text }) {
         parts.push(text.slice(index));
     return _jsx(_Fragment, { children: parts });
 }
+/** iOS pops a fresh tapback in from small, past full size, and back. */
+function tapbackPop(message, emoji, time) {
+    if (time === undefined)
+        return undefined;
+    const at = Math.max(...message.reactions.filter((r) => r.emoji === emoji).map((r) => r.at));
+    const age = time - at;
+    if (!(at > 0) || age < 0 || age >= 0.5)
+        return undefined;
+    const t = age / 0.5;
+    const scale = 1 - Math.exp(-7 * t) * Math.cos(t * 9) * 0.7;
+    return { transform: `scale(${scale})`, opacity: Math.min(1, t * 6) };
+}
 function groupedReactions(message, scene) {
     const groups = new Map();
     for (const reaction of message.reactions) {
@@ -562,7 +591,7 @@ function groupedReactions(message, scene) {
     }
     return [...groups.values()];
 }
-function ReactionBadges({ slots, message, scene, }) {
+function ReactionBadges({ slots, message, scene, time, }) {
     const groups = groupedReactions(message, scene);
     const label = groups
         .map((group) => `${group.emoji}: ${group.names.join(", ")}`)
@@ -572,7 +601,7 @@ function ReactionBadges({ slots, message, scene, }) {
         .reduce((total, group) => total + group.names.length, 0);
     if (scene.platform === "instagram")
         return (_jsx("div", { className: "tm-reactions tm-ig-reactions", role: "img", "aria-label": `Reactions — ${label}`, title: label, "data-count": message.reactions.length, children: _jsxs("span", { className: "tm-reaction", children: [groups.slice(0, 3).map((group) => (_jsx("span", { children: group.emoji }, group.emoji))), message.reactions.length > 1 && (_jsx("b", { className: "tm-reaction-count", children: message.reactions.length }))] }) }));
-    return (_jsxs("div", { className: "tm-reactions", "data-count": message.reactions.length, role: "img", "aria-label": `Reactions — ${label}`, title: label, children: [groups.slice(0, 3).map((group, index) => scene.platform === "imessage" ? (_jsxs("span", { className: "tm-reaction tm-tapback", style: { zIndex: 3 - index }, "data-self": group.self || undefined, "data-tapback": TAPBACKS[group.emoji], children: [_jsx("i", { className: "tm-tapback-ring" }), _jsx("i", { className: "tm-tapback-shape", children: _jsx("i", { className: "tm-paint" }) }), _jsx("span", { className: "tm-tapback-glyph", children: _jsx(TapbackSymbol, { emoji: group.emoji }) }), group.names.length > 1 && (_jsx("b", { className: "tm-reaction-count", children: group.names.length }))] }, group.emoji)) : (_jsx("span", { className: "tm-reaction", style: { zIndex: index + 1 }, "data-self": group.self || undefined, children: _jsxs("span", { children: [group.emoji, group.names.length > 1 && (_jsx("b", { className: "tm-reaction-count", children: group.names.length }))] }) }, group.emoji))), overflow > 0 && (_jsxs("span", { className: "tm-reaction tm-reaction-count", title: groups
+    return (_jsxs("div", { className: "tm-reactions", "data-count": message.reactions.length, role: "img", "aria-label": `Reactions — ${label}`, title: label, children: [groups.slice(0, 3).map((group, index) => scene.platform === "imessage" ? (_jsxs("span", { className: "tm-reaction tm-tapback", style: { zIndex: 3 - index, ...tapbackPop(message, group.emoji, time) }, "data-self": group.self || undefined, "data-tapback": TAPBACKS[group.emoji], children: [_jsx("i", { className: "tm-tapback-ring" }), _jsx("i", { className: "tm-tapback-shape", children: _jsx("i", { className: "tm-paint" }) }), _jsx("span", { className: "tm-tapback-glyph", children: _jsx(TapbackSymbol, { emoji: group.emoji, self: group.self }) }), group.names.length > 1 && (_jsx("b", { className: "tm-reaction-count", children: group.names.length }))] }, group.emoji)) : (_jsx("span", { className: "tm-reaction", style: { zIndex: index + 1 }, "data-self": group.self || undefined, children: _jsxs("span", { children: [group.emoji, group.names.length > 1 && (_jsx("b", { className: "tm-reaction-count", children: group.names.length }))] }) }, group.emoji))), overflow > 0 && (_jsxs("span", { className: "tm-reaction tm-reaction-count", title: groups
                     .slice(3)
                     .map((group) => `${group.emoji}: ${group.names.join(", ")}`)
                     .join("; "), children: ["+", overflow] }))] }));
@@ -679,16 +708,18 @@ const TAPBACKS = {
     "‼": "emphasize",
     "❓": "question",
 };
-function TapbackSymbol({ emoji }) {
+function TapbackSymbol({ emoji, self }) {
     const kind = TAPBACKS[emoji];
-    return kind ? _jsx(TapbackGlyph, { kind: kind }) : emoji;
+    return kind ? _jsx(TapbackGlyph, { kind: kind, self: self }) : emoji;
 }
-function TapbackGlyph({ kind }) {
+function TapbackGlyph({ kind, self }) {
     if (kind === "heart")
         return (_jsxs("svg", { viewBox: "0 0 56 49", width: "18.7", height: "16.3", "aria-hidden": "true", children: [_jsxs("defs", { children: [_jsxs("radialGradient", { id: "tm-heart-body", cx: "0.5", cy: "0.32", r: "0.72", children: [_jsx("stop", { offset: "0", stopColor: "#ffc3dc" }), _jsx("stop", { offset: "0.45", stopColor: "#ff92c4" }), _jsx("stop", { offset: "1", stopColor: "#ff4f9f" })] }), _jsxs("radialGradient", { id: "tm-heart-shine", cx: "0.5", cy: "0.5", r: "0.5", children: [_jsx("stop", { offset: "0", stopColor: "#fff", stopOpacity: "0.5" }), _jsx("stop", { offset: "1", stopColor: "#fff", stopOpacity: "0" })] })] }), _jsx("path", { d: "M28 48.2C21.6 43.4 1.4 30.6 1.4 15.4 1.4 7 7.4 1 15.2 1c5.8 0 10.2 3.2 12.8 7.6C30.6 4.2 35 1 40.8 1 48.6 1 54.6 7 54.6 15.4c0 15.2-20.2 28-26.6 32.8Z", fill: "url(#tm-heart-body)" }), _jsx("ellipse", { cx: "16", cy: "9.5", rx: "9", ry: "6", fill: "url(#tm-heart-shine)" }), _jsx("ellipse", { cx: "40", cy: "9.5", rx: "9", ry: "6", fill: "url(#tm-heart-shine)" }), _jsx("ellipse", { cx: "28", cy: "15", rx: "7", ry: "5", fill: "url(#tm-heart-shine)" })] }));
+    // Your own thumbs, on the blue badge, are a white glove shaded light blue: a round cuff, the
+    // thumb leaning left, and four stepped fingers. Thumbs down turns it over. Theirs stay emoji.
     if (kind === "like" || kind === "dislike")
-        return kind === "like" ? "👍" : "👎";
-    // iOS 26's question, emphasis and HA HA keep their own colored puff palettes.
+        return self ? (_jsxs("svg", { viewBox: "0 0 17 18", width: "17", height: "18", "aria-hidden": "true", className: "tm-glove", style: kind === "dislike" ? { transform: "scale(-1, -1)" } : undefined, children: [_jsxs("defs", { children: [_jsxs("linearGradient", { id: "tm-glove", x1: "0.8", y1: "0", x2: "0.5", y2: "1", children: [_jsx("stop", { offset: "0.55", stopColor: "#fff" }), _jsx("stop", { offset: "1", stopColor: "#cfe6f4" })] }), _jsxs("linearGradient", { id: "tm-glove-cuff", x1: "1", y1: "0.3", x2: "0", y2: "0.8", children: [_jsx("stop", { offset: "0.4", stopColor: "#fff" }), _jsx("stop", { offset: "1", stopColor: "#cfe6f4" })] })] }), _jsx("ellipse", { cx: "2.6", cy: "13.1", rx: "2.6", ry: "3.85", transform: "rotate(-10 2.6 13.1)", fill: "url(#tm-glove-cuff)" }), _jsxs("g", { fill: "url(#tm-glove)", children: [_jsx("path", { d: "M3.9 9.6C5.3 8.5 6.7 6.1 7.6 3.7l.5-2.1C8.4.6 9 0 9.7 0c1 0 1.7.9 1.5 2.2l-.6 4.1c-.1.9.5 1.6 1.5 1.6h.9v9.9H8.6c-1.9 0-3.4-.5-4.7-1.3Z" }), _jsx("rect", { x: "10.8", y: "7.9", width: "6.1", height: "2.6", rx: "1.3" }), _jsx("rect", { x: "10.8", y: "10.4", width: "5.7", height: "2.6", rx: "1.3" }), _jsx("rect", { x: "10.6", y: "12.9", width: "5.3", height: "2.6", rx: "1.3" }), _jsx("rect", { x: "9.8", y: "15.3", width: "5.3", height: "2.6", rx: "1.3" })] }), _jsx("path", { d: "M13.2 10.45h2.9M13.2 12.95h2.5M12.8 15.4h2.3M9.4 17.85h4.6", fill: "none", stroke: "#9ccbe6", strokeWidth: "0.5", strokeLinecap: "round" })] })) : kind === "like" ? "👍" : "👎";
+    // Their question, emphasis and HA HA keep iOS 26's colored puffs; yours are white (phone.css).
     const strokes = {
         haha: [
             "0 0 20 19",
@@ -709,6 +740,54 @@ function TapbackGlyph({ kind }) {
     const [viewBox, d, width] = strokes[kind];
     const [, , boxWidth, boxHeight] = viewBox.split(" ").map(Number);
     return (_jsx("svg", { viewBox: viewBox, width: boxWidth, height: boxHeight, "aria-hidden": "true", children: _jsxs("g", { fill: "none", strokeLinecap: "round", strokeLinejoin: "round", children: [_jsx("path", { d: d, stroke: "var(--tm-puff-edge, currentColor)", strokeWidth: width + 0.7 }), _jsx("path", { d: d, stroke: "var(--tm-puff-body, currentColor)", strokeWidth: width }), _jsx("path", { d: d, stroke: "var(--tm-puff-hi, currentColor)", strokeWidth: width * 0.5, transform: "translate(-0.3 -0.4)" })] }) }));
+}
+/** A seeded number in [0, 1), so a place always gets the same streets. */
+function seeded(text) {
+    let h = 2166136261;
+    for (let i = 0; i < text.length; i++)
+        h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+    return (n) => {
+        const x = Math.sin((h % 100000) * 0.001 + n * 12.9898) * 43758.5453;
+        return x - Math.floor(x);
+    };
+}
+/**
+ * A map drawn on the spot, with no tiles fetched: blocks of streets at a slight angle, an avenue
+ * or two, a highway, a park and maybe a shore, in the Maps palette, with the red pin at the
+ * center. Seeded by the place, so the same link always draws the same neighborhood.
+ */
+function MapArt({ seed }) {
+    const r = seeded(seed);
+    const angle = -25 + r(1) * 50;
+    const step = 21 + r(2) * 8;
+    const lines = (offset, count) => Array.from({ length: count }, (_, i) => -260 + offset + i * step);
+    const shore = r(3);
+    const water = shore < 0.3
+        ? `M-10 ${118 + r(4) * 20} C80 ${100 + r(5) * 30} 170 ${150 + r(6) * 10} 310 ${108 + r(7) * 30} V170 H-10Z`
+        : shore < 0.5
+            ? `M${236 + r(4) * 30} -10 C${210 + r(5) * 20} 60 ${260 + r(6) * 20} 110 ${226 + r(7) * 30} 170 H310 V-10Z`
+            : "";
+    const px = 30 + r(8) * 70;
+    const py = 20 + r(9) * 30;
+    return (_jsxs("svg", { className: "tm-map-art", viewBox: "0 0 300 160", preserveAspectRatio: "xMidYMid slice", "aria-hidden": "true", children: [_jsx("rect", { width: "300", height: "160", fill: "var(--tm-map-land)" }), _jsx("path", { d: `M${px} ${py} h${60 + r(10) * 30} q8 0 8 8 v${34 + r(11) * 22} q0 8 -8 8 h-${60 + r(10) * 30} q-8 0 -8 -8 v-${34 + r(11) * 22} q0 -8 8 -8Z`, fill: "var(--tm-map-park)", transform: `rotate(${angle} 150 80)` }), _jsxs("g", { transform: `rotate(${angle} 150 80)`, stroke: "var(--tm-map-road)", fill: "none", children: [_jsxs("g", { strokeWidth: "2.6", stroke: "var(--tm-map-casing)", children: [lines(r(12) * step, 30).map((x) => _jsx("path", { d: `M${x} -200 V360` }, `a${x}`)), lines(r(13) * step, 30).map((y) => _jsx("path", { d: `M-200 ${y} H500` }, `b${y}`))] }), _jsxs("g", { strokeWidth: "1.8", children: [lines(r(12) * step, 30).map((x) => _jsx("path", { d: `M${x} -200 V360` }, `c${x}`)), lines(r(13) * step, 30).map((y) => _jsx("path", { d: `M-200 ${y} H500` }, `d${y}`))] }), _jsx("path", { d: `M-200 ${70 + r(14) * 30} H500`, strokeWidth: "6", stroke: "var(--tm-map-casing)" }), _jsx("path", { d: `M-200 ${70 + r(14) * 30} H500`, strokeWidth: "4.6" }), _jsx("path", { d: `M${120 + r(15) * 60} -200 V360`, strokeWidth: "6", stroke: "var(--tm-map-casing)" }), _jsx("path", { d: `M${120 + r(15) * 60} -200 V360`, strokeWidth: "4.6" })] }), water && _jsx("path", { d: water, fill: "var(--tm-map-water)" }), _jsx("path", { d: `M-10 ${150 - r(16) * 40} C90 ${120 - r(17) * 40} 180 ${60 + r(18) * 40} 310 ${20 + r(19) * 40}`, fill: "none", stroke: "var(--tm-map-highway-casing)", strokeWidth: "7" }), _jsx("path", { d: `M-10 ${150 - r(16) * 40} C90 ${120 - r(17) * 40} 180 ${60 + r(18) * 40} 310 ${20 + r(19) * 40}`, fill: "none", stroke: "var(--tm-map-highway)", strokeWidth: "5" }), _jsxs("g", { transform: "translate(150 80)", className: "tm-map-pin", children: [_jsx("ellipse", { cx: "0", cy: "1", rx: "4", ry: "1.6", fill: "#00000033" }), _jsx("path", { d: "M0 0 L-3.6 -8.5 A15 15 0 1 1 3.6 -8.5Z", fill: "#fff" }), _jsx("circle", { cx: "0", cy: "-22", r: "13.2", fill: "#ff3b30" }), _jsx("path", { d: "M-1.6 -1.6 L-3 -9 h6 L1.6 -1.6Z", fill: "#ff3b30" }), _jsx("circle", { cx: "0", cy: "-22", r: "4.6", fill: "#fff" })] })] }));
+}
+/** Map links: Apple Maps, Google Maps and OpenStreetMap get a drawn map in place of art. */
+function isMapLink(url) {
+    if (!url)
+        return false;
+    try {
+        const { hostname, pathname } = new URL(url);
+        return (hostname === "maps.apple.com" ||
+            hostname === "maps.apple" ||
+            hostname === "maps.google.com" ||
+            hostname === "maps.app.goo.gl" ||
+            (hostname === "goo.gl" && pathname.startsWith("/maps")) ||
+            (/(^|\.)google\.[a-z.]+$/.test(hostname) && pathname.startsWith("/maps")) ||
+            /(^|\.)openstreetmap\.org$/.test(hostname));
+    }
+    catch {
+        return false;
+    }
 }
 function VoiceMessage({ slots, message, scene }) {
     const media = message.media;
@@ -1021,7 +1100,11 @@ function Keyboard({ scene }) {
                         "🤓",
                         "😎",
                     ].map((emoji) => (_jsx("span", { children: emoji }, emoji))) }), _jsxs("div", { className: "tm-emoji-footer", children: [_jsx("span", { children: "ABC" }), _jsx(Glyph, { name: "clock", size: 19 }), _jsx(Glyph, { name: "smile", size: 20 }), _jsx("span", { children: "\u2661" }), _jsx("span", { children: "\u2667" }), _jsx("span", { children: "\u2691" }), _jsx(Glyph, { name: "backspace", size: 24 })] })] }));
-    return (_jsxs("div", { className: "tm-keyboard tm-alphabetic-keyboard", "aria-hidden": "true", children: [["qwertyuiop", "asdfghjkl", "zxcvbnm"].map((row, index) => (_jsxs("div", { className: "tm-key-row", children: [index === 2 && (_jsx("span", { className: "tm-key tm-key-mod", children: _jsx(Glyph, { name: "shift", size: 19 }) })), [...row].map((letter) => (_jsx("span", { className: "tm-key", children: letter }, letter))), index === 2 && (_jsx("span", { className: "tm-key tm-key-mod", children: _jsx(Glyph, { name: "backspace", size: 22 }) }))] }, row))), _jsxs("div", { className: "tm-key-row tm-key-bottom", children: [_jsx("span", { className: "tm-key tm-key-mod", children: "123" }), _jsx("span", { className: "tm-key tm-key-space", children: "space" }), _jsx("span", { className: "tm-key tm-key-return", children: "return" })] }), _jsxs("div", { className: "tm-keyboard-bottom", children: [_jsx(Glyph, { name: "smile", size: 27 }), _jsx(Glyph, { name: "mic", size: 24 })] })] }));
+    const key = scene.composer.pressedKey;
+    const pressed = key === " " ? " " : key?.toLowerCase();
+    // Auto-capitalization: at the start of a sentence shift is on and the keycaps are capitals.
+    const shifted = /(^|[.!?]\s+)$/.test(scene.composer.text);
+    return (_jsxs("div", { className: "tm-keyboard tm-alphabetic-keyboard", "aria-hidden": "true", children: [["qwertyuiop", "asdfghjkl", "zxcvbnm"].map((row, index) => (_jsxs("div", { className: "tm-key-row", children: [index === 2 && (_jsx("span", { className: "tm-key tm-key-mod", "data-on": shifted || undefined, children: _jsx(Glyph, { name: shifted ? "shiftOn" : "shift", size: 19 }) })), [...row].map((letter) => (_jsxs("span", { className: "tm-key", "data-pressed": pressed === letter || undefined, children: [shifted ? letter.toUpperCase() : letter, pressed === letter && (_jsx("b", { className: "tm-key-callout", children: _jsx("i", { children: shifted ? letter.toUpperCase() : letter }) }))] }, letter))), index === 2 && (_jsx("span", { className: "tm-key tm-key-mod", children: _jsx(Glyph, { name: "backspace", size: 22 }) }))] }, row))), _jsxs("div", { className: "tm-key-row tm-key-bottom", children: [_jsx("span", { className: "tm-key tm-key-mod", children: "123" }), _jsx("span", { className: "tm-key tm-key-space", "data-pressed": pressed === " " || undefined, children: "space" }), _jsx("span", { className: "tm-key tm-key-return", children: "return" })] }), _jsxs("div", { className: "tm-keyboard-bottom", children: [_jsx(Glyph, { name: "smile", size: 27 }), _jsx(Glyph, { name: "mic", size: 24 })] })] }));
 }
 function TypingDots({ time }) {
     return (_jsxs("div", { className: "tm-typing", "aria-label": "Typing", children: [[0, 1, 2].map((index) => (_jsx("i", { style: {
@@ -1060,13 +1143,29 @@ function ScreenEffect({ effect, time, }) {
                                 : "" }, index));
         }) }));
 }
-function messageStyle(message, time, animate) {
+/** A critically damped settle with a touch of overshoot, like UIKit's default spring. */
+const springAt = (t, bounce = 0.04) => t >= 1 ? 1 : 1 - Math.pow(1 - t, 3) + Math.sin(t * Math.PI) * bounce;
+function messageStyle(message, time, animate, side) {
     const p = message.presentation;
     const age = Math.max(0, time - message.at);
+    // iMessage: yours rises out of the field below; theirs grows from its tail.
+    if (animate && side && age < 0.45 && message.at > 0 && !message.effect) {
+        const t = clamp(age / 0.42);
+        const settle = springAt(t, side === "in" ? 0.07 : 0.03);
+        const style = side === "out"
+            ? {
+                transform: `translateY(${(1 - settle) * 52 + p.offsetY}px) translateX(${p.offsetX}px) scale(${p.scale * (0.94 + 0.06 * settle)})`,
+                transformOrigin: "100% 100%",
+            }
+            : {
+                transform: `translate(${p.offsetX}px, ${p.offsetY + (1 - settle) * 6}px) scale(${p.scale * (0.5 + 0.5 * settle)})`,
+                transformOrigin: "0% 100%",
+            };
+        const opacity = p.opacity * Math.min(1, t * (side === "out" ? 6 : 4));
+        return { ...style, opacity: opacity === 1 ? undefined : opacity };
+    }
     const enter = animate ? clamp(age / 0.32) : 1;
-    const spring = enter === 1
-        ? 1
-        : 1 - Math.pow(1 - enter, 3) + Math.sin(enter * Math.PI) * 0.04;
+    const spring = enter === 1 ? 1 : springAt(enter);
     let effectScale = 1;
     let rotate = 0;
     let dx = 0;

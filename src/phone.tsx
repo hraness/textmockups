@@ -177,8 +177,10 @@ export function Phone({
     (person) =>
       scene.contact.participantIds.includes(person.id) && !person.isSelf,
   );
+  const reveal = scene.composer.keyboardReveal ?? 1;
   const keyboard =
     scene.composer.keyboard !== "hidden" &&
+    reveal > 0 &&
     scene.composer.context?.mode !== "recording";
   const selected = exporting ? undefined : selectedMessageId;
   const mode = scene.composer.context?.mode ?? "normal";
@@ -252,7 +254,8 @@ export function Phone({
           "--tm-thread-w": `${scene.device.width - 40}px`,
           "--tm-radius": `${scene.appearance.bubbleRadius}px`,
           "--tm-composer-extra": `${extraComposerHeight}px`,
-          "--tm-keyboard-height": `${keyboardHeight}px`,
+          "--tm-keyboard-height": `${keyboardHeight * reveal}px`,
+          "--tm-keyboard-full": `${keyboardHeight}px`,
           "--tm-bezel": model ? `${model.bezel}px` : undefined,
           "--tm-screen-radius": model ? `${model.radius}px` : undefined,
           "--tm-cutout-w": model ? `${model.cutout.width}px` : undefined,
@@ -639,6 +642,7 @@ export function Phone({
                               message,
                               playhead,
                               time !== undefined,
+                              scene.platform === "imessage" ? (outgoing ? "out" : "in") : undefined,
                             ),
                             ...(message.link?.tint && {
                               "--tm-link-tint": message.link.tint,
@@ -781,7 +785,7 @@ export function Phone({
                               <GoogleReceipt status={message.status} />
                             )}
                           {message.reactions.length > 0 && (
-                            <ReactionBadges slots={slots} message={message} scene={scene} />
+                            <ReactionBadges slots={slots} message={message} scene={scene} time={time !== undefined ? playhead : undefined} />
                           )}
                           {message.stickers?.map((sticker) => (
                             <span
@@ -1031,15 +1035,15 @@ function StatusBar({
       </span>
       <span className="tm-status-right">
         {status.cellular2 === undefined ? (
-          <svg className="tm-cellular" width="21.67" height="13" viewBox="0 0 65 39">
+          <svg className="tm-cellular" width="21.67" height="13.67" viewBox="0 0 65 41" preserveAspectRatio="none">
             {[0, 1, 2, 3].map((bar) => (
               <rect
                 key={bar}
                 x={bar * 18}
-                y={27 - bar * 8}
+                y={41 - [16, 23, 32, 41][bar]!}
                 width="11"
-                height={12 + bar * 8}
-                rx="3.3"
+                height={[16, 23, 32, 41][bar]!}
+                rx="3.9"
                 fill="currentColor"
                 opacity={bar < status.cellular ? 1 : 0.2}
               />
@@ -1071,24 +1075,17 @@ function StatusBar({
           </svg>
         )}
         {status.wifi > 0 ? (
-          <svg className="tm-wifi" width="17.67" height="13.67" viewBox="0 0 53 41">
-            <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-              <path
-                opacity={status.wifi >= 3 ? 1 : 0.2}
-                strokeWidth="9"
-                d="M2.1 13.9a36.5 36.5 0 0 1 48.8 0"
-              />
-              <path
-                opacity={status.wifi >= 2 ? 1 : 0.2}
-                strokeWidth="8"
-                d="M11.8 24.6a22 22 0 0 1 29.4 0"
-              />
-              <path
-                opacity={status.wifi >= 1 ? 1 : 0.2}
-                fill="currentColor"
-                strokeWidth="2.4"
-                d="M26.5 39.6 18.8 31.9a10.8 10.8 0 0 1 15.4 0Z"
-              />
+          // Three sectors about the point below, ±45°, their ends cut along the radius and
+          // their corners just softened, as iOS draws them.
+          <svg className="tm-wifi" width="19.67" height="14" viewBox="0 0 19.67 14" preserveAspectRatio="none">
+            <g fill="currentColor" stroke="currentColor" strokeWidth="0.8" strokeLinejoin="round">
+              {[
+                [10.85, 14.05],
+                [6.05, 9.3],
+                [0, 4.45],
+              ].map(([inner, outer], band) => (
+                <path key={band} opacity={status.wifi >= 3 - band ? 1 : 0.2} d={wifiBand(inner!, outer!)} />
+              ))}
             </g>
           </svg>
         ) : (
@@ -1100,11 +1097,30 @@ function StatusBar({
           data-charging={status.charging || undefined}
         >
           <i style={{ width: `${status.battery}%` }} />
-          {status.charging && <b>ϟ</b>}
+          {status.charging && (
+            // The bolt sits over the middle of the battery, a ring of the screen color cut around it.
+            <svg className="tm-bolt" viewBox="-6 -8 12 16">
+              <path className="tm-bolt-cut" d={BOLT} strokeWidth="2.4" strokeLinejoin="round" />
+              <path d={BOLT} fill="currentColor" stroke="currentColor" strokeWidth="0.7" strokeLinejoin="round" />
+            </svg>
+          )}
         </span>
       </span>
     </div>
   );
+}
+
+const BOLT = "M2.1 -7.2 L-4.7 0.9 H-0.25 L-2.3 7.2 L4.7 -0.9 H0.25 Z";
+
+/** One wifi band: the ring between two radii about the apex, 45° either side of up. */
+function wifiBand(inner: number, outer: number) {
+  const [x, y] = [9.835, 14.15];
+  const point = (r: number, side: number) =>
+    `${(x + side * r * Math.SQRT1_2).toFixed(3)} ${(y - r * Math.SQRT1_2).toFixed(3)}`;
+  const [r, R] = [Math.max(0, inner + 0.6), outer - 0.6];
+  return r > 0
+    ? `M${point(R, -1)}A${R} ${R} 0 0 1 ${point(R, 1)}L${point(r, 1)}A${r} ${r} 0 0 0 ${point(r, -1)}Z`
+    : `M${point(R, -1)}A${R} ${R} 0 0 1 ${point(R, 1)}L${x} ${y - 0.75}Z`;
 }
 
 function ConversationAvatar({ slots,
@@ -1741,6 +1757,10 @@ function MessageContent({ slots,
             alt=""
             referrerPolicy="no-referrer"
           />
+        ) : isMapLink(message.link?.url) ? (
+          <div className="tm-link-map">
+            <MapArt seed={message.link!.url} />
+          </div>
         ) : (
           <div className="tm-link-art">
             <span>↗</span>
@@ -1758,12 +1778,7 @@ function MessageContent({ slots,
     content = (
       <div className="tm-location tm-bubble-content">
         <div className="tm-map">
-          <i />
-          <i />
-          <i />
-          <span>
-            <Glyph name="pin" size={29} />
-          </span>
+          <MapArt seed={`${message.location?.latitude},${message.location?.longitude}`} />
         </div>
         <strong>{message.location?.label}</strong>
         <small>
@@ -1893,6 +1908,17 @@ function EmojiText({ text }: { text: string }) {
   return <>{parts}</>;
 }
 
+/** iOS pops a fresh tapback in from small, past full size, and back. */
+function tapbackPop(message: Message, emoji: string, time?: number): CSSProperties | undefined {
+  if (time === undefined) return undefined;
+  const at = Math.max(...message.reactions.filter((r) => r.emoji === emoji).map((r) => r.at));
+  const age = time - at;
+  if (!(at > 0) || age < 0 || age >= 0.5) return undefined;
+  const t = age / 0.5;
+  const scale = 1 - Math.exp(-7 * t) * Math.cos(t * 9) * 0.7;
+  return { transform: `scale(${scale})`, opacity: Math.min(1, t * 6) };
+}
+
 function groupedReactions(message: Message, scene: Scene) {
   const groups = new Map<
     string,
@@ -1918,10 +1944,13 @@ function groupedReactions(message: Message, scene: Scene) {
 function ReactionBadges({ slots,
   message,
   scene,
+  time,
 }: {
   slots: Slots;
   message: Message;
   scene: Scene;
+  /** While playing: a new tapback pops in and settles. */
+  time?: number;
 }) {
   const groups = groupedReactions(message, scene);
   const label = groups
@@ -1962,7 +1991,7 @@ function ReactionBadges({ slots,
           <span
             key={group.emoji}
             className="tm-reaction tm-tapback"
-            style={{ zIndex: 3 - index }}
+            style={{ zIndex: 3 - index, ...tapbackPop(message, group.emoji, time) }}
             data-self={group.self || undefined}
             data-tapback={TAPBACKS[group.emoji]}
           >
@@ -1971,7 +2000,7 @@ function ReactionBadges({ slots,
               <i className="tm-paint" />
             </i>
             <span className="tm-tapback-glyph">
-              <TapbackSymbol emoji={group.emoji} />
+              <TapbackSymbol emoji={group.emoji} self={group.self} />
             </span>
             {group.names.length > 1 && (
               <b className="tm-reaction-count">{group.names.length}</b>
@@ -2254,12 +2283,12 @@ const TAPBACKS: Record<string, TapbackKind | undefined> = {
 };
 type TapbackKind = "heart" | "like" | "dislike" | "haha" | "emphasize" | "question";
 
-function TapbackSymbol({ emoji }: { emoji: string }) {
+function TapbackSymbol({ emoji, self }: { emoji: string; self?: boolean }) {
   const kind = TAPBACKS[emoji];
-  return kind ? <TapbackGlyph kind={kind} /> : emoji;
+  return kind ? <TapbackGlyph kind={kind} self={self} /> : emoji;
 }
 
-function TapbackGlyph({ kind }: { kind: TapbackKind }) {
+function TapbackGlyph({ kind, self }: { kind: TapbackKind; self?: boolean }) {
   if (kind === "heart")
     return (
       <svg viewBox="0 0 56 49" width="18.7" height="16.3" aria-hidden="true">
@@ -2283,9 +2312,46 @@ function TapbackGlyph({ kind }: { kind: TapbackKind }) {
         <ellipse cx="28" cy="15" rx="7" ry="5" fill="url(#tm-heart-shine)" />
       </svg>
     );
+  // Your own thumbs, on the blue badge, are a white glove shaded light blue: a round cuff, the
+  // thumb leaning left, and four stepped fingers. Thumbs down turns it over. Theirs stay emoji.
   if (kind === "like" || kind === "dislike")
-    return kind === "like" ? "👍" : "👎";
-  // iOS 26's question, emphasis and HA HA keep their own colored puff palettes.
+    return self ? (
+      <svg
+        viewBox="0 0 17 18"
+        width="17"
+        height="18"
+        aria-hidden="true"
+        className="tm-glove"
+        style={kind === "dislike" ? { transform: "scale(-1, -1)" } : undefined}
+      >
+        <defs>
+          <linearGradient id="tm-glove" x1="0.8" y1="0" x2="0.5" y2="1">
+            <stop offset="0.55" stopColor="#fff" />
+            <stop offset="1" stopColor="#cfe6f4" />
+          </linearGradient>
+          <linearGradient id="tm-glove-cuff" x1="1" y1="0.3" x2="0" y2="0.8">
+            <stop offset="0.4" stopColor="#fff" />
+            <stop offset="1" stopColor="#cfe6f4" />
+          </linearGradient>
+        </defs>
+        <ellipse cx="2.6" cy="13.1" rx="2.6" ry="3.85" transform="rotate(-10 2.6 13.1)" fill="url(#tm-glove-cuff)" />
+        <g fill="url(#tm-glove)">
+          <path d="M3.9 9.6C5.3 8.5 6.7 6.1 7.6 3.7l.5-2.1C8.4.6 9 0 9.7 0c1 0 1.7.9 1.5 2.2l-.6 4.1c-.1.9.5 1.6 1.5 1.6h.9v9.9H8.6c-1.9 0-3.4-.5-4.7-1.3Z" />
+          <rect x="10.8" y="7.9" width="6.1" height="2.6" rx="1.3" />
+          <rect x="10.8" y="10.4" width="5.7" height="2.6" rx="1.3" />
+          <rect x="10.6" y="12.9" width="5.3" height="2.6" rx="1.3" />
+          <rect x="9.8" y="15.3" width="5.3" height="2.6" rx="1.3" />
+        </g>
+        <path
+          d="M13.2 10.45h2.9M13.2 12.95h2.5M12.8 15.4h2.3M9.4 17.85h4.6"
+          fill="none"
+          stroke="#9ccbe6"
+          strokeWidth="0.5"
+          strokeLinecap="round"
+        />
+      </svg>
+    ) : kind === "like" ? "👍" : "👎";
+  // Their question, emphasis and HA HA keep iOS 26's colored puffs; yours are white (phone.css).
   const strokes: Record<Exclude<TapbackKind, "heart" | "like" | "dislike">, [string, string, number]> = {
     haha: [
       "0 0 20 19",
@@ -2319,6 +2385,101 @@ function TapbackGlyph({ kind }: { kind: TapbackKind }) {
       </g>
     </svg>
   );
+}
+
+/** A seeded number in [0, 1), so a place always gets the same streets. */
+function seeded(text: string) {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+  return (n: number) => {
+    const x = Math.sin((h % 100000) * 0.001 + n * 12.9898) * 43758.5453;
+    return x - Math.floor(x);
+  };
+}
+
+/**
+ * A map drawn on the spot, with no tiles fetched: blocks of streets at a slight angle, an avenue
+ * or two, a highway, a park and maybe a shore, in the Maps palette, with the red pin at the
+ * center. Seeded by the place, so the same link always draws the same neighborhood.
+ */
+function MapArt({ seed }: { seed: string }) {
+  const r = seeded(seed);
+  const angle = -25 + r(1) * 50;
+  const step = 21 + r(2) * 8;
+  const lines = (offset: number, count: number) =>
+    Array.from({ length: count }, (_, i) => -260 + offset + i * step);
+  const shore = r(3);
+  const water =
+    shore < 0.3
+      ? `M-10 ${118 + r(4) * 20} C80 ${100 + r(5) * 30} 170 ${150 + r(6) * 10} 310 ${108 + r(7) * 30} V170 H-10Z`
+      : shore < 0.5
+        ? `M${236 + r(4) * 30} -10 C${210 + r(5) * 20} 60 ${260 + r(6) * 20} 110 ${226 + r(7) * 30} 170 H310 V-10Z`
+        : "";
+  const px = 30 + r(8) * 70;
+  const py = 20 + r(9) * 30;
+  return (
+    <svg className="tm-map-art" viewBox="0 0 300 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <rect width="300" height="160" fill="var(--tm-map-land)" />
+      <path
+        d={`M${px} ${py} h${60 + r(10) * 30} q8 0 8 8 v${34 + r(11) * 22} q0 8 -8 8 h-${60 + r(10) * 30} q-8 0 -8 -8 v-${34 + r(11) * 22} q0 -8 8 -8Z`}
+        fill="var(--tm-map-park)"
+        transform={`rotate(${angle} 150 80)`}
+      />
+      <g transform={`rotate(${angle} 150 80)`} stroke="var(--tm-map-road)" fill="none">
+        <g strokeWidth="2.6" stroke="var(--tm-map-casing)">
+          {lines(r(12) * step, 30).map((x) => <path key={`a${x}`} d={`M${x} -200 V360`} />)}
+          {lines(r(13) * step, 30).map((y) => <path key={`b${y}`} d={`M-200 ${y} H500`} />)}
+        </g>
+        <g strokeWidth="1.8">
+          {lines(r(12) * step, 30).map((x) => <path key={`c${x}`} d={`M${x} -200 V360`} />)}
+          {lines(r(13) * step, 30).map((y) => <path key={`d${y}`} d={`M-200 ${y} H500`} />)}
+        </g>
+        <path d={`M-200 ${70 + r(14) * 30} H500`} strokeWidth="6" stroke="var(--tm-map-casing)" />
+        <path d={`M-200 ${70 + r(14) * 30} H500`} strokeWidth="4.6" />
+        <path d={`M${120 + r(15) * 60} -200 V360`} strokeWidth="6" stroke="var(--tm-map-casing)" />
+        <path d={`M${120 + r(15) * 60} -200 V360`} strokeWidth="4.6" />
+      </g>
+      {water && <path d={water} fill="var(--tm-map-water)" />}
+      <path
+        d={`M-10 ${150 - r(16) * 40} C90 ${120 - r(17) * 40} 180 ${60 + r(18) * 40} 310 ${20 + r(19) * 40}`}
+        fill="none"
+        stroke="var(--tm-map-highway-casing)"
+        strokeWidth="7"
+      />
+      <path
+        d={`M-10 ${150 - r(16) * 40} C90 ${120 - r(17) * 40} 180 ${60 + r(18) * 40} 310 ${20 + r(19) * 40}`}
+        fill="none"
+        stroke="var(--tm-map-highway)"
+        strokeWidth="5"
+      />
+      <g transform="translate(150 80)" className="tm-map-pin">
+        <ellipse cx="0" cy="1" rx="4" ry="1.6" fill="#00000033" />
+        <path d="M0 0 L-3.6 -8.5 A15 15 0 1 1 3.6 -8.5Z" fill="#fff" />
+        <circle cx="0" cy="-22" r="13.2" fill="#ff3b30" />
+        <path d="M-1.6 -1.6 L-3 -9 h6 L1.6 -1.6Z" fill="#ff3b30" />
+        <circle cx="0" cy="-22" r="4.6" fill="#fff" />
+      </g>
+    </svg>
+  );
+}
+
+/** Map links: Apple Maps, Google Maps and OpenStreetMap get a drawn map in place of art. */
+function isMapLink(url?: string) {
+  if (!url) return false;
+  try {
+    const { hostname, pathname } = new URL(url);
+    return (
+      hostname === "maps.apple.com" ||
+      hostname === "maps.apple" ||
+      hostname === "maps.google.com" ||
+      hostname === "maps.app.goo.gl" ||
+      (hostname === "goo.gl" && pathname.startsWith("/maps")) ||
+      (/(^|\.)google\.[a-z.]+$/.test(hostname) && pathname.startsWith("/maps")) ||
+      /(^|\.)openstreetmap\.org$/.test(hostname)
+    );
+  } catch {
+    return false;
+  }
 }
 
 function VoiceMessage({ slots, message, scene }: {
@@ -3524,18 +3685,31 @@ function Keyboard({ scene }: { scene: Scene }) {
         </div>
       </div>
     );
+  const key = scene.composer.pressedKey;
+  const pressed = key === " " ? " " : key?.toLowerCase();
+  // Auto-capitalization: at the start of a sentence shift is on and the keycaps are capitals.
+  const shifted = /(^|[.!?]\s+)$/.test(scene.composer.text);
   return (
     <div className="tm-keyboard tm-alphabetic-keyboard" aria-hidden="true">
       {["qwertyuiop", "asdfghjkl", "zxcvbnm"].map((row, index) => (
         <div className="tm-key-row" key={row}>
           {index === 2 && (
-            <span className="tm-key tm-key-mod">
-              <Glyph name="shift" size={19} />
+            <span className="tm-key tm-key-mod" data-on={shifted || undefined}>
+              <Glyph name={shifted ? "shiftOn" : "shift"} size={19} />
             </span>
           )}
           {[...row].map((letter) => (
-            <span className="tm-key" key={letter}>
-              {letter}
+            <span
+              className="tm-key"
+              key={letter}
+              data-pressed={pressed === letter || undefined}
+            >
+              {shifted ? letter.toUpperCase() : letter}
+              {pressed === letter && (
+                <b className="tm-key-callout">
+                  <i>{shifted ? letter.toUpperCase() : letter}</i>
+                </b>
+              )}
             </span>
           ))}
           {index === 2 && (
@@ -3547,7 +3721,9 @@ function Keyboard({ scene }: { scene: Scene }) {
       ))}
       <div className="tm-key-row tm-key-bottom">
         <span className="tm-key tm-key-mod">123</span>
-        <span className="tm-key tm-key-space">space</span>
+        <span className="tm-key tm-key-space" data-pressed={pressed === " " || undefined}>
+          space
+        </span>
         <span className="tm-key tm-key-return">return</span>
       </div>
       <div className="tm-keyboard-bottom">
@@ -3644,18 +3820,37 @@ function ScreenEffect({
   );
 }
 
+/** A critically damped settle with a touch of overshoot, like UIKit's default spring. */
+const springAt = (t: number, bounce = 0.04) =>
+  t >= 1 ? 1 : 1 - Math.pow(1 - t, 3) + Math.sin(t * Math.PI) * bounce;
+
 function messageStyle(
   message: Message,
   time: number,
   animate: boolean,
+  side?: "in" | "out",
 ): CSSProperties {
   const p = message.presentation;
   const age = Math.max(0, time - message.at);
+  // iMessage: yours rises out of the field below; theirs grows from its tail.
+  if (animate && side && age < 0.45 && message.at > 0 && !message.effect) {
+    const t = clamp(age / 0.42);
+    const settle = springAt(t, side === "in" ? 0.07 : 0.03);
+    const style: CSSProperties =
+      side === "out"
+        ? {
+            transform: `translateY(${(1 - settle) * 52 + p.offsetY}px) translateX(${p.offsetX}px) scale(${p.scale * (0.94 + 0.06 * settle)})`,
+            transformOrigin: "100% 100%",
+          }
+        : {
+            transform: `translate(${p.offsetX}px, ${p.offsetY + (1 - settle) * 6}px) scale(${p.scale * (0.5 + 0.5 * settle)})`,
+            transformOrigin: "0% 100%",
+          };
+    const opacity = p.opacity * Math.min(1, t * (side === "out" ? 6 : 4));
+    return { ...style, opacity: opacity === 1 ? undefined : opacity };
+  }
   const enter = animate ? clamp(age / 0.32) : 1;
-  const spring =
-    enter === 1
-      ? 1
-      : 1 - Math.pow(1 - enter, 3) + Math.sin(enter * Math.PI) * 0.04;
+  const spring = enter === 1 ? 1 : springAt(enter);
   let effectScale = 1;
   let rotate = 0;
   let dx = 0;

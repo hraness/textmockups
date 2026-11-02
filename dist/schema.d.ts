@@ -680,6 +680,8 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
             alphabetic: "alphabetic";
         }>>;
         focused: z.ZodDefault<z.ZodBoolean>;
+        keyboardReveal: z.ZodOptional<z.ZodNumber>;
+        pressedKey: z.ZodOptional<z.ZodString>;
         context: z.ZodOptional<z.ZodObject<{
             mode: z.ZodDefault<z.ZodEnum<{
                 normal: "normal";
@@ -935,6 +937,8 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
         };
         keyboard: "emoji" | "hidden" | "alphabetic";
         focused: boolean;
+        keyboardReveal?: number | undefined;
+        pressedKey?: string | undefined;
         context?: {
             mode: "normal" | "reply" | "edit" | "recording" | "scheduled";
             scheduledAt: string;
@@ -1196,6 +1200,8 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
         };
         keyboard: "emoji" | "hidden" | "alphabetic";
         focused: boolean;
+        keyboardReveal?: number | undefined;
+        pressedKey?: string | undefined;
         context?: {
             mode: "normal" | "reply" | "edit" | "recording" | "scheduled";
             scheduledAt: string;
@@ -1615,6 +1621,8 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
             alphabetic: "alphabetic";
         }>>;
         focused: z.ZodDefault<z.ZodBoolean>;
+        keyboardReveal: z.ZodOptional<z.ZodNumber>;
+        pressedKey: z.ZodOptional<z.ZodString>;
         context: z.ZodOptional<z.ZodObject<{
             mode: z.ZodDefault<z.ZodEnum<{
                 normal: "normal";
@@ -1870,6 +1878,8 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
         };
         keyboard: "emoji" | "hidden" | "alphabetic";
         focused: boolean;
+        keyboardReveal?: number | undefined;
+        pressedKey?: string | undefined;
         context?: {
             mode: "normal" | "reply" | "edit" | "recording" | "scheduled";
             scheduledAt: string;
@@ -2131,6 +2141,8 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
         };
         keyboard: "emoji" | "hidden" | "alphabetic";
         focused: boolean;
+        keyboardReveal?: number | undefined;
+        pressedKey?: string | undefined;
         context?: {
             mode: "normal" | "reply" | "edit" | "recording" | "scheduled";
             scheduledAt: string;

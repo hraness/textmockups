@@ -23,6 +23,7 @@ export type GlyphName =
   | "more"
   | "close"
   | "shift"
+  | "shiftOn"
   | "backspace"
   | "globe"
   | "star"
@@ -136,6 +137,7 @@ export function Glyph({
     ),
     close: <path d="m6 6 12 12M6 18 18 6" />,
     shift: <path d="m3 11 9-9 9 9h-5v11H8V11H3Z" />,
+    shiftOn: <path d="m3 11 9-9 9 9h-5v11H8V11H3Z" fill="currentColor" />,
     backspace: (
       <>
         <path d="m9 4-7 8 7 8h13V4H9Z" />
