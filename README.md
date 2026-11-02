@@ -25,7 +25,7 @@ Install the compiled package from an immutable GitHub Release:
 ```json
 {
   "dependencies": {
-    "@hraness/textmockups": "https://github.com/hraness/textmockups/releases/download/v0.10.7/hraness-textmockups-0.10.7.tgz"
+    "@hraness/textmockups": "https://github.com/hraness/textmockups/releases/download/v0.11.0/hraness-textmockups-0.11.0.tgz"
   }
 }
 ```
@@ -158,6 +158,10 @@ A long conversation opens at its latest message. To show earlier messages, set `
 A scene is version 1 JSON, capped at 256 KiB, 160 messages, and 300 seconds. The full contract is the Zod schema in [`src/schema.ts`](src/schema.ts), exported as `SceneSchema`, with `Scene`, `Message`, and `Participant` types. The [presets](src/presets.ts) (`presets` and `defaultScene`) are complete examples for each app.
 
 Version 1 is fixed. Changes that would make an existing scene parse or draw differently ship as a new scene version.
+
+### Languages
+
+Set `locale` to a BCP 47 tag, such as `"ja"` or `"pt-BR"`, and iMessage draws its own words in that language: receipts ("Delivered", "Read"), the composer, the message menu, and the + menu. It supports English, Spanish, French, German, Italian, Portuguese, Japanese, Korean, and Simplified and Traditional Chinese, and falls back to English. Text you write in the scene, such as `dateLabel`, `statusText`, and times, is drawn as written. `stringsFor(locale)` returns the same words for an editor's own labels.
 
 ## Used by
 

@@ -447,6 +447,8 @@ const SceneBaseSchema = z.strictObject({
         .enum(["imessage", "whatsapp", "telegram", "instagram", "google-messages"])
         .default("imessage"),
     theme: z.enum(["light", "dark"]).default("light"),
+    /** The language iMessage draws its own words in (receipts, menus, the composer), as a BCP 47 tag such as "ja" or "pt-BR". English when unset or unsupported. */
+    locale: z.string().regex(/^[A-Za-z]{2,3}([-_][A-Za-z0-9]{2,8}){0,3}$/).optional(),
     device: z
         .strictObject({
         model: z.enum(DEVICE_MODELS).optional(),

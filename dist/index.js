@@ -9,3 +9,4 @@ export { conversationMembers, isGroupConversation, participantUsage, receiptRead
 export { MAX_INLINE_IMAGE_BYTES, MAX_INLINE_IMAGE_SIDE, inlineRasterSize, isSceneAssetUrl, } from "./assets.js";
 export { defaultScene, presets } from "./presets.js";
 export { fitBubbles } from "./fit.js";
+export { fill, matchLocale, STRING_LOCALES, stringsFor } from "./strings.js";

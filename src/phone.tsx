@@ -26,6 +26,10 @@ import {
   isGroupConversation,
   receiptReaders,
 } from "./conversation.js";
+import { fill, stringsFor, type Strings } from "./strings.js";
+
+/** iMessage's own words in the scene's language; other apps draw English. */
+const wordsOf = (scene: Scene): Strings => stringsFor(scene.platform === "imessage" ? scene.locale : undefined);
 
 /** Props the renderer passes to the image slot. `src` is the scene's authored asset reference. */
 export type PhoneImageProps = ImgHTMLAttributes<HTMLImageElement>;
@@ -442,7 +446,7 @@ export function Phone({
                       data-message-id={message.id}
                     >
                       {message.unsent
-                        ? `${outgoing ? "You" : person.name} unsent a message`
+                        ? outgoing ? wordsOf(scene).youUnsent : fill(wordsOf(scene).theyUnsent, { name: person.name })
                         : message.text}
                     </div>
                   );
@@ -494,9 +498,9 @@ export function Phone({
                       (!previous?.scheduledAt ||
                         previous.scheduledAt !== message.scheduledAt) && (
                         <div className="tm-scheduled-label">
-                          <span>Send Later</span>
+                          <span>{wordsOf(scene).sendLater}</span>
                           <span>
-                            {message.scheduledAt} <b>Edit</b>
+                            {message.scheduledAt} <b>{wordsOf(scene).edit}</b>
                           </span>
                         </div>
                       )}
@@ -590,7 +594,7 @@ export function Phone({
                                   <span>{version.text}</span>
                                 </div>
                               ))}
-                              <small>Hide Edits</small>
+                              <small>{wordsOf(scene).hideEdits}</small>
                             </div>
                           )}
                         {!outgoing && named && group && (
@@ -738,10 +742,10 @@ export function Phone({
                                 scene.composer.selection.end >
                                   scene.composer.selection.start && (
                                   <div className="tm-selection-menu">
-                                    <span>Cut</span>
-                                    <span>Copy</span>
-                                    <span>Paste</span>
-                                    <span>Replace…</span>
+                                    <span>{wordsOf(scene).cut}</span>
+                                    <span>{wordsOf(scene).copy}</span>
+                                    <span>{wordsOf(scene).paste}</span>
+                                    <span>{wordsOf(scene).replace}</span>
                                     <Glyph name="chevron" size={15} />
                                   </div>
                                 )}
@@ -806,7 +810,7 @@ export function Phone({
                         </div>
                         {replyCount > 0 && (
                           <div className="tm-reply-count">
-                            {replyCount} {replyCount === 1 ? "Reply" : "Replies"}
+                            {wordsOf(scene).replies(replyCount)}
                           </div>
                         )}
                         {(receipt || incomingEdited ||
@@ -833,7 +837,7 @@ export function Phone({
                                     {" "}
                                     ·{" "}
                                     <span className={scene.platform === "imessage" ? "tm-edited" : undefined}>
-                                      Edited{message.editedAt ? ` ${message.editedAt}` : ""}
+                                      {wordsOf(scene).edited}{message.editedAt ? ` ${message.editedAt}` : ""}
                                     </span>
                                   </span>
                                 )}
@@ -841,7 +845,7 @@ export function Phone({
                             )}
                             {incomingEdited && (
                               <div className="tm-receipt tm-incoming-edit">
-                                <span className="tm-edited">Edited{message.editedAt ? ` ${message.editedAt}` : ""}</span>
+                                <span className="tm-edited">{wordsOf(scene).edited}{message.editedAt ? ` ${message.editedAt}` : ""}</span>
                               </div>
                             )}
                             {scene.platform === "imessage" &&
@@ -850,7 +854,7 @@ export function Phone({
                                   className="tm-audio-keep"
                                   data-kept={message.media?.keep || undefined}
                                 >
-                                  {message.media?.keep ? "Kept" : "Keep"}
+                                  {message.media?.keep ? wordsOf(scene).kept : wordsOf(scene).keep}
                                 </span>
                               )}
                           </div>
@@ -1152,17 +1156,19 @@ function nativeReceipt(scene: Scene, message: Message): string {
       isGroupConversation(scene) && scene.platform === "instagram"
         ? receiptReaders(scene, message)
         : [];
-    const verb = scene.platform === "instagram" ? "Seen" : "Read";
+    const words = wordsOf(scene);
+    const verb = scene.platform === "instagram" ? "Seen" : words.read;
     if (readers.length)
       return `${verb} by ${readers.slice(0, 2).join(", ")}${readers.length > 2 ? ` +${readers.length - 2}` : ""}`;
     return `${verb}${scene.platform !== "instagram" && message.timestamp ? ` ${message.timestamp}` : ""}`;
   }
   if (message.status === "failed")
-    return scene.platform === "instagram" ? "Not sent" : "Not Delivered";
-  if (message.status === "sending") return "Sending…";
+    return scene.platform === "instagram" ? "Not sent" : wordsOf(scene).notDelivered;
+  const words = wordsOf(scene);
+  if (message.status === "sending") return words.sending;
   return scene.platform === "instagram" || message.status === "sent"
-    ? "Sent"
-    : "Delivered";
+    ? words.sent
+    : words.delivered;
 }
 function InstagramReply({
   scene,
@@ -1793,7 +1799,7 @@ function MessageContent({ slots,
     content = (
       <div className="tm-poll tm-bubble-content">
         <strong>{message.poll?.question}</strong>
-        <small>Poll</small>
+        <small>{wordsOf(scene).poll}</small>
         {message.poll?.options.map((option) => (
           <div className="tm-poll-option" key={option.id}>
             <i
@@ -1812,7 +1818,7 @@ function MessageContent({ slots,
             </b>
           </div>
         ))}
-        <small>{message.poll?.totalVotes} votes</small>
+        <small>{wordsOf(scene).votes(message.poll?.totalVotes ?? 0)}</small>
       </div>
     );
   if (message.kind === "payment")
@@ -2658,9 +2664,9 @@ function FocusStatus({ scene }: { scene: Scene }) {
     <div className="tm-focus-status">
       <span>
         <NativeIcon name="moon" />
-        {focus.name} has notifications silenced
+        {fill(wordsOf(scene).silenced, { name: focus.name ?? "" })}
       </span>
-      {focus.notifyAnyway && <b>Notify Anyway</b>}
+      {focus.notifyAnyway && <b>{wordsOf(scene).notifyAnyway}</b>}
     </div>
   );
 }
@@ -2757,6 +2763,7 @@ function RecordingComposer({ scene }: { scene: Scene }) {
 
 function NativeInteraction({ slots, scene, time }: {
   slots: Slots; scene: Scene; time: number }) {
+  const words = wordsOf(scene);
   const picker = scene.interactions?.tapbackPicker;
   const message = scene.messages.find(
     (message) => message.id === picker?.messageId,
@@ -2877,24 +2884,24 @@ function NativeInteraction({ slots, scene, time }: {
           </div>
           {picker.showMenu && scene.platform === "imessage" && (
             <div className="tm-message-menu">
-              <span><MenuIcon name="reply" />Reply</span>
-              <span><MenuIcon name="sticker" />Attach Sticker</span>
+              <span><MenuIcon name="reply" />{words.reply}</span>
+              <span><MenuIcon name="sticker" />{words.attachSticker}</span>
               <hr />
               {outgoing && picker.undoable && message.kind === "text" && (
                 <>
-                  <span><MenuIcon name="edit" />Edit</span>
-                  <span><MenuIcon name="undo" />Undo Send</span>
+                  <span><MenuIcon name="edit" />{words.edit}</span>
+                  <span><MenuIcon name="undo" />{words.undoSend}</span>
                   <hr />
                 </>
               )}
-              <span><MenuIcon name="copy" />Copy</span>
+              <span><MenuIcon name="copy" />{words.copy}</span>
               {message.kind === "text" && (
                 <>
-                  <span><MenuIcon name="translate" />Translate</span>
-                  <span><MenuIcon name="select" />Select</span>
+                  <span><MenuIcon name="translate" />{words.translate}</span>
+                  <span><MenuIcon name="select" />{words.select}</span>
                 </>
               )}
-              <span><MenuIcon name="more" />More…</span>
+              <span><MenuIcon name="more" />{words.more}</span>
             </div>
           )}
           {picker.showMenu && scene.platform !== "imessage" && (
@@ -2929,13 +2936,13 @@ function NativeInteraction({ slots, scene, time }: {
   const apps =
     scene.platform === "imessage"
       ? ([
-          ["Camera", "camera"],
-          ["Photos", "camera"],
-          ["Stickers", "sticker"],
+          [words.camera, "camera"],
+          [words.photos, "camera"],
+          [words.stickers, "sticker"],
           ["Apple Cash", "gift"],
-          ["Audio", "wave"],
-          ["Store", "more"],
-          ["Location", "pin"],
+          [words.audio, "wave"],
+          [words.store, "more"],
+          [words.location, "pin"],
         ] as const)
       : scene.platform === "whatsapp"
         ? ([
@@ -2992,14 +2999,14 @@ function NativeInteraction({ slots, scene, time }: {
         ) : (
           <>
             <div className="tm-tray-heading">
-              <span>{tray.kind === "photos" ? "Photos" : "Stickers"}</span>
+              <span>{tray.kind === "photos" ? words.photos : words.stickers}</span>
               <Glyph name="close" size={20} />
             </div>
             <div className="tm-tray-tabs">
               {tray.kind === "photos" ? (
                 <>
-                  <span>Library</span>
-                  <span>Albums</span>
+                  <span>{words.library}</span>
+                  <span>{words.albums}</span>
                 </>
               ) : (
                 <>
@@ -3033,7 +3040,7 @@ function NativeInteraction({ slots, scene, time }: {
                   size={40}
                 />
                 <strong>
-                  {tray.kind === "photos" ? "No Photos" : "No Recent Stickers"}
+                  {tray.kind === "photos" ? words.noPhotos : words.noStickers}
                 </strong>
               </div>
             )}
@@ -3171,13 +3178,15 @@ function Composer({ scene, time }: { scene: Scene; time: number }) {
   );
   const placeholder =
     mode === "reply" && scene.platform === "imessage"
-      ? "Reply"
+      ? wordsOf(scene).reply
       : scene.platform === "imessage" &&
           scene.composer.placeholder === "iMessage" &&
           scene.header?.transport !== undefined &&
           scene.header.transport !== "imessage"
-        ? `Text Message · ${scene.header.transport.toUpperCase()}`
-        : scene.composer.placeholder;
+        ? fill(wordsOf(scene).textMessage, { transport: scene.header.transport.toUpperCase() })
+        : scene.platform === "imessage" && scene.composer.placeholder === "iMessage"
+          ? wordsOf(scene).placeholder
+          : scene.composer.placeholder;
   if (mode === "recording" && context)
     return <RecordingComposer scene={scene} />;
   if (scene.platform === "instagram")
@@ -3463,7 +3472,7 @@ function Keyboard({ scene }: { scene: Scene }) {
       <div className="tm-keyboard tm-emoji-keyboard" aria-hidden="true">
         <div className="tm-emoji-search">
           <Glyph name="smile" size={17} />
-          <span>Search Emoji</span>
+          <span>{wordsOf(scene).searchEmoji}</span>
         </div>
         <span className="tm-emoji-heading">SMILEYS & PEOPLE</span>
         <div className="tm-emoji-grid">

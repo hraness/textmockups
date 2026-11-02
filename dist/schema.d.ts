@@ -373,6 +373,7 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
         light: "light";
         dark: "dark";
     }>>;
+    locale: z.ZodOptional<z.ZodString>;
     device: z.ZodPrefault<z.ZodPipe<z.ZodObject<{
         model: z.ZodOptional<z.ZodEnum<{
             "iphone-17-pro": "iphone-17-pro";
@@ -968,6 +969,7 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
         }[];
     };
     extensions: Record<string, JsonValue>;
+    locale?: string | undefined;
     header?: {
         transport: "imessage" | "sms" | "rcs";
         backCount: number;
@@ -1237,6 +1239,7 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
         }[];
     };
     extensions: Record<string, JsonValue>;
+    locale?: string | undefined;
     header?: {
         transport: "imessage" | "sms" | "rcs";
         backCount: number;
@@ -1305,6 +1308,7 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
         light: "light";
         dark: "dark";
     }>>;
+    locale: z.ZodOptional<z.ZodString>;
     device: z.ZodPrefault<z.ZodPipe<z.ZodObject<{
         model: z.ZodOptional<z.ZodEnum<{
             "iphone-17-pro": "iphone-17-pro";
@@ -1900,6 +1904,7 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
         }[];
     };
     extensions: Record<string, JsonValue>;
+    locale?: string | undefined;
     header?: {
         transport: "imessage" | "sms" | "rcs";
         backCount: number;
@@ -2169,6 +2174,7 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
         }[];
     };
     extensions: Record<string, JsonValue>;
+    locale?: string | undefined;
     header?: {
         transport: "imessage" | "sms" | "rcs";
         backCount: number;

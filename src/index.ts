@@ -50,3 +50,4 @@ export {
 } from "./assets.js";
 export { defaultScene, presets, type Preset } from "./presets.js";
 export { fitBubbles } from "./fit.js";
+export { fill, matchLocale, STRING_LOCALES, stringsFor, type StringLocale, type Strings } from "./strings.js";

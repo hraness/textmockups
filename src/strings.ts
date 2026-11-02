@@ -1,0 +1,547 @@
+/**
+ * The words iMessage draws around a conversation (receipts, menus, the composer), in the
+ * languages iOS shows them. A scene picks one with `locale`; other platforms draw English.
+ */
+export type Strings = {
+  read: string;
+  delivered: string;
+  notDelivered: string;
+  sending: string;
+  sent: string;
+  edited: string;
+  hideEdits: string;
+  youUnsent: string;
+  /** `{name}` is the sender. */
+  theyUnsent: string;
+  sendLater: string;
+  edit: string;
+  /** `{n}` is the count. */
+  replies: (n: number) => string;
+  keep: string;
+  kept: string;
+  you: string;
+  poll: string;
+  votes: (n: number) => string;
+  /** `{name}` is the person in Focus. */
+  silenced: string;
+  notifyAnyway: string;
+  reply: string;
+  attachSticker: string;
+  undoSend: string;
+  copy: string;
+  translate: string;
+  select: string;
+  more: string;
+  cut: string;
+  paste: string;
+  replace: string;
+  camera: string;
+  photos: string;
+  stickers: string;
+  audio: string;
+  store: string;
+  location: string;
+  library: string;
+  albums: string;
+  noPhotos: string;
+  noStickers: string;
+  /** The empty composer of an iMessage conversation. */
+  placeholder: string;
+  /** The empty composer of a text message conversation; `{transport}` is SMS or RCS. */
+  textMessage: string;
+  searchEmoji: string;
+};
+
+const plural = (one: string, other: string) => (n: number) => (n === 1 ? one : other).replace("{n}", String(n));
+const counted = (word: string) => (n: number) => word.replace("{n}", String(n));
+
+const en: Strings = {
+  read: "Read",
+  delivered: "Delivered",
+  notDelivered: "Not Delivered",
+  sending: "Sending…",
+  sent: "Sent",
+  edited: "Edited",
+  hideEdits: "Hide Edits",
+  youUnsent: "You unsent a message",
+  theyUnsent: "{name} unsent a message",
+  sendLater: "Send Later",
+  edit: "Edit",
+  replies: plural("{n} Reply", "{n} Replies"),
+  keep: "Keep",
+  kept: "Kept",
+  you: "You",
+  poll: "Poll",
+  votes: plural("{n} vote", "{n} votes"),
+  silenced: "{name} has notifications silenced",
+  notifyAnyway: "Notify Anyway",
+  reply: "Reply",
+  attachSticker: "Attach Sticker",
+  undoSend: "Undo Send",
+  copy: "Copy",
+  translate: "Translate",
+  select: "Select",
+  more: "More…",
+  cut: "Cut",
+  paste: "Paste",
+  replace: "Replace…",
+  camera: "Camera",
+  photos: "Photos",
+  stickers: "Stickers",
+  audio: "Audio",
+  store: "Store",
+  location: "Location",
+  library: "Library",
+  albums: "Albums",
+  noPhotos: "No Photos",
+  noStickers: "No Recent Stickers",
+  placeholder: "iMessage",
+  textMessage: "Text Message · {transport}",
+  searchEmoji: "Search Emoji",
+};
+
+const es: Strings = {
+  read: "Leído",
+  delivered: "Entregado",
+  notDelivered: "No entregado",
+  sending: "Enviando…",
+  sent: "Enviado",
+  edited: "Editado",
+  hideEdits: "Ocultar ediciones",
+  youUnsent: "Anulaste el envío de un mensaje",
+  theyUnsent: "{name} anuló el envío de un mensaje",
+  sendLater: "Enviar más tarde",
+  edit: "Editar",
+  replies: plural("{n} respuesta", "{n} respuestas"),
+  keep: "Conservar",
+  kept: "Conservado",
+  you: "Tú",
+  poll: "Encuesta",
+  votes: plural("{n} voto", "{n} votos"),
+  silenced: "{name} tiene las notificaciones silenciadas",
+  notifyAnyway: "Notificar de todos modos",
+  reply: "Responder",
+  attachSticker: "Adjuntar sticker",
+  undoSend: "Deshacer envío",
+  copy: "Copiar",
+  translate: "Traducir",
+  select: "Seleccionar",
+  more: "Más…",
+  cut: "Cortar",
+  paste: "Pegar",
+  replace: "Reemplazar…",
+  camera: "Cámara",
+  photos: "Fotos",
+  stickers: "Stickers",
+  audio: "Audio",
+  store: "Tienda",
+  location: "Ubicación",
+  library: "Fototeca",
+  albums: "Álbumes",
+  noPhotos: "No hay fotos",
+  noStickers: "No hay stickers recientes",
+  placeholder: "iMessage",
+  textMessage: "Mensaje de texto · {transport}",
+  searchEmoji: "Buscar emoji",
+};
+
+const fr: Strings = {
+  read: "Lu",
+  delivered: "Distribué",
+  notDelivered: "Non distribué",
+  sending: "Envoi…",
+  sent: "Envoyé",
+  edited: "Modifié",
+  hideEdits: "Masquer les modifications",
+  youUnsent: "Vous avez annulé l’envoi d’un message",
+  theyUnsent: "{name} a annulé l’envoi d’un message",
+  sendLater: "Envoyer plus tard",
+  edit: "Modifier",
+  replies: plural("{n} réponse", "{n} réponses"),
+  keep: "Garder",
+  kept: "Gardé",
+  you: "Vous",
+  poll: "Sondage",
+  votes: plural("{n} vote", "{n} votes"),
+  silenced: "{name} a mis les notifications en silencieux",
+  notifyAnyway: "Notifier quand même",
+  reply: "Répondre",
+  attachSticker: "Joindre un autocollant",
+  undoSend: "Annuler l’envoi",
+  copy: "Copier",
+  translate: "Traduire",
+  select: "Sélectionner",
+  more: "Plus…",
+  cut: "Couper",
+  paste: "Coller",
+  replace: "Remplacer…",
+  camera: "Appareil photo",
+  photos: "Photos",
+  stickers: "Autocollants",
+  audio: "Audio",
+  store: "Store",
+  location: "Position",
+  library: "Photothèque",
+  albums: "Albums",
+  noPhotos: "Aucune photo",
+  noStickers: "Aucun autocollant récent",
+  placeholder: "iMessage",
+  textMessage: "Message texte · {transport}",
+  searchEmoji: "Rechercher des émojis",
+};
+
+const de: Strings = {
+  read: "Gelesen",
+  delivered: "Zugestellt",
+  notDelivered: "Nicht zugestellt",
+  sending: "Senden …",
+  sent: "Gesendet",
+  edited: "Bearbeitet",
+  hideEdits: "Änderungen ausblenden",
+  youUnsent: "Du hast das Senden einer Nachricht widerrufen",
+  theyUnsent: "{name} hat das Senden einer Nachricht widerrufen",
+  sendLater: "Später senden",
+  edit: "Bearbeiten",
+  replies: plural("{n} Antwort", "{n} Antworten"),
+  keep: "Behalten",
+  kept: "Behalten",
+  you: "Du",
+  poll: "Umfrage",
+  votes: plural("{n} Stimme", "{n} Stimmen"),
+  silenced: "{name} hat Mitteilungen stummgeschaltet",
+  notifyAnyway: "Trotzdem mitteilen",
+  reply: "Antworten",
+  attachSticker: "Sticker anhängen",
+  undoSend: "Senden widerrufen",
+  copy: "Kopieren",
+  translate: "Übersetzen",
+  select: "Auswählen",
+  more: "Mehr …",
+  cut: "Ausschneiden",
+  paste: "Einsetzen",
+  replace: "Ersetzen …",
+  camera: "Kamera",
+  photos: "Fotos",
+  stickers: "Sticker",
+  audio: "Audio",
+  store: "Store",
+  location: "Standort",
+  library: "Mediathek",
+  albums: "Alben",
+  noPhotos: "Keine Fotos",
+  noStickers: "Keine zuletzt verwendeten Sticker",
+  placeholder: "iMessage",
+  textMessage: "Textnachricht · {transport}",
+  searchEmoji: "Emoji suchen",
+};
+
+const it: Strings = {
+  read: "Letto",
+  delivered: "Consegnato",
+  notDelivered: "Non consegnato",
+  sending: "Invio…",
+  sent: "Inviato",
+  edited: "Modificato",
+  hideEdits: "Nascondi modifiche",
+  youUnsent: "Hai annullato l’invio di un messaggio",
+  theyUnsent: "{name} ha annullato l’invio di un messaggio",
+  sendLater: "Invia più tardi",
+  edit: "Modifica",
+  replies: plural("{n} risposta", "{n} risposte"),
+  keep: "Mantieni",
+  kept: "Mantenuto",
+  you: "Tu",
+  poll: "Sondaggio",
+  votes: plural("{n} voto", "{n} voti"),
+  silenced: "{name} ha silenziato le notifiche",
+  notifyAnyway: "Notifica comunque",
+  reply: "Rispondi",
+  attachSticker: "Allega sticker",
+  undoSend: "Annulla invio",
+  copy: "Copia",
+  translate: "Traduci",
+  select: "Seleziona",
+  more: "Altro…",
+  cut: "Taglia",
+  paste: "Incolla",
+  replace: "Sostituisci…",
+  camera: "Fotocamera",
+  photos: "Foto",
+  stickers: "Sticker",
+  audio: "Audio",
+  store: "Store",
+  location: "Posizione",
+  library: "Libreria",
+  albums: "Album",
+  noPhotos: "Nessuna foto",
+  noStickers: "Nessuno sticker recente",
+  placeholder: "iMessage",
+  textMessage: "Messaggio di testo · {transport}",
+  searchEmoji: "Cerca emoji",
+};
+
+const pt: Strings = {
+  read: "Lida",
+  delivered: "Entregue",
+  notDelivered: "Não Entregue",
+  sending: "Enviando…",
+  sent: "Enviada",
+  edited: "Editada",
+  hideEdits: "Ocultar Edições",
+  youUnsent: "Você cancelou o envio de uma mensagem",
+  theyUnsent: "{name} cancelou o envio de uma mensagem",
+  sendLater: "Enviar Mais Tarde",
+  edit: "Editar",
+  replies: plural("{n} Resposta", "{n} Respostas"),
+  keep: "Manter",
+  kept: "Mantido",
+  you: "Você",
+  poll: "Enquete",
+  votes: plural("{n} voto", "{n} votos"),
+  silenced: "{name} está com as notificações silenciadas",
+  notifyAnyway: "Notificar Mesmo Assim",
+  reply: "Responder",
+  attachSticker: "Anexar Figurinha",
+  undoSend: "Desfazer Envio",
+  copy: "Copiar",
+  translate: "Traduzir",
+  select: "Selecionar",
+  more: "Mais…",
+  cut: "Recortar",
+  paste: "Colar",
+  replace: "Substituir…",
+  camera: "Câmera",
+  photos: "Fotos",
+  stickers: "Figurinhas",
+  audio: "Áudio",
+  store: "Loja",
+  location: "Localização",
+  library: "Fototeca",
+  albums: "Álbuns",
+  noPhotos: "Nenhuma Foto",
+  noStickers: "Nenhuma Figurinha Recente",
+  placeholder: "iMessage",
+  textMessage: "Mensagem de Texto · {transport}",
+  searchEmoji: "Buscar Emoji",
+};
+
+const ja: Strings = {
+  read: "既読",
+  delivered: "配信済み",
+  notDelivered: "未配信",
+  sending: "送信中…",
+  sent: "送信済み",
+  edited: "編集済み",
+  hideEdits: "編集内容を非表示",
+  youUnsent: "メッセージの送信を取り消しました",
+  theyUnsent: "{name}がメッセージの送信を取り消しました",
+  sendLater: "あとで送信",
+  edit: "編集",
+  replies: counted("{n}件の返信"),
+  keep: "保持",
+  kept: "保持済み",
+  you: "自分",
+  poll: "投票",
+  votes: counted("{n}票"),
+  silenced: "{name}は通知を停止中です",
+  notifyAnyway: "通知する",
+  reply: "返信",
+  attachSticker: "ステッカーを添付",
+  undoSend: "送信を取り消す",
+  copy: "コピー",
+  translate: "翻訳",
+  select: "選択",
+  more: "その他…",
+  cut: "カット",
+  paste: "ペースト",
+  replace: "置き換える…",
+  camera: "カメラ",
+  photos: "写真",
+  stickers: "ステッカー",
+  audio: "オーディオ",
+  store: "ストア",
+  location: "位置情報",
+  library: "ライブラリ",
+  albums: "アルバム",
+  noPhotos: "写真なし",
+  noStickers: "最近使ったステッカーはありません",
+  placeholder: "iMessage",
+  textMessage: "テキストメッセージ · {transport}",
+  searchEmoji: "絵文字を検索",
+};
+
+const ko: Strings = {
+  read: "읽음",
+  delivered: "전송됨",
+  notDelivered: "전송되지 않음",
+  sending: "보내는 중…",
+  sent: "보냄",
+  edited: "편집됨",
+  hideEdits: "편집 내용 가리기",
+  youUnsent: "메시지 전송을 취소했습니다",
+  theyUnsent: "{name}님이 메시지 전송을 취소했습니다",
+  sendLater: "나중에 보내기",
+  edit: "편집",
+  replies: counted("답장 {n}개"),
+  keep: "유지",
+  kept: "유지됨",
+  you: "나",
+  poll: "투표",
+  votes: counted("{n}표"),
+  silenced: "{name}님이 알림을 끔",
+  notifyAnyway: "그래도 알리기",
+  reply: "답장",
+  attachSticker: "스티커 첨부",
+  undoSend: "전송 취소",
+  copy: "복사",
+  translate: "번역",
+  select: "선택",
+  more: "더 보기…",
+  cut: "오려두기",
+  paste: "붙여넣기",
+  replace: "대치…",
+  camera: "카메라",
+  photos: "사진",
+  stickers: "스티커",
+  audio: "오디오",
+  store: "스토어",
+  location: "위치",
+  library: "보관함",
+  albums: "앨범",
+  noPhotos: "사진 없음",
+  noStickers: "최근 사용한 스티커 없음",
+  placeholder: "iMessage",
+  textMessage: "문자 메시지 · {transport}",
+  searchEmoji: "이모티콘 검색",
+};
+
+const zhHans: Strings = {
+  read: "已读",
+  delivered: "已送达",
+  notDelivered: "未送达",
+  sending: "正在发送…",
+  sent: "已发送",
+  edited: "已编辑",
+  hideEdits: "隐藏编辑",
+  youUnsent: "你撤回了一条信息",
+  theyUnsent: "“{name}”撤回了一条信息",
+  sendLater: "稍后发送",
+  edit: "编辑",
+  replies: counted("{n}条回复"),
+  keep: "保留",
+  kept: "已保留",
+  you: "你",
+  poll: "投票",
+  votes: counted("{n}票"),
+  silenced: "“{name}”已将通知静音",
+  notifyAnyway: "仍要通知",
+  reply: "回复",
+  attachSticker: "附加贴纸",
+  undoSend: "撤回",
+  copy: "拷贝",
+  translate: "翻译",
+  select: "选择",
+  more: "更多…",
+  cut: "剪切",
+  paste: "粘贴",
+  replace: "替换…",
+  camera: "相机",
+  photos: "照片",
+  stickers: "贴纸",
+  audio: "音频",
+  store: "商店",
+  location: "位置",
+  library: "图库",
+  albums: "相簿",
+  noPhotos: "无照片",
+  noStickers: "无最近使用的贴纸",
+  placeholder: "iMessage信息",
+  textMessage: "短信 · {transport}",
+  searchEmoji: "搜索表情符号",
+};
+
+const zhHant: Strings = {
+  read: "已讀",
+  delivered: "已送達",
+  notDelivered: "未送達",
+  sending: "正在傳送…",
+  sent: "已傳送",
+  edited: "已編輯",
+  hideEdits: "隱藏編輯內容",
+  youUnsent: "你已收回一則訊息",
+  theyUnsent: "{name}已收回一則訊息",
+  sendLater: "稍後傳送",
+  edit: "編輯",
+  replies: counted("{n}則回覆"),
+  keep: "保留",
+  kept: "已保留",
+  you: "你",
+  poll: "投票",
+  votes: counted("{n}票"),
+  silenced: "{name}已將通知設為靜音",
+  notifyAnyway: "仍要通知",
+  reply: "回覆",
+  attachSticker: "附加貼圖",
+  undoSend: "取消傳送",
+  copy: "拷貝",
+  translate: "翻譯",
+  select: "選取",
+  more: "更多…",
+  cut: "剪下",
+  paste: "貼上",
+  replace: "取代…",
+  camera: "相機",
+  photos: "照片",
+  stickers: "貼圖",
+  audio: "音訊",
+  store: "商店",
+  location: "位置",
+  library: "圖庫",
+  albums: "相簿",
+  noPhotos: "沒有照片",
+  noStickers: "沒有最近使用的貼圖",
+  placeholder: "iMessage",
+  textMessage: "簡訊 · {transport}",
+  searchEmoji: "搜尋表情符號",
+};
+
+/** The languages iMessage strings come in, by BCP 47 tag. */
+export const STRING_LOCALES = {
+  en,
+  es,
+  fr,
+  de,
+  it,
+  pt,
+  ja,
+  ko,
+  "zh-Hans": zhHans,
+  "zh-Hant": zhHant,
+} as const satisfies Record<string, Strings>;
+
+export type StringLocale = keyof typeof STRING_LOCALES;
+
+/**
+ * The supported language closest to a BCP 47 tag, such as "pt-BR" → "pt" or "zh-TW" → "zh-Hant",
+ * or undefined when none is.
+ */
+export function matchLocale(tag: string | undefined): StringLocale | undefined {
+  if (!tag) return undefined;
+  const parts = tag.replace(/_/g, "-").split("-");
+  const language = parts[0]!.toLowerCase();
+  if (language === "zh") {
+    const rest = parts.slice(1).map((part) => part.toLowerCase());
+    return rest.includes("hant") || rest.some((part) => ["tw", "hk", "mo"].includes(part)) ? "zh-Hant" : "zh-Hans";
+  }
+  return language in STRING_LOCALES ? (language as StringLocale) : undefined;
+}
+
+/** The iMessage words for a locale, falling back to English. */
+export function stringsFor(locale: string | undefined): Strings {
+  return STRING_LOCALES[matchLocale(locale) ?? "en"];
+}
+
+/** Fills `{name}`-style holes. */
+export function fill(template: string, values: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (hole, key: string) => values[key] ?? hole);
+}
