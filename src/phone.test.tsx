@@ -51,6 +51,21 @@ describe("Phone", () => {
     expect(html.match(/tm-thread-end/g)).toHaveLength(2);
     expect(html).toContain('data-at="date"');
   });
+  test("the iOS keyboard suggests words for what is typed and starts sentences fresh", () => {
+    const bar = (text: string) => {
+      const scene = parseScene({
+        ...defaultScene,
+        platform: "imessage",
+        composer: { ...defaultScene.composer, text, focused: true, keyboard: "alphabetic" },
+      });
+      const html = renderToStaticMarkup(<Phone scene={scene} />);
+      return [...(/<div class="tm-kb-predict">(.*?)<\/div>/.exec(html)?.[1] ?? "").matchAll(/<span>(.*?)<\/span>/g)].map((m) => m[1]);
+    };
+    expect(bar("")).toEqual(["I", "The", "I&#x27;m"]);
+    expect(bar("Help with?")).toEqual(["I", "The", "I&#x27;m"]);
+    expect(bar("see you ")).toEqual(["I", "the", "and"]);
+    expect(bar("see you th")[0]).toBe("“th”");
+  });
   test("is deterministic for a fixed playhead", () => {
     const render = () =>
       renderToStaticMarkup(<Phone scene={defaultScene} time={2.5} />);
@@ -396,14 +411,19 @@ describe("iMessage bubble paint", () => {
     expect(incoming).toContain('<span class="tm-edited">Edited</span>');
   });
 
-  test("standard thumbs and custom skin tones use native emoji for either reactor", () => {
-    for (const participantId of ["me", "jamie"]) {
-      for (const emoji of ["👍", "👎", "👍🏽", "👎🏻"]) {
-        const html = renderMessage({ text: "A reaction", reactions: [{ id: "r", emoji, participantId }] });
-        expect(html).toContain(`<span class="tm-tapback-glyph">${emoji}</span>`);
-        expect(html).not.toContain("tm-glove");
-      }
+  test("their thumbs are native emoji; yours are the white glove; skin tones stay emoji", () => {
+    for (const emoji of ["👍", "👎", "👍🏽", "👎🏻"]) {
+      const theirs = renderMessage({ text: "A reaction", reactions: [{ id: "r", emoji, participantId: "jamie" }] });
+      expect(theirs).toContain(`<span class="tm-tapback-glyph">${emoji}</span>`);
+      expect(theirs).not.toContain("tm-glove");
     }
+    for (const emoji of ["👍", "👎"]) {
+      const mine = renderMessage({ text: "A reaction", reactions: [{ id: "r", emoji, participantId: "me" }] });
+      expect(mine).toContain('class="tm-glove"');
+      expect(mine).not.toContain(`>${emoji}<`);
+    }
+    const toned = renderMessage({ text: "A reaction", reactions: [{ id: "r", emoji: "👍🏽", participantId: "me" }] });
+    expect(toned).toContain('<span class="tm-tapback-glyph">👍🏽</span>');
   });
 
   test("the iMessage picker shares the badge symbols and keeps HA HA distinct from 😂", () => {
