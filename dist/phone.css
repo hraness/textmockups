@@ -5415,10 +5415,10 @@
   max-height: 236px;
   object-fit: cover;
 }
-/* iOS 26.6 device capture: a 17pt semibold title on a 27pt baseline, the 15pt domain 20pt below,
-   in a 63pt footer. */
+/* At the default Text Size: a 15pt semibold title over the 13pt domain. The iOS 26.6 device that
+   measured 17/15pt runs one Dynamic Type step large (its 17pt body text draws at 19pt). */
 .tm-phone[data-platform="imessage"] .tm-link-card > div:last-child {
-  padding: 10px 16px 11.3px;
+  padding: 7.3px 16px 8.5px;
   background: var(--tm-link-surface, var(--tm-link-tint));
 }
 .tm-phone[data-platform="imessage"] .tm-link-card strong {
@@ -5426,8 +5426,8 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
-  font-size: 17px;
-  line-height: 22px;
+  font-size: 15px;
+  line-height: 18px;
   font-weight: 600;
   letter-spacing: 0;
 }
@@ -5436,9 +5436,9 @@
 }
 .tm-phone[data-platform="imessage"] .tm-link-card small {
   display: block;
-  margin-top: 0;
-  font-size: 15px;
-  line-height: 20px;
+  margin-top: 3px;
+  font-size: 13px;
+  line-height: 16px;
   letter-spacing: 0;
   color: var(--tm-link-domain, rgb(60 60 67 / 0.8));
   opacity: 1;
@@ -5737,8 +5737,9 @@
 .tm-phone[data-platform="imessage"] .tm-link-map {
   width: calc(var(--tm-thread-w) - 89.67px);
 }
-/* Apple Maps, from an iOS 26.6 device capture: a 236pt square map over a 61pt footer of frosted
-   map, a 17pt semibold place and "Maps" in gray. The tail takes the frost's color. */
+/* Apple Maps, from an iOS 26.6 device capture: a 236pt square map over a footer of frosted map,
+   the place in semibold and "Maps" in gray, sized at the default Text Size like other link
+   footers. The tail takes the frost's color. */
 .tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"]:has(> .tm-link-card[data-maps]) {
   --tm-link-tint: #b3def0;
 }
@@ -5755,8 +5756,7 @@
 .tm-phone[data-platform="imessage"] .tm-link-card[data-maps] > div:last-child {
   position: relative;
   overflow: hidden;
-  height: 61px;
-  padding: 10px 16px 0;
+  padding: 7.3px 16px 8.5px;
   background: var(--tm-link-tint);
 }
 .tm-phone .tm-link-glass {
@@ -5775,9 +5775,9 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 17px;
-  line-height: 22px;
+  gap: 7px;
+  font-size: 15px;
+  line-height: 18px;
   font-weight: 600;
   -webkit-line-clamp: 1;
   white-space: nowrap;
@@ -5785,6 +5785,8 @@
 }
 .tm-link-search {
   flex: none;
+  width: 14px;
+  height: 14px;
   color: rgb(60 75 80 / 0.7);
 }
 .tm-phone[data-theme="dark"] .tm-link-search {
