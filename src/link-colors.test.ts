@@ -14,15 +14,21 @@ test("alpha accounts for both existing tint paint layers", () => {
   expect(linkColors("#00000080", { ...defaultScene, theme: "light" })).toMatchObject({ tone: "dark", surface: "rgb(63.251 63.251 63.251)" });
 });
 
-test("opaque red and middle gray choose readable black ink and strengthen the domain", () => {
-  for (const theme of ["light", "dark"] as const)
-    for (const tint of ["#ff0000", "#777777"])
-      expect(linkColors(tint, { ...defaultScene, theme })).toMatchObject({ tone: "light", domain: "#000" });
+test("opaque red keeps black ink; middle tones lean white like iOS", () => {
+  for (const theme of ["light", "dark"] as const) {
+    expect(linkColors("#ff0000", { ...defaultScene, theme })).toMatchObject({ tone: "light", domain: "rgb(60 60 67 / 0.8)" });
+    expect(linkColors("#777777", { ...defaultScene, theme })).toMatchObject({ tone: "dark", domain: "rgb(255 255 255 / 0.62)" });
+    expect(linkColors("#5b7d8b", { ...defaultScene, theme })).toMatchObject({ tone: "dark", domain: "rgb(255 255 255 / 0.62)" });
+  }
+});
+
+test("a domain that would wash out is drawn in full ink", () => {
+  expect(linkColors("#8a8a8a", defaultScene)).toMatchObject({ tone: "light", domain: "#000" });
 });
 
 test("opaque sampled light and dark colors keep their surface and native muted domain", () => {
   expect(linkColors("#f4e4c8", defaultScene)).toEqual({ tone: "light", surface: "rgb(244 228 200)", domain: "rgb(60 60 67 / 0.8)" });
-  expect(linkColors("#263544", defaultScene)).toEqual({ tone: "dark", surface: "rgb(38 53 68)", domain: "rgb(235 235 245 / 0.7)" });
+  expect(linkColors("#263544", defaultScene)).toEqual({ tone: "dark", surface: "rgb(38 53 68)", domain: "rgb(255 255 255 / 0.62)" });
 });
 
 test("a custom scene surface is composited before transparent link colors", () => {

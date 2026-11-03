@@ -22,12 +22,15 @@ export function linkColors(tint, scene) {
     // The bubble paint and footer each draw the same tint. Flatten only the footer,
     // giving alpha colors a known opaque surface for deterministic readable text.
     const surface = over(color, over(color, background)).map((value) => Math.round(value * 1000) / 1000);
-    const dark = contrast([255, 255, 255], surface) > contrast([0, 0, 0], surface);
-    const muted = dark ? [235, 235, 245, 0.7] : [60, 60, 67, 0.8];
+    // iOS leans white: a mid teal (#5b7d8b) footer takes white ink though black measures a little
+    // higher, and its domain is white at about 62% (iOS 26.6 device capture).
+    const white = contrast([255, 255, 255], surface);
+    const dark = white >= 4 || white > contrast([0, 0, 0], surface);
+    const muted = dark ? [255, 255, 255, 0.62] : [60, 60, 67, 0.8];
     return {
         tone: dark ? "dark" : "light",
         surface: `rgb(${surface.join(" ")})`,
-        domain: contrast(over(muted, surface), surface) >= 4.5
+        domain: contrast(over(muted, surface), surface) >= 2.5
             ? `rgb(${muted[0]} ${muted[1]} ${muted[2]} / ${muted[3]})`
             : dark ? "#fff" : "#000",
     };

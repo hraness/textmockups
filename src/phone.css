@@ -1060,21 +1060,22 @@
   opacity: 0.65;
 }
 .tm-map,
+.tm-link-glass,
 .tm-link-map {
   position: relative;
   height: 130px;
   overflow: hidden;
   border-radius: var(--tm-radius) var(--tm-radius) 0 0;
   /* The Maps palette, light and dark. */
-  --tm-map-land: #f5f3ef;
-  --tm-map-park: #cfe8c1;
-  --tm-map-water: #a6d2f2;
+  --tm-map-land: #f4f3ea;
+  --tm-map-park: #cbeba6;
+  --tm-map-water: #8ed4f1;
   --tm-map-road: #fff;
-  --tm-map-casing: #e2ded6;
+  --tm-map-casing: #cdd1da;
   --tm-map-highway: #fbd36b;
   --tm-map-highway-casing: #e6b64e;
 }
-.tm-phone[data-theme="dark"] :is(.tm-map, .tm-link-map) {
+.tm-phone[data-theme="dark"] :is(.tm-map, .tm-link-map, .tm-link-glass) {
   --tm-map-land: #2c2c2e;
   --tm-map-park: #2f4733;
   --tm-map-water: #1f3a52;
@@ -4827,24 +4828,24 @@
   line-height: 1;
 }
 .tm-phone[data-platform="imessage"] [data-tapback="question"] > .tm-tapback-glyph {
-  --tm-puff-edge: #8250bf;
-  --tm-puff-body: #bc8ce8;
-  --tm-puff-hi: #edd8ff;
+  --tm-puff-edge: #7a5fe0;
+  --tm-puff-body: #a98ff9;
+  --tm-puff-hi: #e6dcff;
 }
 .tm-phone[data-platform="imessage"] [data-tapback="emphasize"] > .tm-tapback-glyph {
-  --tm-puff-edge: #d54d54;
-  --tm-puff-body: #ff7c78;
-  --tm-puff-hi: #ffd6c8;
+  --tm-puff-edge: #f5414c;
+  --tm-puff-body: #ff715f;
+  --tm-puff-hi: #ffc2ac;
 }
 .tm-phone[data-platform="imessage"] [data-tapback="haha"] > .tm-tapback-glyph {
-  --tm-puff-edge: #278fae;
-  --tm-puff-body: #61d5ee;
-  --tm-puff-hi: #d0f7ff;
+  --tm-puff-edge: #0b9ef0;
+  --tm-puff-body: #2cc6ff;
+  --tm-puff-hi: #c4efff;
 }
 /* On your own blue badge iOS draws them white, shaded light blue. */
 .tm-phone[data-platform="imessage"] .tm-tapback[data-self] > .tm-tapback-glyph {
-  --tm-puff-edge: #b6d4f5;
-  --tm-puff-body: #d6e8fc;
+  --tm-puff-edge: #a9caf2;
+  --tm-puff-body: #f3f8ff;
   --tm-puff-hi: #fff;
 }
 .tm-phone[data-platform="imessage"] .tm-tapback[data-self][data-tapback="like"] > .tm-tapback-glyph,
@@ -4856,8 +4857,8 @@
   height: 100%;
 }
 .tm-phone[data-platform="imessage"] .tm-tapback-picker .tm-tapback-glyph > svg {
-  width: 28px;
-  height: 28px;
+  width: 28.5px;
+  height: 28.5px;
 }
 /* iOS 26 long-press: the conversation stays sharp under a light wash, the
    message lifts in place of its row, and the glass bar and menu hug its edge. */
@@ -4891,11 +4892,11 @@
 .tm-phone[data-platform="imessage"] .tm-message-context > .tm-tapback-picker {
   align-self: stretch;
   gap: 0;
-  height: 61px;
+  height: 66px;
   margin: 0 0 7px 26px;
-  padding: 0 0 0 8px;
+  padding: 0 0 0 8.5px;
   border: 0;
-  border-radius: 31px;
+  border-radius: 33px;
   background: var(--tm-menu-fill);
   box-shadow: 0 6px 24px rgb(0 0 0 / 0.12);
 }
@@ -4910,10 +4911,12 @@
 .tm-phone[data-platform="imessage"][data-theme="dark"] .tm-message-context > .tm-tapback-picker {
   background: #141416;
 }
+/* iOS 26 spaces the reactions 49pt apart, the first centered on the capsule's
+   end cap, so the eighth runs off the edge and the row scrolls. */
 .tm-phone[data-platform="imessage"] .tm-tapback-picker > span {
-  width: 46px;
-  height: 46px;
-  font-size: 25px;
+  width: 49px;
+  height: 49px;
+  font-size: 27.5px;
 }
 .tm-message-context > .tm-lifted {
   position: relative;
@@ -5403,8 +5406,10 @@
   max-height: 236px;
   object-fit: cover;
 }
+/* iOS 26.6 device capture: a 17pt semibold title on a 27pt baseline, the 15pt domain 20pt below,
+   in a 63pt footer. */
 .tm-phone[data-platform="imessage"] .tm-link-card > div:last-child {
-  padding: 7.3px 16px 8.5px;
+  padding: 10px 16px 11.3px;
   background: var(--tm-link-surface, var(--tm-link-tint));
 }
 .tm-phone[data-platform="imessage"] .tm-link-card strong {
@@ -5412,8 +5417,8 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
-  font-size: 15px;
-  line-height: 18px;
+  font-size: 17px;
+  line-height: 22px;
   font-weight: 600;
   letter-spacing: 0;
 }
@@ -5422,9 +5427,9 @@
 }
 .tm-phone[data-platform="imessage"] .tm-link-card small {
   display: block;
-  margin-top: 3px;
-  font-size: 13px;
-  line-height: 16px;
+  margin-top: 0;
+  font-size: 15px;
+  line-height: 20px;
   letter-spacing: 0;
   color: var(--tm-link-domain, rgb(60 60 67 / 0.8));
   opacity: 1;
@@ -5434,7 +5439,7 @@
   color: #fff;
 }
 .tm-phone[data-platform="imessage"] .tm-bubble[data-tint="dark"] .tm-link-card small {
-  color: var(--tm-link-domain, rgb(235 235 245 / 0.7));
+  color: var(--tm-link-domain, rgb(255 255 255 / 0.62));
 }
 .tm-phone[data-platform="imessage"][data-theme="dark"] .tm-bubble:not([data-tint]) .tm-link-card small {
   color: rgb(235 235 245 / 0.7);
@@ -5722,6 +5727,66 @@
 }
 .tm-phone[data-platform="imessage"] .tm-link-map {
   width: calc(var(--tm-thread-w) - 89.67px);
+}
+/* Apple Maps, from an iOS 26.6 device capture: a 236pt square map over a 61pt footer of frosted
+   map, a 17pt semibold place and "Maps" in gray. The tail takes the frost's color. */
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"]:has(> .tm-link-card[data-maps]) {
+  --tm-link-tint: #b3def0;
+}
+.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-bubble[data-kind="link"]:has(> .tm-link-card[data-maps]) {
+  --tm-link-tint: #24485e;
+}
+.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"] .tm-link-card[data-maps] {
+  width: 236px;
+}
+.tm-phone[data-platform="imessage"] .tm-link-card[data-maps] > .tm-link-map {
+  width: 236px;
+  aspect-ratio: 1;
+}
+.tm-phone[data-platform="imessage"] .tm-link-card[data-maps] > div:last-child {
+  position: relative;
+  overflow: hidden;
+  height: 61px;
+  padding: 10px 16px 0;
+  background: var(--tm-link-tint);
+}
+.tm-phone .tm-link-glass {
+  position: absolute;
+  inset: -20px;
+  height: auto;
+  border-radius: 0;
+  opacity: 0.35;
+  filter: blur(14px) saturate(1.3);
+  transform: scaleY(-1);
+}
+.tm-link-glass > .tm-map-art {
+  height: 100%;
+}
+.tm-phone[data-platform="imessage"] .tm-link-card[data-maps] strong {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  -webkit-line-clamp: 1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tm-link-search {
+  flex: none;
+  color: rgb(60 75 80 / 0.7);
+}
+.tm-phone[data-theme="dark"] .tm-link-search {
+  color: rgb(235 245 250 / 0.6);
+}
+.tm-phone[data-platform="imessage"] .tm-link-card[data-maps] small {
+  position: relative;
+  color: rgb(60 60 67 / 0.75);
+}
+.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-link-card[data-maps] small {
+  color: rgb(235 235 245 / 0.65);
 }
 
 /* iOS 26 keyboard, measured from iOS 26 Simulator captures of the 17 Pro Max and 17 Pro: a panel
