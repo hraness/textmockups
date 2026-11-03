@@ -813,6 +813,10 @@
 .tm-composer-field .tm-send {
   margin: -3px -7px -3px 0;
 }
+/* Held down, iOS 26 washes the send button out to a pale tint before the message leaves. */
+.tm-send[data-pressed] {
+  opacity: 0.38;
+}
 .tm-home-indicator {
   position: absolute;
   z-index: 12;
@@ -4254,7 +4258,7 @@
 .tm-phone[data-platform="imessage"][data-theme="dark"] {
   --tm-ink: #fff;
   --tm-receipt: #98989f;
-  --tm-in: #262629;
+  --tm-in: #303033; /* iOS 26.6 device, dark: received bubbles and their tapback badges */
   --tm-glass: rgb(44 44 47 / 0.88);
   --tm-glass-shadow:
     inset 0 0.5px 0 rgb(255 255 255 / 0.12),
@@ -4679,6 +4683,11 @@
   position: fixed;
   inset: 0;
   background: linear-gradient(var(--tm-out-top), var(--tm-out-bottom));
+}
+/* A moving bubble is the fixed paint's containing block, so the paint would stop at the
+   bubble's edge and leave the tail, which hangs below it, unpainted mid-flight. */
+.tm-bubble[data-side="out"][style*="transform"] > .tm-tail > .tm-paint {
+  inset: -16px;
 }
 .tm-phone[data-platform="imessage"] .tm-tail {
   position: absolute;

@@ -1061,7 +1061,7 @@ function Composer({ scene, time }) {
         return _jsx(AndroidComposer, { scene: scene, time: time });
     return (_jsxs("div", { className: "tm-composer-wrap", "data-mode": mode, "aria-hidden": "true", children: [scene.platform !== "imessage" &&
                 (mode === "reply" || mode === "edit") && (_jsxs("div", { className: "tm-compose-context", children: [_jsx(NativeIcon, { name: mode === "edit" ? "edit" : "reply" }), _jsxs("div", { children: [_jsx("strong", { children: mode === "edit" ? "Edit Message" : (person?.name ?? "Reply") }), _jsx("span", { children: referenced?.text || referenced?.kind })] }), _jsx(Glyph, { name: "close", size: 18 })] })), _jsxs("div", { className: "tm-composer", "data-native-edit": nativeEdit || undefined, children: [_jsx("span", { className: "tm-add", children: scene.platform === "imessage" ? (_jsx(ComposerIcon, { name: "plus" })) : (_jsx(Glyph, { name: scene.platform === "telegram" ? "paperclip" : "plus", size: 24 })) }), _jsxs("div", { className: "tm-composer-field", "data-scheduled": mode === "scheduled" || undefined, children: [mode === "scheduled" && (_jsxs("div", { className: "tm-schedule-chip", children: [_jsx(Glyph, { name: "clock", size: 13 }), _jsx("span", { children: context?.scheduledAt }), _jsx(Glyph, { name: "chevron", size: 12 }), _jsx(Glyph, { name: "close", size: 15 })] })), _jsx("span", { className: hasText ? "tm-composer-text" : "tm-composer-placeholder", children: hasText ? (_jsx(ComposerText, { scene: scene, time: time })) : (_jsxs(_Fragment, { children: [!nativeEdit && scene.composer.focused && (_jsx("i", { className: "tm-caret" })), placeholder] })) }), !hasText && scene.platform === "telegram" && (_jsx(Glyph, { name: "gift", size: 20 })), " ", !hasText &&
-                                (scene.platform === "imessage" ? (_jsx(ComposerIcon, { name: "mic" })) : (_jsx(Glyph, { name: "sticker", size: 20 }))), " ", hasText && scene.platform === "imessage" && (_jsx("span", { className: "tm-send", children: _jsx(Glyph, { name: "arrow-up", size: 20 }) }))] }), scene.platform === "whatsapp" && !hasText && (_jsx("span", { className: "tm-composer-mic", "data-camera": true, children: _jsx(Glyph, { name: "camera", size: 22 }) })), scene.platform !== "imessage" && (_jsx("span", { className: hasText ? "tm-send" : "tm-composer-mic", children: _jsx(Glyph, { name: hasText
+                                (scene.platform === "imessage" ? (_jsx(ComposerIcon, { name: "mic" })) : (_jsx(Glyph, { name: "sticker", size: 20 }))), " ", hasText && scene.platform === "imessage" && (_jsx("span", { className: "tm-send", "data-pressed": scene.composer.pressedKey === "send" || undefined, children: _jsx(Glyph, { name: "arrow-up", size: 20 }) }))] }), scene.platform === "whatsapp" && !hasText && (_jsx("span", { className: "tm-composer-mic", "data-camera": true, children: _jsx(Glyph, { name: "camera", size: 22 }) })), scene.platform !== "imessage" && (_jsx("span", { className: hasText ? "tm-send" : "tm-composer-mic", children: _jsx(Glyph, { name: hasText
                                 ? mode === "edit"
                                     ? "check"
                                     : scene.platform === "telegram" ||
@@ -1201,12 +1201,15 @@ function messageStyle(message, time, animate, side) {
     const p = message.presentation;
     const age = Math.max(0, time - message.at);
     // iMessage: yours rises out of the field below; theirs grows from its tail.
-    if (animate && side && age < 0.45 && message.at > 0 && !message.effect) {
+    if (animate && side && age < 0.45 && message.at > 0 && (!message.effect || message.effect === "none")) {
         const t = clamp(age / 0.42);
         const settle = springAt(t, side === "in" ? 0.07 : 0.03);
+        // iOS 26.6, measured at 10 fps: a sent bubble leaves the field at about two thirds of its
+        // size, its bottom ~19pt low, and grows into place, right edge fixed, rising a touch past.
+        const rise = springAt(t, 0.1);
         const style = side === "out"
             ? {
-                transform: `translateY(${(1 - settle) * 52 + p.offsetY}px) translateX(${p.offsetX}px) scale(${p.scale * (0.94 + 0.06 * settle)})`,
+                transform: `translateY(${(1 - rise) * 19 + p.offsetY}px) translateX(${p.offsetX}px) scale(${p.scale * (0.66 + 0.34 * settle)})`,
                 transformOrigin: "100% 100%",
             }
             : {

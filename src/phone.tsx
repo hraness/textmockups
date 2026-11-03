@@ -3565,7 +3565,10 @@ function Composer({ scene, time }: { scene: Scene; time: number }) {
               <Glyph name="sticker" size={20} />
             ))}{" "}
           {hasText && scene.platform === "imessage" && (
-            <span className="tm-send">
+            <span
+              className="tm-send"
+              data-pressed={scene.composer.pressedKey === "send" || undefined}
+            >
               <Glyph name="arrow-up" size={20} />
             </span>
           )}
@@ -3960,13 +3963,16 @@ function messageStyle(
   const p = message.presentation;
   const age = Math.max(0, time - message.at);
   // iMessage: yours rises out of the field below; theirs grows from its tail.
-  if (animate && side && age < 0.45 && message.at > 0 && !message.effect) {
+  if (animate && side && age < 0.45 && message.at > 0 && (!message.effect || message.effect === "none")) {
     const t = clamp(age / 0.42);
     const settle = springAt(t, side === "in" ? 0.07 : 0.03);
+    // iOS 26.6, measured at 10 fps: a sent bubble leaves the field at about two thirds of its
+    // size, its bottom ~19pt low, and grows into place, right edge fixed, rising a touch past.
+    const rise = springAt(t, 0.1);
     const style: CSSProperties =
       side === "out"
         ? {
-            transform: `translateY(${(1 - settle) * 52 + p.offsetY}px) translateX(${p.offsetX}px) scale(${p.scale * (0.94 + 0.06 * settle)})`,
+            transform: `translateY(${(1 - rise) * 19 + p.offsetY}px) translateX(${p.offsetX}px) scale(${p.scale * (0.66 + 0.34 * settle)})`,
             transformOrigin: "100% 100%",
           }
         : {
