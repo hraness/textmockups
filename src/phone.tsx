@@ -1751,7 +1751,33 @@ function MessageContent({ slots,
         </span>
       </div>
     );
-  else if (message.kind === "link")
+  else if (message.kind === "link" && scene.platform === "imessage" && !message.link?.image && appleMaps(message.link?.url)) {
+    // Apple Maps links get Messages' own card: a square map, then the place under frosted glass
+    // with "Maps" below it. A search has no single place, so it shows a magnifier and no pin.
+    const search = appleMaps(message.link?.url) === "search";
+    content = (
+      <div className="tm-link-card tm-bubble-content" data-maps={search ? "search" : "place"}>
+        <div className="tm-link-map">
+          <MapArt seed={message.link!.url} pin={!search} square />
+        </div>
+        <div>
+          <span className="tm-link-glass" aria-hidden="true">
+            <MapArt seed={message.link!.url} pin={false} square />
+          </span>
+          <strong>
+            {search && (
+              <svg className="tm-link-search" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+                <circle cx="6.6" cy="6.6" r="4.9" fill="none" stroke="currentColor" strokeWidth="2" />
+                <path d="m10.3 10.3 4 4" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" />
+              </svg>
+            )}
+            {message.link?.title || "Maps"}
+          </strong>
+          <small>Maps</small>
+        </div>
+      </div>
+    );
+  } else if (message.kind === "link")
     content = (
       <div className="tm-link-card tm-bubble-content">
         {message.link?.image ? (
@@ -2355,37 +2381,68 @@ function TapbackGlyph({ kind, self }: { kind: TapbackKind; self?: boolean }) {
       </svg>
     ) : kind === "like" ? "👍" : "👎";
   // Their question, emphasis and HA HA keep iOS 26's colored puffs; yours are white (phone.css).
-  const strokes: Record<Exclude<TapbackKind, "heart" | "like" | "dislike">, [string, string, number]> = {
+  // Each puff is a solid, saturated body lit from the top left, inside a slightly darker rim.
+  // HA HA and the question mark are fat strokes; emphasis is two splayed teardrops, the right
+  // one raised, so it is drawn filled.
+  const puffs: Record<Exclude<TapbackKind, "heart" | "like" | "dislike">, [string, string, number]> = {
     haha: [
       "0 0 20 19",
       "M2.2 2.4v6.4M7.2 2.4v6.4M2.2 5.5h5M10.2 8.8l2.5-5.9a.9.9 0 0 1 1.6 0l2.5 5.9M11.1 6.7h4.8M4.4 11.9v5M8.3 11.9v5M4.4 14.3h3.9M10.4 16.9l2-4.5a.7.7 0 0 1 1.3 0l2 4.5M11.1 15.3h3.9",
-      3.3,
+      3.4,
     ],
     emphasize: [
-      "0 0 14 20",
-      "M3.6 2.6 3.3 12M10.6 2.6 10.3 12M3.3 17.2h.01M10.3 17.2h.01",
-      3.8,
+      "0.2 0 14 20",
+      "M0.67 6.44L2.96 13.55A1.13 1.13 0 0 0 5.17 13.27L5.64 5.82A2.55 2.55 0 1 0 0.67 6.44ZM2.07 17.45a2.08 2.08 0 1 0 4.16 0a2.08 2.08 0 1 0-4.16 0ZM8.13 3.46L8.6 11.87A1.2 1.2 0 0 0 10.94 12.19L13.64 4.21A2.83 2.83 0 1 0 8.13 3.46ZM7.52 16.2a2.08 2.08 0 1 0 4.16 0a2.08 2.08 0 1 0-4.16 0Z",
+      0,
     ],
     question: [
       "0 0 13 20",
-      "M2.6 5.4C2.6 3.2 4.3 1.8 6.5 1.8s3.8 1.3 3.8 3.3c0 2.7-3.8 3.1-3.8 6.4M6.5 17.2h.01",
-      3.8,
+      "M3 5.3C3 3.2 4.6 1.9 6.6 1.9s3.6 1.2 3.6 3.2c0 2.6-3.5 3-3.6 6.3M6.6 17.2h.01",
+      4.1,
     ],
   };
-  const [viewBox, d, width] = strokes[kind];
+  const [viewBox, d, width] = puffs[kind];
   const [, , boxWidth, boxHeight] = viewBox.split(" ").map(Number);
+  // Gradients resolve their colors where they are defined, so yours and theirs need their own.
+  const shade = `tm-puff-${kind}${self ? "-self" : ""}`;
   return (
     <svg viewBox={viewBox} width={boxWidth} height={boxHeight} aria-hidden="true">
-      <g fill="none" strokeLinecap="round" strokeLinejoin="round">
-        <path d={d} stroke="var(--tm-puff-edge, currentColor)" strokeWidth={width + 0.7} />
-        <path d={d} stroke="var(--tm-puff-body, currentColor)" strokeWidth={width} />
-        <path
-          d={d}
-          stroke="var(--tm-puff-hi, currentColor)"
-          strokeWidth={width * 0.5}
-          transform="translate(-0.3 -0.4)"
-        />
-      </g>
+      <defs>
+        <filter id="tm-puff-soft" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="0.45" />
+        </filter>
+        {width ? null : (
+          <radialGradient id={shade} cx="0.42" cy="0.3" r="0.75">
+            <stop offset="0" style={{ stopColor: "var(--tm-puff-hi, currentColor)" }} />
+            <stop offset="0.5" style={{ stopColor: "var(--tm-puff-body, currentColor)" }} />
+            <stop offset="1" style={{ stopColor: "var(--tm-puff-edge, currentColor)" }} />
+          </radialGradient>
+        )}
+      </defs>
+      {width ? (
+        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <path d={d} stroke="var(--tm-puff-edge, currentColor)" strokeWidth={width + 0.9} />
+          <path d={d} stroke="var(--tm-puff-body, currentColor)" strokeWidth={width} />
+          <path
+            d={d}
+            stroke="var(--tm-puff-hi, currentColor)"
+            strokeOpacity="0.75"
+            strokeWidth={width * 0.32}
+            transform="translate(-0.3 -0.45)"
+            filter="url(#tm-puff-soft)"
+          />
+        </g>
+      ) : (
+        // One path per mark, so each gets its own light.
+        <g fill={`url(#${shade})`} stroke="var(--tm-puff-edge, currentColor)" strokeWidth="0.5">
+          {d
+            .split("Z")
+            .filter(Boolean)
+            .map((part) => (
+              <path key={part} d={`${part}Z`} />
+            ))}
+        </g>
+      )}
     </svg>
   );
 }
@@ -2405,24 +2462,30 @@ function seeded(text: string) {
  * or two, a highway, a park and maybe a shore, in the Maps palette, with the red pin at the
  * center. Seeded by the place, so the same link always draws the same neighborhood.
  */
-function MapArt({ seed }: { seed: string }) {
+function MapArt({ seed, pin = true, square = false }: { seed: string; pin?: boolean; square?: boolean }) {
   const r = seeded(seed);
   const angle = -25 + r(1) * 50;
   const step = 21 + r(2) * 8;
   const lines = (offset: number, count: number) =>
     Array.from({ length: count }, (_, i) => -260 + offset + i * step);
   const shore = r(3);
+  const [top, bottom] = square ? [-80, 240] : [-10, 170];
   const water =
     shore < 0.3
-      ? `M-10 ${118 + r(4) * 20} C80 ${100 + r(5) * 30} 170 ${150 + r(6) * 10} 310 ${108 + r(7) * 30} V170 H-10Z`
+      ? `M-10 ${118 + r(4) * 20} C80 ${100 + r(5) * 30} 170 ${150 + r(6) * 10} 310 ${108 + r(7) * 30} V${bottom} H-10Z`
       : shore < 0.5
-        ? `M${236 + r(4) * 30} -10 C${210 + r(5) * 20} 60 ${260 + r(6) * 20} 110 ${226 + r(7) * 30} 170 H310 V-10Z`
+        ? `M${236 + r(4) * 30} ${top} C${210 + r(5) * 20} 60 ${260 + r(6) * 20} 110 ${226 + r(7) * 30} ${bottom} H310 V${top}Z`
         : "";
   const px = 30 + r(8) * 70;
   const py = 20 + r(9) * 30;
   return (
-    <svg className="tm-map-art" viewBox="0 0 300 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <rect width="300" height="160" fill="var(--tm-map-land)" />
+    <svg
+      className="tm-map-art"
+      viewBox={square ? "0 -70 300 300" : "0 0 300 160"}
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden="true"
+    >
+      <rect x="-10" y="-80" width="320" height="320" fill="var(--tm-map-land)" />
       <path
         d={`M${px} ${py} h${60 + r(10) * 30} q8 0 8 8 v${34 + r(11) * 22} q0 8 -8 8 h-${60 + r(10) * 30} q-8 0 -8 -8 v-${34 + r(11) * 22} q0 -8 8 -8Z`}
         fill="var(--tm-map-park)"
@@ -2455,15 +2518,30 @@ function MapArt({ seed }: { seed: string }) {
         stroke="var(--tm-map-highway)"
         strokeWidth="5"
       />
-      <g transform="translate(150 80)" className="tm-map-pin">
+{pin && (
+              <g transform="translate(150 80)" className="tm-map-pin">
         <ellipse cx="0" cy="1" rx="4" ry="1.6" fill="#00000033" />
         <path d="M0 0 L-3.6 -8.5 A15 15 0 1 1 3.6 -8.5Z" fill="#fff" />
         <circle cx="0" cy="-22" r="13.2" fill="#ff3b30" />
         <path d="M-1.6 -1.6 L-3 -9 h6 L1.6 -1.6Z" fill="#ff3b30" />
         <circle cx="0" cy="-22" r="4.6" fill="#fff" />
       </g>
+      )}
     </svg>
   );
+}
+
+/** "search" for an Apple Maps search with no place in it, "place" for any other Apple Maps link. */
+function appleMaps(url?: string): "search" | "place" | undefined {
+  if (!url) return undefined;
+  try {
+    const { hostname, searchParams } = new URL(url);
+    if (hostname !== "maps.apple.com" && hostname !== "maps.apple") return undefined;
+    const place = ["ll", "address", "sll", "daddr", "auid", "place-id"].some((key) => searchParams.has(key));
+    return searchParams.has("q") && !place ? "search" : "place";
+  } catch {
+    return undefined;
+  }
 }
 
 /** Map links: Apple Maps, Google Maps and OpenStreetMap get a drawn map in place of art. */
