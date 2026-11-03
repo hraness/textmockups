@@ -517,7 +517,7 @@ const SceneBaseSchema = z.strictObject({
         focused: z.boolean().default(false),
         /** How far the keyboard has slid up, 0 to 1; a timeline eases it for the slide. */
         keyboardReveal: z.number().min(0).max(1).optional(),
-        /** The key under your finger, which iOS lifts into a callout above its row. */
+        /** The key under your finger, which iOS lifts into a callout above its row; "send" holds the send button down. */
         pressedKey: z.string().max(8).optional(),
         context: ComposerContextSchema.optional(),
         selection: ComposerSelectionSchema.optional(),

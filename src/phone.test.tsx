@@ -66,6 +66,15 @@ describe("Phone", () => {
     expect(bar("see you ")).toEqual(["I", "the", "and"]);
     expect(bar("see you th")[0]).toBe("“th”");
   });
+  test("iMessage holds the send button down while it sends", () => {
+    const send = (pressedKey?: string) =>
+      renderToStaticMarkup(
+        <Phone scene={parseScene({ ...defaultScene, platform: "imessage", composer: { ...defaultScene.composer, text: "On my way", ...(pressedKey ? { pressedKey } : {}) } })} />,
+      ).match(/<span class="tm-send"[^>]*>/)?.[0];
+    expect(send("send")).toContain("data-pressed");
+    expect(send()).not.toContain("data-pressed");
+    expect(send("a")).not.toContain("data-pressed");
+  });
   test("is deterministic for a fixed playhead", () => {
     const render = () =>
       renderToStaticMarkup(<Phone scene={defaultScene} time={2.5} />);
