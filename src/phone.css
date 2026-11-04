@@ -4638,9 +4638,9 @@
   min-width: 40px;
   min-height: 40px;
   box-sizing: border-box;
-  padding: 10.03px 14.07px; /* 40.33pt single line: iOS 26 device, Text Size L */
-  /* Keep the measured 20.28pt line at 17pt, including when Dynamic Type grows it. */
-  line-height: calc(var(--tm-type) * 1.1929411765);
+  padding: 10.165px 14.07px; /* iOS 26 device, Text Size L: 40.33pt for one line, then 20pt a line */
+  /* 20pt a line at 17pt, the device pitch; it scales when Dynamic Type grows the text. */
+  line-height: calc(var(--tm-type) * 1.1764705882);
   letter-spacing: 0;
 }
 .tm-phone[data-platform="imessage"] .tm-bubble[data-emoji] {
