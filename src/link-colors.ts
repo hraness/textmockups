@@ -21,7 +21,9 @@ export function legacyLinkTone(tint: string): "dark" | "light" {
 }
 
 /** Resolve the two tint layers onto a stable footer surface before choosing its ink. */
-export function linkColors(tint: string, scene: Pick<Scene, "theme" | "appearance">) {
+/** `white` is the contrast at which white ink always wins: 4 for footers; the compact card, which a site
+ * icon tints whole, takes white sooner (#ff6600 at 2.9:1 on an iOS 26 device). */
+export function linkColors(tint: string, scene: Pick<Scene, "theme" | "appearance">, lean = 4) {
   const screen: Rgb = scene.theme === "dark" ? [0, 0, 0] : [255, 255, 255];
   const background = scene.appearance.wallpaper === "custom"
     ? over(rgba(scene.appearance.color), screen)
@@ -33,12 +35,13 @@ export function linkColors(tint: string, scene: Pick<Scene, "theme" | "appearanc
   // iOS leans white: a mid teal (#5b7d8b) footer takes white ink though black measures a little
   // higher, and its domain is white at about 62% (iOS 26.6 device capture).
   const white = contrast([255, 255, 255], surface);
-  const dark = white >= 4 || white > contrast([0, 0, 0], surface);
+  const dark = white >= lean || white > contrast([0, 0, 0], surface);
   const muted: Rgba = dark ? [255, 255, 255, 0.62] : [60, 60, 67, 0.8];
   return {
     tone: dark ? "dark" as const : "light" as const,
     surface: `rgb(${surface.join(" ")})`,
-    domain: contrast(over(muted, surface), surface) >= 2.5
+    // The compact card keeps the muted domain even where it is faint (white at 55% on #ff6600).
+    domain: lean < 4 || contrast(over(muted, surface), surface) >= 2.5
       ? `rgb(${muted[0]} ${muted[1]} ${muted[2]} / ${muted[3]})`
       : dark ? "#fff" : "#000",
   };

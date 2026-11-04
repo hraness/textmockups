@@ -273,6 +273,8 @@ export const MessageSchema = z
         playbackRate: z.number().min(0.25).max(3).default(1),
         playing: z.boolean().default(false),
         keep: z.boolean().default(false),
+        /** A received photo or video already saved, so iMessage drops its save button. */
+        saved: z.boolean().optional(),
     })
         .superRefine((media, ctx) => {
         if (media.playhead > media.duration)
@@ -326,6 +328,8 @@ export const MessageSchema = z
         longitude: z.number().min(-180).max(180),
         label: shortText,
         address: shortText.default(""),
+        /** A map image centered on the place; iMessage sets its pin on the middle. */
+        map: assetUrl.optional(),
     })
         .optional(),
     sharedContact: z

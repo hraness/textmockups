@@ -273,6 +273,7 @@ export declare const MessageSchema: z.ZodObject<{
         playbackRate: z.ZodDefault<z.ZodNumber>;
         playing: z.ZodDefault<z.ZodBoolean>;
         keep: z.ZodDefault<z.ZodBoolean>;
+        saved: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strict>>;
     file: z.ZodOptional<z.ZodObject<{
         name: z.ZodString;
@@ -303,6 +304,7 @@ export declare const MessageSchema: z.ZodObject<{
         longitude: z.ZodNumber;
         label: z.ZodString;
         address: z.ZodDefault<z.ZodString>;
+        map: z.ZodOptional<z.ZodString>;
     }, z.core.$strict>>;
     sharedContact: z.ZodOptional<z.ZodObject<{
         name: z.ZodString;
@@ -610,6 +612,7 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
             playbackRate: z.ZodDefault<z.ZodNumber>;
             playing: z.ZodDefault<z.ZodBoolean>;
             keep: z.ZodDefault<z.ZodBoolean>;
+            saved: z.ZodOptional<z.ZodBoolean>;
         }, z.core.$strict>>;
         file: z.ZodOptional<z.ZodObject<{
             name: z.ZodString;
@@ -640,6 +643,7 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
             longitude: z.ZodNumber;
             label: z.ZodString;
             address: z.ZodDefault<z.ZodString>;
+            map: z.ZodOptional<z.ZodString>;
         }, z.core.$strict>>;
         sharedContact: z.ZodOptional<z.ZodObject<{
             name: z.ZodString;
@@ -872,6 +876,7 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
             videoUrl?: string | undefined;
             poster?: string | undefined;
             transcript?: string | undefined;
+            saved?: boolean | undefined;
         } | undefined;
         file?: {
             name: string;
@@ -902,6 +907,7 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
             longitude: number;
             label: string;
             address: string;
+            map?: string | undefined;
         } | undefined;
         sharedContact?: {
             name: string;
@@ -1135,6 +1141,7 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
             videoUrl?: string | undefined;
             poster?: string | undefined;
             transcript?: string | undefined;
+            saved?: boolean | undefined;
         } | undefined;
         file?: {
             name: string;
@@ -1165,6 +1172,7 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
             longitude: number;
             label: string;
             address: string;
+            map?: string | undefined;
         } | undefined;
         sharedContact?: {
             name: string;
@@ -1551,6 +1559,7 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
             playbackRate: z.ZodDefault<z.ZodNumber>;
             playing: z.ZodDefault<z.ZodBoolean>;
             keep: z.ZodDefault<z.ZodBoolean>;
+            saved: z.ZodOptional<z.ZodBoolean>;
         }, z.core.$strict>>;
         file: z.ZodOptional<z.ZodObject<{
             name: z.ZodString;
@@ -1581,6 +1590,7 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
             longitude: z.ZodNumber;
             label: z.ZodString;
             address: z.ZodDefault<z.ZodString>;
+            map: z.ZodOptional<z.ZodString>;
         }, z.core.$strict>>;
         sharedContact: z.ZodOptional<z.ZodObject<{
             name: z.ZodString;
@@ -1813,6 +1823,7 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
             videoUrl?: string | undefined;
             poster?: string | undefined;
             transcript?: string | undefined;
+            saved?: boolean | undefined;
         } | undefined;
         file?: {
             name: string;
@@ -1843,6 +1854,7 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
             longitude: number;
             label: string;
             address: string;
+            map?: string | undefined;
         } | undefined;
         sharedContact?: {
             name: string;
@@ -2076,6 +2088,7 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
             videoUrl?: string | undefined;
             poster?: string | undefined;
             transcript?: string | undefined;
+            saved?: boolean | undefined;
         } | undefined;
         file?: {
             name: string;
@@ -2106,6 +2119,7 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
             longitude: number;
             label: string;
             address: string;
+            map?: string | undefined;
         } | undefined;
         sharedContact?: {
             name: string;
