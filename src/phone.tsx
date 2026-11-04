@@ -343,7 +343,7 @@ export function Phone({
                   (participant) => participant.id === message.senderId,
                 )!;
                 const outgoing = person.isSelf;
-                const link = scene.platform === "imessage" && message.link?.tint ? linkColors(message.link.tint, scene) : undefined;
+                const link = scene.platform === "imessage" && message.link?.tint ? linkColors(message.link.tint, scene, compactLink(message.link) ? 2.5 : 4) : undefined;
                 const previous = threadMessages[index - 1];
                 const next = threadMessages[index + 1];
                 const editing =
@@ -1648,6 +1648,13 @@ function MessageContent({ slots,
         {message.kind === "video" && !media?.playing && <ImPlay size={32} />}
       </div>
     );
+    if (!outgoing && !media?.saved)
+      content = (
+        <>
+          {content}
+          <ImSave />
+        </>
+      );
   } else if (message.kind === "image" || message.kind === "video")
     content = (
       <div
@@ -1735,34 +1742,80 @@ function MessageContent({ slots,
   else if (
     message.kind === "link" &&
     scene.platform === "imessage" &&
-    message.link?.icon &&
-    !message.link.image
-  )
+    !message.link?.image &&
+    !appleMaps(message.link?.url)
+  ) {
+    // Without an image Messages draws one row: the title over the domain, then the site's icon on the
+    // right, or Safari's compass when there is none. A page that never loaded shows only its address.
+    const host = safeHostname(message.link?.url);
+    const title = message.link?.title?.trim() ?? "";
+    const single = !title || title === host || title === message.link?.url;
     content = (
-      <div className="tm-link-compact tm-bubble-content">
-        <slots.Image
-          src={message.link.icon}
-          alt=""
-          referrerPolicy="no-referrer"
-        />
+      <div className="tm-link-compact tm-bubble-content" data-single={single || undefined}>
         <span>
-          <strong>{message.link.title}</strong>
-          <small>{safeHostname(message.link.url)}</small>
+          {single ? <small>{host}</small> : <><strong>{title}</strong><small>{host}</small></>}
         </span>
+        {message.link?.icon ? (
+          <slots.Image src={message.link.icon} alt="" referrerPolicy="no-referrer" />
+        ) : (
+          <svg className="tm-link-compass" viewBox="0 0 28 28" aria-hidden="true">
+            <circle cx="14" cy="14" r="14" fill="currentColor" />
+            <path d="M20.2 7.8 16.3 16.3 7.8 20.2 11.7 11.7Z" fill="var(--tm-link-cut)" />
+            <circle cx="14" cy="14" r="1.6" fill="currentColor" />
+          </svg>
+        )}
       </div>
     );
-  else if (message.kind === "link" && scene.platform === "imessage" && !message.link?.image && appleMaps(message.link?.url)) {
-    // Apple Maps links get Messages' own card: a square map, then the place under frosted glass
-    // with "Maps" below it. A search has no single place, so it shows a magnifier and no pin.
-    const search = appleMaps(message.link?.url) === "search";
+  }
+  else if (
+    scene.platform === "imessage" &&
+    (message.kind === "location" || (message.kind === "link" && appleMaps(message.link?.url) === "pin"))
+  ) {
+    // A shared pin, or a Maps link to bare coordinates, from an iOS 26 device capture: a
+    // 290 x 187pt map with the Maps marker on its middle, over a frosted footer that names it
+    // beside a chevron. A link's preview image is Apple's own snapshot, marker and all.
+    const place = message.kind === "location" ? message.location : undefined;
+    const map = place ? place.map : message.link?.image;
+    const face = map ? (
+      <slots.Image src={map} alt="" referrerPolicy="no-referrer" draggable={false} />
+    ) : (
+      <MapArt seed={place ? `${place.latitude},${place.longitude}` : message.link!.url} pin={false} />
+    );
     content = (
-      <div className="tm-link-card tm-bubble-content" data-maps={search ? "search" : "place"}>
+      <div className="tm-link-card tm-im-pin tm-bubble-content">
         <div className="tm-link-map">
-          <MapArt seed={message.link!.url} pin={!search} square />
+          {face}
+          {!(map && !place) && <MapMarker />}
         </div>
         <div>
           <span className="tm-link-glass" aria-hidden="true">
-            <MapArt seed={message.link!.url} pin={false} square />
+            {face}
+          </span>
+          <strong>{(place ? place.label : message.link?.title) || "Location"}</strong>
+          <svg className="tm-im-pin-chevron" width="6.33" height="11.33" viewBox="0 0 6.33 11.33" aria-hidden="true">
+            <path d="M1 1l4.33 4.67L1 10.33" fill="none" stroke="currentColor" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      </div>
+    );
+  } else if (message.kind === "link" && scene.platform === "imessage" && appleMaps(message.link?.url)) {
+    // Apple Maps links get Messages' own card: a square map, then the place under frosted glass
+    // with "Maps" below it. A search has no single place, so it shows a magnifier and no pin.
+    // A preview image is Apple's own snapshot of the map, pin and all.
+    const search = appleMaps(message.link?.url) === "search";
+    const map = message.link?.image;
+    const face = (pin: boolean) =>
+      map ? (
+        <slots.Image src={map} alt="" referrerPolicy="no-referrer" draggable={false} />
+      ) : (
+        <MapArt seed={message.link!.url} pin={pin} square />
+      );
+    content = (
+      <div className="tm-link-card tm-bubble-content" data-maps={search ? "search" : "place"}>
+        <div className="tm-link-map">{face(!search)}</div>
+        <div>
+          <span className="tm-link-glass" aria-hidden="true">
+            {face(false)}
           </span>
           <strong>
             {search && (
@@ -1803,7 +1856,7 @@ function MessageContent({ slots,
         </div>
       </div>
     );
-  if (message.kind === "location")
+  if (message.kind === "location" && scene.platform !== "imessage")
     content = (
       <div className="tm-location tm-bubble-content">
         <div className="tm-map">
@@ -2156,7 +2209,24 @@ function ImPlay({ size }: { size: number }) {
   );
 }
 
-/** iOS 26 groups photos sent together: a few stagger down the thread, many stack. */
+/** The save button Messages sets beside photos and videos you receive. */
+function ImSave() {
+  return (
+    <span className="tm-im-save" aria-hidden="true">
+      <svg width="16" height="17" viewBox="0 0 16 17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 5.5H3.5a2 2 0 0 0-2 2v6.5a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7.5a2 2 0 0 0-2-2H11M8 1v9.5M5 7.5l3 3 3-3" />
+      </svg>
+    </span>
+  );
+}
+
+/** A photo in a stagger keeps only its orientation: 4:3 across (squares too) or 3:4 tall. */
+const COLLAGE_WIDE: [number, number] = [217.33, 166.67];
+const COLLAGE_TALL: [number, number] = [174.67, 228.33];
+/** A stack's front card is always this 3:4 crop, whatever the photo. */
+const DECK_CARD: [number, number] = [250, 333.33];
+
+/** iOS 26 groups photos sent together: two or three stagger down the thread, four or more stack. */
 function ImGallery({
   slots,
   gallery,
@@ -2171,9 +2241,14 @@ function ImGallery({
     ) : (
       <Landscape />
     );
-  if (count > 4) {
+  const save = !gallery.saved && <ImSave />;
+  if (count >= 4) {
     const [front, ...rest] = gallery.items;
-    const [width, height] = mediaBox(front!.width, front!.height);
+    const [width, height] = DECK_CARD;
+    const videos = gallery.items.filter((item) => item.video).length;
+    const noun = videos === gallery.items.length ? "Videos" : videos ? "Items" : "Photos";
+    // Up to four cards show behind the front one, each smaller, further out, and more turned.
+    const depths = [4, 3, 2, 1].filter((depth) => depth < count);
     return (
       <div className="tm-im-deck tm-bubble-content">
         <div className="tm-im-deck-label">
@@ -2183,12 +2258,14 @@ function ImGallery({
             <rect x="0" y="5.5" width="4.67" height="4.5" rx="1.2" />
             <rect x="5.67" y="5.5" width="4.67" height="4.5" rx="1.2" />
           </svg>
-          <b>{count} Items</b>
+          <b>
+            {count} {noun}
+          </b>
           {gallery.saved && " Saved"}
         </div>
         <div className="tm-im-deck-cards" style={{ width, height }}>
-          {[3, 2, 1].map((depth) => {
-            const item = rest[depth - 1] ?? front!;
+          {depths.map((depth) => {
+            const item = rest[(depth - 1) % Math.max(1, rest.length)] ?? front!;
             return (
               <div key={depth} className="tm-im-card" data-depth={depth}>
                 {picture(item)}
@@ -2199,19 +2276,20 @@ function ImGallery({
             {picture(front!)}
             {front!.video && <ImPlay size={42} />}
           </div>
+          {save}
         </div>
       </div>
     );
   }
   return (
-      <div className="tm-im-collage tm-bubble-content">
-      {gallery.items.slice(0, 4).map((item, index) => {
-        const [width, height] = mediaBox(item.width, item.height, [220.67, 229]);
+    <div className="tm-im-collage tm-bubble-content">
+      {gallery.items.slice(0, 3).map((item, index) => {
+        const [width, height] = item.width >= item.height ? COLLAGE_WIDE : COLLAGE_TALL;
         return (
           <div
             key={index}
             className="tm-im-card"
-            data-at={index % 2 ? "start" : "end"}
+            data-at={index === 2 ? "middle" : index ? "start" : "end"}
             // Each photo tucks under the one above, a taller one further.
             style={{
               width,
@@ -2225,13 +2303,7 @@ function ImGallery({
           </div>
         );
       })}
-      {!gallery.saved && (
-        <span className="tm-im-save" aria-hidden="true">
-          <svg width="16" height="17" viewBox="0 0 16 17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M5 5.5H3.5a2 2 0 0 0-2 2v6.5a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7.5a2 2 0 0 0-2-2H11M8 1v9.5M5 7.5l3 3 3-3" />
-          </svg>
-        </span>
-      )}
+      {save}
     </div>
   );
 }
@@ -2518,26 +2590,55 @@ function MapArt({ seed, pin = true, square = false }: { seed: string; pin?: bool
         stroke="var(--tm-map-highway)"
         strokeWidth="5"
       />
-{pin && (
-              <g transform="translate(150 80)" className="tm-map-pin">
-        <ellipse cx="0" cy="1" rx="4" ry="1.6" fill="#00000033" />
-        <path d="M0 0 L-3.6 -8.5 A15 15 0 1 1 3.6 -8.5Z" fill="#fff" />
-        <circle cx="0" cy="-22" r="13.2" fill="#ff3b30" />
-        <path d="M-1.6 -1.6 L-3 -9 h6 L1.6 -1.6Z" fill="#ff3b30" />
-        <circle cx="0" cy="-22" r="4.6" fill="#fff" />
-      </g>
-      )}
+      {pin && <MapPinShape />}
     </svg>
   );
 }
 
-/** "search" for an Apple Maps search with no place in it, "place" for any other Apple Maps link. */
-function appleMaps(url?: string): "search" | "place" | undefined {
+/** The red Maps pin, its point on the middle of the map. */
+function MapPinShape() {
+  return (
+    <g transform="translate(150 80)" className="tm-map-pin">
+      <ellipse cx="0" cy="1" rx="4" ry="1.6" fill="#00000033" />
+      <path d="M0 0 L-3.6 -8.5 A15 15 0 1 1 3.6 -8.5Z" fill="#fff" />
+      <circle cx="0" cy="-22" r="13.2" fill="#ff3b30" />
+      <path d="M-1.6 -1.6 L-3 -9 h6 L1.6 -1.6Z" fill="#ff3b30" />
+      <circle cx="0" cy="-22" r="4.6" fill="#fff" />
+    </g>
+  );
+}
+
+/** The iOS 26 Maps marker: a white-ringed red disc with a pushpin, its point below the middle. */
+function MapMarker() {
+  return (
+    <svg className="tm-map-marker" width="32" height="40" viewBox="-16 -16 32 40" aria-hidden="true">
+      <defs>
+        <linearGradient id="tm-marker-red" x1="0" y1="-13" x2="0" y2="13" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#f2638f" />
+          <stop offset="1" stopColor="#dc1340" />
+        </linearGradient>
+      </defs>
+      <path d="M0-15.17a15.17 15.17 0 0 1 3.4 29.95L0 18.5l-3.4-3.72A15.17 15.17 0 0 1 0-15.17Z" fill="#fff" />
+      <circle r="13.17" fill="url(#tm-marker-red)" />
+      <circle cy="-4.5" r="3.67" fill="#fff" />
+      <path d="M-.83-1.5h1.66v8.33a.83.83 0 0 1-1.66 0Z" fill="#fff" />
+    </svg>
+  );
+}
+
+/**
+ * What an Apple Maps link points at: "search" for a search with no place in it, "pin" for bare
+ * coordinates (Messages draws those as a dropped pin, even with a search beside them), and
+ * "place" for any other Apple Maps link.
+ */
+function appleMaps(url?: string): "search" | "place" | "pin" | undefined {
   if (!url) return undefined;
   try {
     const { hostname, searchParams } = new URL(url);
     if (hostname !== "maps.apple.com" && hostname !== "maps.apple") return undefined;
-    const place = ["ll", "address", "sll", "daddr", "auid", "place-id"].some((key) => searchParams.has(key));
+    const has = (keys: string[]) => keys.some((key) => searchParams.has(key));
+    if (has(["ll", "sll"]) && !has(["address", "daddr", "auid", "place-id"])) return "pin";
+    const place = has(["ll", "address", "sll", "daddr", "auid", "place-id"]);
     return searchParams.has("q") && !place ? "search" : "place";
   } catch {
     return undefined;
@@ -3014,7 +3115,7 @@ function NativeInteraction({ slots, scene, time }: {
     const outgoing = !!scene.participants.find(
       (person) => person.id === message.senderId,
     )?.isSelf;
-    const link = scene.platform === "imessage" && message.link?.tint ? linkColors(message.link.tint, scene) : undefined;
+    const link = scene.platform === "imessage" && message.link?.tint ? linkColors(message.link.tint, scene, compactLink(message.link) ? 2.5 : 4) : undefined;
     const groups = groupedReactions(message, scene);
     return (
       <div
@@ -4031,6 +4132,10 @@ function emojiOnly(text: string): boolean {
       ),
     ].length <= 3
   );
+}
+/** Messages' one-row card: a link without an image that isn't an Apple Maps link or a text post. */
+function compactLink(link: NonNullable<Message["link"]>): boolean {
+  return !link.image && !appleMaps(link.url) && !(link.icon && link.description);
 }
 function safeHostname(url?: string): string {
   try {

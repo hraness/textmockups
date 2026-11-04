@@ -215,8 +215,8 @@ describe("Phone", () => {
     expect(tails(false)).toBe(1);
     expect(tails(true)).toBe(2);
   });
-  test("iMessage draws a gallery as a collage, or a deck past four", () => {
-    const gallery = (count: number) =>
+  test("iMessage staggers two or three photos and stacks four or more", () => {
+    const gallery = (count: number, video = [false, false]) =>
       renderToStaticMarkup(
         <Phone
           scene={parseScene({
@@ -227,7 +227,10 @@ describe("Phone", () => {
                 kind: "image",
                 text: "",
                 gallery: {
-                  items: [{ width: 800, height: 600 }, { width: 600, height: 800 }],
+                  items: [
+                    { width: 800, height: 600, video: video[0] },
+                    { width: 600, height: 800, video: video[1] },
+                  ],
                   count,
                 },
               },
@@ -235,9 +238,53 @@ describe("Phone", () => {
           })}
         />,
       );
-    expect(gallery(2)).toContain("tm-im-collage");
-    expect(gallery(15)).toContain("tm-im-deck");
-    expect(gallery(15)).toContain("15 Items");
+    expect(gallery(3)).toContain("tm-im-collage");
+    expect(gallery(4)).toContain("tm-im-deck");
+    expect(gallery(4)).toContain("4 Photos");
+    expect(gallery(15, [true, true])).toContain("15 Videos");
+    expect(gallery(5, [false, true])).toContain("5 Items");
+    // A square photo crops to the same 4:3 tile as a wide one; a deck card is always 3:4.
+    expect(gallery(2)).toContain("width:217.33px;height:166.67px");
+    expect(gallery(2)).toContain("width:174.67px;height:228.33px");
+    expect(gallery(4)).toContain("width:250px;height:333.33px");
+  });
+  test("iMessage draws a shared pin as a map with the Maps marker, over a supplied map", () => {
+    const pin = (map?: string) =>
+      renderToStaticMarkup(
+        <Phone
+          scene={parseScene({
+            ...defaultScene,
+            messages: [
+              {
+                ...defaultScene.messages[0],
+                kind: "location",
+                text: "",
+                location: { latitude: 40.7851, longitude: -73.9683, label: "Location from 11/5/26", ...(map ? { map } : {}) },
+              },
+            ],
+          })}
+        />,
+      );
+    expect(pin()).toContain("tm-im-pin");
+    expect(pin()).toContain("Location from 11/5/26");
+    expect(pin()).toContain("tm-map-marker");
+    expect(pin()).toContain("tm-map-art");
+    const map = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+    expect(pin(map)).toContain(`src="${map}"`);
+    expect(pin(map)).not.toContain("tm-map-art");
+    const link = (url: string) =>
+      renderToStaticMarkup(
+        <Phone
+          scene={parseScene({
+            ...defaultScene,
+            messages: [{ ...defaultScene.messages[0], kind: "link", text: url, link: { url, title: "" } }],
+          })}
+        />,
+      );
+    // Coordinates draw a dropped pin even beside a search; a named place or a search keeps its card.
+    expect(link("https://maps.apple.com/?ll=40.7851,-73.9683&q=Great%20Lawn")).toContain("tm-im-pin");
+    expect(link("https://maps.apple.com/?address=1%20Main%20St")).toContain('data-maps="place"');
+    expect(link("https://maps.apple.com/?q=coffee")).toContain('data-maps="search"');
   });
   test("a link with words and an icon is a text post", () => {
     const scene = parseScene({

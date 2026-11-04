@@ -5295,38 +5295,69 @@
 }
 
 /* Link previews: a compact card for a site icon, a large card with a sampled footer for an image. */
-.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"] {
+.tm-phone[data-platform="imessage"] .tm-bubble:is([data-kind="link"], [data-kind="location"]) {
   padding: 0;
   width: auto;
   --tm-link-tint: #e9e9eb;
 }
-.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-bubble[data-kind="link"] {
+.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-bubble:is([data-kind="link"], [data-kind="location"]) {
   --tm-link-tint: #3a3a3c;
 }
-.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"]:not(.tm-ghost) > .tm-bubble-paint,
-.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"]:not(.tm-ghost) > .tm-tail {
+.tm-phone[data-platform="imessage"] .tm-bubble:is([data-kind="link"], [data-kind="location"]):not(.tm-ghost) > .tm-bubble-paint,
+.tm-phone[data-platform="imessage"] .tm-bubble:is([data-kind="link"], [data-kind="location"]):not(.tm-ghost) > .tm-tail {
   background: var(--tm-link-tint);
 }
-.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"] > .tm-bubble-paint > .tm-paint,
-.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"] > .tm-tail > .tm-paint {
+.tm-phone[data-platform="imessage"] .tm-bubble:is([data-kind="link"], [data-kind="location"]) > .tm-bubble-paint > .tm-paint,
+.tm-phone[data-platform="imessage"] .tm-bubble:is([data-kind="link"], [data-kind="location"]) > .tm-tail > .tm-paint {
   display: none;
+}
+/* iOS 26 device, Text Size L: a 52.67pt row with the title and domain inset 16.67pt and the icon
+   12pt from the right edge, a 30pt site icon or a 28pt compass. A page that never loaded is a
+   58.67pt row of its address in gray, with a 24pt compass. Without a tint the card is the
+   received gray on either side; a site icon tints the whole card. */
+.tm-phone[data-platform="imessage"] .tm-bubble:is([data-kind="link"], [data-kind="location"]):has(> .tm-link-compact) {
+  --tm-link-tint: var(--tm-in);
+}
+/* A tinted card darkens toward its foot, about 7% at the bottom edge. */
+.tm-phone[data-platform="imessage"] .tm-bubble:is([data-kind="link"], [data-kind="location"])[data-tint]:has(> .tm-link-compact):not(.tm-ghost) > .tm-bubble-paint {
+  background: linear-gradient(transparent 40%, rgb(0 0 0 / 0.07)), var(--tm-link-tint);
 }
 .tm-link-compact {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 6.5px;
+  gap: 16.33px;
   box-sizing: border-box;
-  height: 56px;
-  padding: 0 21px 0 5.5px;
+  min-height: 52.67px;
+  padding: 0 12.33px 0 16.67px;
   color: var(--tm-ink);
+  --tm-link-cut: var(--tm-link-surface, var(--tm-link-tint));
+}
+.tm-link-compact[data-single] {
+  min-height: 58.67px;
+  gap: 22px;
+  padding-right: 15.33px;
+}
+.tm-link-compact:has(> img) {
+  min-height: 53px;
 }
 .tm-link-compact > img {
   flex: none;
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
+  width: 30px;
+  height: 30px;
+  border-radius: 3px;
   object-fit: cover;
+}
+.tm-link-compass {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin-right: 0.67px;
+  color: var(--tm-link-domain, rgb(60 60 67 / 0.6));
+}
+.tm-link-compact[data-single] > .tm-link-compass {
+  width: 24px;
+  height: 24px;
 }
 .tm-link-compact > span {
   display: flex;
@@ -5338,18 +5369,33 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  letter-spacing: 0;
 }
 .tm-link-compact strong {
   font-size: 15px;
-  line-height: 18px;
+  line-height: 19px;
   font-weight: 600;
 }
 .tm-link-compact small {
+  margin-top: 1px;
   font-size: 13px;
   line-height: 16px;
-  color: #8a8a8e;
+  color: var(--tm-link-domain, rgb(60 60 67 / 0.6));
 }
-.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"]:has(> .tm-link-post) {
+.tm-link-compact[data-single] small {
+  margin: 0;
+}
+.tm-phone[data-theme="dark"] .tm-bubble:not([data-tint]) .tm-link-compact small,
+.tm-phone[data-theme="dark"] .tm-bubble:not([data-tint]) .tm-link-compass {
+  color: rgb(235 235 245 / 0.6);
+}
+.tm-bubble[data-tint="dark"] .tm-link-compact {
+  color: #fff;
+}
+.tm-bubble[data-tint="light"] .tm-link-compact {
+  color: #000;
+}
+.tm-phone[data-platform="imessage"] .tm-bubble:is([data-kind="link"], [data-kind="location"]):has(> .tm-link-post) {
   --tm-link-tint: var(--tm-in);
 }
 .tm-link-post {
@@ -5396,7 +5442,7 @@
   line-height: 16px;
   color: #8a8a8e;
 }
-.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"] .tm-link-card {
+.tm-phone[data-platform="imessage"] .tm-bubble:is([data-kind="link"], [data-kind="location"]) .tm-link-card {
   position: relative;
   width: calc(var(--tm-thread-w) - 89.67px);
   max-width: 100%;
@@ -5404,7 +5450,7 @@
   border-radius: var(--tm-radius);
   color: var(--tm-ink);
 }
-.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"] .tm-link-card:has(> img) {
+.tm-phone[data-platform="imessage"] .tm-bubble:is([data-kind="link"], [data-kind="location"]) .tm-link-card:has(> img) {
   width: min-content;
 }
 /* A wide image spans the bubble; a square or tall one shrinks the card to a 236pt square. */
@@ -5446,7 +5492,7 @@
   opacity: 1;
 }
 .tm-bubble[data-tint="dark"] .tm-link-card,
-.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"][data-tint="dark"] .tm-link-card {
+.tm-phone[data-platform="imessage"] .tm-bubble:is([data-kind="link"], [data-kind="location"])[data-tint="dark"] .tm-link-card {
   color: #fff;
 }
 .tm-phone[data-platform="imessage"] .tm-bubble[data-tint="dark"] .tm-link-card small {
@@ -5565,14 +5611,21 @@
   object-fit: cover;
 }
 
-/* Many photos stack into a deck that fans out to the right, under an "N Items" label. */
+/* Four or more stack into a 250 x 333pt deck that fans 26pt out to the right, under an
+   "N Photos" label set to the bubble's edge. */
 .tm-im-deck {
-  padding: 0 0 4px 8.33px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0 26px 4px 0;
+}
+.tm-bubble[data-side="out"] .tm-im-deck {
+  align-items: stretch;
 }
 .tm-im-deck-label {
   display: flex;
   align-items: center;
-  margin: 2.33px 0 9.67px 6.67px;
+  margin: 2.33px 0 11px;
   font-size: 11.25px;
   line-height: 13px;
   letter-spacing: 0;
@@ -5582,8 +5635,12 @@
 .tm-phone[data-theme="dark"] .tm-im-deck-label {
   color: #98989f;
 }
+.tm-bubble[data-side="out"] .tm-im-deck-label {
+  justify-content: flex-end;
+  margin-right: -26px;
+}
 .tm-im-deck-label > svg {
-  margin-right: 5px;
+  margin-right: 5.67px;
   fill: #1f6ff4;
 }
 .tm-im-deck-label > b {
@@ -5600,19 +5657,23 @@
 .tm-im-deck-cards > .tm-im-card:not([data-depth]) {
   box-shadow: 0 1px 10px rgb(0 0 0 / 0.14);
 }
+/* Each card behind is about 11% smaller, centered, and leans further right: their right edges
+   sit 11, 18, 21 and 23pt past the front card at mid-height. */
 .tm-im-deck-cards > .tm-im-card[data-depth] {
-  transform-origin: 0 100%;
-  box-shadow: 0 0 2px rgb(0 0 0 / 0.4);
-  filter: brightness(0.66);
+  box-shadow: -1px 0 3px rgb(0 0 0 / 0.18);
+  filter: brightness(0.9);
 }
 .tm-im-deck-cards > .tm-im-card[data-depth="1"] {
-  transform: translate(5.1%, -0.5%) rotate(2.3deg) scale(0.95);
+  transform: translateX(9.9%) rotate(2deg) scale(0.89);
 }
 .tm-im-deck-cards > .tm-im-card[data-depth="2"] {
-  transform: translate(10.2%, -1%) rotate(4.6deg) scale(0.9);
+  transform: translateX(18.1%) rotate(3.5deg) scale(0.78);
 }
 .tm-im-deck-cards > .tm-im-card[data-depth="3"] {
-  transform: translate(15.2%, -1.5%) rotate(6.9deg) scale(0.85);
+  transform: translateX(24.9%) rotate(5deg) scale(0.67);
+}
+.tm-im-deck-cards > .tm-im-card[data-depth="4"] {
+  transform: translateX(30.2%) rotate(6deg) scale(0.58);
 }
 
 /* A few photos stagger down the thread, alternating sides, each slightly turned. */
@@ -5634,7 +5695,8 @@
 .tm-im-collage > .tm-im-card[data-at="start"] {
   transform: rotate(-0.5deg);
 }
-.tm-im-collage > .tm-im-card:nth-child(3) {
+.tm-im-collage > .tm-im-card[data-at="middle"] {
+  align-self: center;
   margin-right: 8.33px;
   transform: rotate(0.5deg);
 }
@@ -5644,23 +5706,36 @@
   left: 11px;
   filter: drop-shadow(0 0 2px rgb(0 0 0 / 0.3));
 }
+/* From an iOS 26 light capture: a 35pt disc 14pt from the photo, level with its middle. */
 .tm-im-save {
   position: absolute;
   top: 50%;
-  left: calc(100% + 15.5px);
+  left: calc(100% + 14px);
   display: grid;
   place-items: center;
-  width: 34.33px;
-  height: 34.33px;
-  margin-top: -21px;
+  width: 35px;
+  height: 35px;
+  margin-top: -17.5px;
   border-radius: 50%;
-  background: #dedee0;
-  color: #1858c3;
+  background: #e9e9eb;
+  color: #068afe;
+}
+.tm-im-save > svg {
+  width: 14.33px;
+  height: 17px;
+}
+.tm-im-collage > .tm-im-save {
+  margin-top: -21px;
+}
+/* Beside a stack the button clears the fanned cards. */
+.tm-im-deck-cards > .tm-im-save {
+  left: calc(100% + 78.67px);
 }
 .tm-phone[data-theme="dark"] .tm-im-save {
   background: #3a3a3c;
   color: #3b8cff;
 }
+.tm-phone[data-platform="imessage"] .tm-bubble:has(> .tm-im-save),
 .tm-phone[data-platform="imessage"] .tm-bubble:has(> .tm-im-deck),
 .tm-phone[data-platform="imessage"] .tm-bubble:has(> .tm-im-collage) {
   overflow: visible;
@@ -5742,13 +5817,13 @@
 /* Apple Maps, from an iOS 26.6 device capture: a 236pt square map over a footer of frosted map,
    the place in semibold and "Maps" in gray, sized at the default Text Size like other link
    footers. The tail takes the frost's color. */
-.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"]:has(> .tm-link-card[data-maps]) {
+.tm-phone[data-platform="imessage"] .tm-bubble:is([data-kind="link"], [data-kind="location"]):has(> .tm-link-card[data-maps]) {
   --tm-link-tint: #b3def0;
 }
-.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-bubble[data-kind="link"]:has(> .tm-link-card[data-maps]) {
+.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-bubble:is([data-kind="link"], [data-kind="location"]):has(> .tm-link-card[data-maps]) {
   --tm-link-tint: #24485e;
 }
-.tm-phone[data-platform="imessage"] .tm-bubble[data-kind="link"] .tm-link-card[data-maps] {
+.tm-phone[data-platform="imessage"] .tm-bubble:is([data-kind="link"], [data-kind="location"]) .tm-link-card[data-maps] {
   width: 236px;
 }
 .tm-phone[data-platform="imessage"] .tm-link-card[data-maps] > .tm-link-map {
@@ -5772,6 +5847,15 @@
 }
 .tm-link-glass > .tm-map-art {
   height: 100%;
+}
+/* A supplied map fills the square, with the pin drawn over its middle. */
+:is(.tm-link-map, .tm-link-glass) > img,
+.tm-link-map > .tm-map-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .tm-phone[data-platform="imessage"] .tm-link-card[data-maps] strong {
   position: relative;
@@ -5802,6 +5886,57 @@
   color: rgb(235 235 245 / 0.65);
 }
 
+/* A shared pin, from an iOS 26.6 light capture on the 17 Pro Max: a 290.67 x 187.33pt map with
+   the Maps marker on its middle, over a 37.33pt frosted footer naming it in 15pt regular, 15pt
+   in from each side, with a gray chevron at the end. */
+.tm-phone[data-platform="imessage"] .tm-bubble:has(> .tm-im-pin) {
+  --tm-link-tint: #d1e5c3;
+}
+.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-bubble:has(> .tm-im-pin) {
+  --tm-link-tint: #2f3a2c;
+}
+.tm-phone[data-platform="imessage"] .tm-bubble .tm-link-card.tm-im-pin {
+  width: 290.67px;
+}
+.tm-phone[data-platform="imessage"] .tm-im-pin > .tm-link-map {
+  width: 100%;
+  height: 187.33px;
+  aspect-ratio: auto;
+}
+.tm-phone[data-platform="imessage"] .tm-im-pin > div:last-child {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 37.33px;
+  overflow: hidden;
+  padding: 0 15px;
+  background: var(--tm-link-tint);
+}
+.tm-phone[data-platform="imessage"] .tm-im-pin strong {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 15px;
+  line-height: 18px;
+  font-weight: 400;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tm-im-pin-chevron {
+  position: relative;
+  flex: none;
+  margin-left: 8px;
+  color: #8e8e93;
+}
+.tm-map-marker {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -16px 0 0 -16px;
+  filter: drop-shadow(0 1px 2.5px rgb(0 0 0 / 0.25));
+}
+
 /* iOS 26 keyboard, measured from iOS 26 Simulator captures of the 17 Pro Max and 17 Pro: a panel
    with 30pt top corners, an empty predictive bar split in thirds, four rows of evenly rounded keys
    all one color, and the emoji and dictation buttons below. */
@@ -5821,6 +5956,14 @@
   border-radius: 30px 30px 0 0;
   box-shadow: inset 0 1px 0 var(--tm-kb-rim);
 }
+/* The Pro Max panel starts 1pt higher than its keys suggest (device top edge at 611pt): it grows
+   up over the composer's margin, keys pinned where they were, and the lift scales with the reveal. */
+.tm-phone[data-model="iphone-17-pro-max"] .tm-alphabetic-keyboard {
+  --tm-kb-lift: calc(var(--tm-keyboard-height, 344px) / 344);
+  height: calc(var(--tm-keyboard-height, 344px) + var(--tm-kb-lift));
+  margin-top: calc(-1 * var(--tm-kb-lift));
+  padding-top: calc(var(--tm-kb-bar) + var(--tm-kb-lift));
+}
 .tm-phone[data-model="iphone-17-pro"] .tm-alphabetic-keyboard {
   --tm-kb-pad: 6.67px;
   --tm-kb-gap: 6px;
@@ -5832,7 +5975,7 @@
 .tm-phone:not([data-os="android"]) .tm-alphabetic-keyboard::after {
   content: "";
   position: absolute;
-  top: calc(var(--tm-kb-bar) / 2 - 13.5px);
+  top: calc(var(--tm-kb-bar) / 2 - 13.5px + var(--tm-kb-lift, 0px));
   left: calc(100% / 3 - 1px);
   width: 1px;
   height: 24px;
@@ -5890,14 +6033,14 @@
   position: absolute;
   left: 29.33px;
   right: 34px;
-  top: calc(var(--tm-kb-bar) + 4 * var(--tm-kb-key-h) + 33px + var(--tm-kb-tools));
+  top: calc(var(--tm-kb-bar) + 4 * var(--tm-kb-key-h) + 33px + var(--tm-kb-tools) + var(--tm-kb-lift, 0px));
   align-items: center;
   padding: 0;
   height: 28px;
 }
 .tm-phone:not([data-os="android"]) .tm-kb-predict {
   position: absolute;
-  top: 0;
+  top: var(--tm-kb-lift, 0px);
   left: 0;
   right: 0;
   height: calc(var(--tm-kb-bar) - 3.5px);

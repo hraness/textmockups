@@ -139,7 +139,7 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                     (os === "android" ? (_jsx("div", { className: "tm-cutout", "aria-hidden": "true" })) : (_jsx("div", { className: "tm-island", "aria-hidden": "true", children: _jsx("i", {}) })))) : (scene.device.frame === "iphone" && (_jsx("div", { className: "tm-island", "aria-hidden": "true", children: _jsx("i", {}) })))), _jsx(PhoneHeader, { slots: slots, scene: scene, person: other }), scene.platform !== "imessage" && pinned?.visible && (_jsx(PinnedBanner, { slots: slots, scene: scene })), _jsx("div", { className: "tm-thread", "data-textmock-thread": true, "data-has-pinned": (scene.platform !== "imessage" && pinned?.visible) || undefined, children: _jsxs("div", { className: "tm-thread-content", children: [threadMessages.map((message, index) => {
                                             const person = scene.participants.find((participant) => participant.id === message.senderId);
                                             const outgoing = person.isSelf;
-                                            const link = scene.platform === "imessage" && message.link?.tint ? linkColors(message.link.tint, scene) : undefined;
+                                            const link = scene.platform === "imessage" && message.link?.tint ? linkColors(message.link.tint, scene, compactLink(message.link) ? 2.5 : 4) : undefined;
                                             const previous = threadMessages[index - 1];
                                             const next = threadMessages[index + 1];
                                             const editing = scene.platform === "imessage" &&
@@ -503,6 +503,8 @@ function MessageContent({ slots, message, scene, time, tail = false, }) {
             }, children: [message.kind === "video" && media?.videoUrl ? (_jsx(slots.Video, { src: media.videoUrl, playhead: media.playhead, width: media.width, height: media.height, poster: media.poster ?? media.url })) : media?.url || media?.poster ? (_jsx(slots.Image, { src: message.kind === "video"
                         ? (media?.poster ?? media?.url)
                         : media?.url, alt: media?.alt ?? "", referrerPolicy: "no-referrer", draggable: false })) : (_jsx(Landscape, {})), message.kind === "video" && !media?.playing && _jsx(ImPlay, { size: 32 })] }));
+        if (!outgoing && !media?.saved)
+            content = (_jsxs(_Fragment, { children: [content, _jsx(ImSave, {})] }));
     }
     else if (message.kind === "image" || message.kind === "video")
         content = (_jsxs("div", { className: "tm-media tm-bubble-content", style: { aspectRatio: `${media?.width ?? 4} / ${media?.height ?? 3}` }, children: [message.kind === "video" && media?.videoUrl ? (_jsx(slots.Video, { src: media.videoUrl, playhead: media.playhead, width: media.width, height: media.height, poster: media.poster ?? media.url })) : media?.url || media?.poster ? (_jsx(slots.Image, { src: message.kind === "video"
@@ -521,18 +523,37 @@ function MessageContent({ slots, message, scene, time, tail = false, }) {
         content = (_jsxs("div", { className: "tm-link-post tm-bubble-content", children: [_jsx("p", { children: message.link.description }), _jsxs("div", { children: [_jsx(slots.Image, { src: message.link.icon, alt: "", referrerPolicy: "no-referrer" }), _jsxs("span", { children: [_jsx("strong", { children: message.link.title }), _jsx("small", { children: safeHostname(message.link.url) })] })] })] }));
     else if (message.kind === "link" &&
         scene.platform === "imessage" &&
-        message.link?.icon &&
-        !message.link.image)
-        content = (_jsxs("div", { className: "tm-link-compact tm-bubble-content", children: [_jsx(slots.Image, { src: message.link.icon, alt: "", referrerPolicy: "no-referrer" }), _jsxs("span", { children: [_jsx("strong", { children: message.link.title }), _jsx("small", { children: safeHostname(message.link.url) })] })] }));
-    else if (message.kind === "link" && scene.platform === "imessage" && !message.link?.image && appleMaps(message.link?.url)) {
+        !message.link?.image &&
+        !appleMaps(message.link?.url)) {
+        // Without an image Messages draws one row: the title over the domain, then the site's icon on the
+        // right, or Safari's compass when there is none. A page that never loaded shows only its address.
+        const host = safeHostname(message.link?.url);
+        const title = message.link?.title?.trim() ?? "";
+        const single = !title || title === host || title === message.link?.url;
+        content = (_jsxs("div", { className: "tm-link-compact tm-bubble-content", "data-single": single || undefined, children: [_jsx("span", { children: single ? _jsx("small", { children: host }) : _jsxs(_Fragment, { children: [_jsx("strong", { children: title }), _jsx("small", { children: host })] }) }), message.link?.icon ? (_jsx(slots.Image, { src: message.link.icon, alt: "", referrerPolicy: "no-referrer" })) : (_jsxs("svg", { className: "tm-link-compass", viewBox: "0 0 28 28", "aria-hidden": "true", children: [_jsx("circle", { cx: "14", cy: "14", r: "14", fill: "currentColor" }), _jsx("path", { d: "M20.2 7.8 16.3 16.3 7.8 20.2 11.7 11.7Z", fill: "var(--tm-link-cut)" }), _jsx("circle", { cx: "14", cy: "14", r: "1.6", fill: "currentColor" })] }))] }));
+    }
+    else if (scene.platform === "imessage" &&
+        (message.kind === "location" || (message.kind === "link" && appleMaps(message.link?.url) === "pin"))) {
+        // A shared pin, or a Maps link to bare coordinates, from an iOS 26 device capture: a
+        // 290 x 187pt map with the Maps marker on its middle, over a frosted footer that names it
+        // beside a chevron. A link's preview image is Apple's own snapshot, marker and all.
+        const place = message.kind === "location" ? message.location : undefined;
+        const map = place ? place.map : message.link?.image;
+        const face = map ? (_jsx(slots.Image, { src: map, alt: "", referrerPolicy: "no-referrer", draggable: false })) : (_jsx(MapArt, { seed: place ? `${place.latitude},${place.longitude}` : message.link.url, pin: false }));
+        content = (_jsxs("div", { className: "tm-link-card tm-im-pin tm-bubble-content", children: [_jsxs("div", { className: "tm-link-map", children: [face, !(map && !place) && _jsx(MapMarker, {})] }), _jsxs("div", { children: [_jsx("span", { className: "tm-link-glass", "aria-hidden": "true", children: face }), _jsx("strong", { children: (place ? place.label : message.link?.title) || "Location" }), _jsx("svg", { className: "tm-im-pin-chevron", width: "6.33", height: "11.33", viewBox: "0 0 6.33 11.33", "aria-hidden": "true", children: _jsx("path", { d: "M1 1l4.33 4.67L1 10.33", fill: "none", stroke: "currentColor", strokeWidth: "1.67", strokeLinecap: "round", strokeLinejoin: "round" }) })] })] }));
+    }
+    else if (message.kind === "link" && scene.platform === "imessage" && appleMaps(message.link?.url)) {
         // Apple Maps links get Messages' own card: a square map, then the place under frosted glass
         // with "Maps" below it. A search has no single place, so it shows a magnifier and no pin.
+        // A preview image is Apple's own snapshot of the map, pin and all.
         const search = appleMaps(message.link?.url) === "search";
-        content = (_jsxs("div", { className: "tm-link-card tm-bubble-content", "data-maps": search ? "search" : "place", children: [_jsx("div", { className: "tm-link-map", children: _jsx(MapArt, { seed: message.link.url, pin: !search, square: true }) }), _jsxs("div", { children: [_jsx("span", { className: "tm-link-glass", "aria-hidden": "true", children: _jsx(MapArt, { seed: message.link.url, pin: false, square: true }) }), _jsxs("strong", { children: [search && (_jsxs("svg", { className: "tm-link-search", viewBox: "0 0 16 16", width: "16", height: "16", "aria-hidden": "true", children: [_jsx("circle", { cx: "6.6", cy: "6.6", r: "4.9", fill: "none", stroke: "currentColor", strokeWidth: "2" }), _jsx("path", { d: "m10.3 10.3 4 4", stroke: "currentColor", strokeWidth: "2.3", strokeLinecap: "round" })] })), message.link?.title || "Maps"] }), _jsx("small", { children: "Maps" })] })] }));
+        const map = message.link?.image;
+        const face = (pin) => map ? (_jsx(slots.Image, { src: map, alt: "", referrerPolicy: "no-referrer", draggable: false })) : (_jsx(MapArt, { seed: message.link.url, pin: pin, square: true }));
+        content = (_jsxs("div", { className: "tm-link-card tm-bubble-content", "data-maps": search ? "search" : "place", children: [_jsx("div", { className: "tm-link-map", children: face(!search) }), _jsxs("div", { children: [_jsx("span", { className: "tm-link-glass", "aria-hidden": "true", children: face(false) }), _jsxs("strong", { children: [search && (_jsxs("svg", { className: "tm-link-search", viewBox: "0 0 16 16", width: "16", height: "16", "aria-hidden": "true", children: [_jsx("circle", { cx: "6.6", cy: "6.6", r: "4.9", fill: "none", stroke: "currentColor", strokeWidth: "2" }), _jsx("path", { d: "m10.3 10.3 4 4", stroke: "currentColor", strokeWidth: "2.3", strokeLinecap: "round" })] })), message.link?.title || "Maps"] }), _jsx("small", { children: "Maps" })] })] }));
     }
     else if (message.kind === "link")
         content = (_jsxs("div", { className: "tm-link-card tm-bubble-content", children: [message.link?.image ? (_jsx(slots.Image, { src: message.link.image, alt: "", referrerPolicy: "no-referrer" })) : isMapLink(message.link?.url) ? (_jsx("div", { className: "tm-link-map", children: _jsx(MapArt, { seed: message.link.url }) })) : (_jsxs("div", { className: "tm-link-art", children: [_jsx("span", { children: "\u2197" }), _jsx("span", { children: safeHostname(message.link?.url) })] })), _jsxs("div", { children: [_jsx("strong", { children: message.link?.title }), message.link?.description && _jsx("p", { children: message.link.description }), _jsx("small", { children: safeHostname(message.link?.url) })] })] }));
-    if (message.kind === "location")
+    if (message.kind === "location" && scene.platform !== "imessage")
         content = (_jsxs("div", { className: "tm-location tm-bubble-content", children: [_jsx("div", { className: "tm-map", children: _jsx(MapArt, { seed: `${message.location?.latitude},${message.location?.longitude}` }) }), _jsx("strong", { children: message.location?.label }), _jsx("small", { children: message.location?.address ||
                         `${message.location?.latitude}, ${message.location?.longitude}` })] }));
     if (message.kind === "contact")
@@ -671,28 +692,42 @@ function mediaClip(w, h, side, tail) {
 function ImPlay({ size }) {
     return (_jsx("span", { className: "tm-im-play", "data-size": size > 36 ? "large" : undefined, "aria-hidden": "true", children: _jsx("i", {}) }));
 }
-/** iOS 26 groups photos sent together: a few stagger down the thread, many stack. */
+/** The save button Messages sets beside photos and videos you receive. */
+function ImSave() {
+    return (_jsx("span", { className: "tm-im-save", "aria-hidden": "true", children: _jsx("svg", { width: "16", height: "17", viewBox: "0 0 16 17", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: _jsx("path", { d: "M5 5.5H3.5a2 2 0 0 0-2 2v6.5a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7.5a2 2 0 0 0-2-2H11M8 1v9.5M5 7.5l3 3 3-3" }) }) }));
+}
+/** A photo in a stagger keeps only its orientation: 4:3 across (squares too) or 3:4 tall. */
+const COLLAGE_WIDE = [217.33, 166.67];
+const COLLAGE_TALL = [174.67, 228.33];
+/** A stack's front card is always this 3:4 crop, whatever the photo. */
+const DECK_CARD = [250, 333.33];
+/** iOS 26 groups photos sent together: two or three stagger down the thread, four or more stack. */
 function ImGallery({ slots, gallery, }) {
     const count = gallery.count ?? gallery.items.length;
     const picture = (item) => item.url ? (_jsx(slots.Image, { src: item.url, alt: "", referrerPolicy: "no-referrer", draggable: false })) : (_jsx(Landscape, {}));
-    if (count > 4) {
+    const save = !gallery.saved && _jsx(ImSave, {});
+    if (count >= 4) {
         const [front, ...rest] = gallery.items;
-        const [width, height] = mediaBox(front.width, front.height);
-        return (_jsxs("div", { className: "tm-im-deck tm-bubble-content", children: [_jsxs("div", { className: "tm-im-deck-label", children: [_jsxs("svg", { width: "10.33", height: "10", viewBox: "0 0 10.33 10", "aria-hidden": "true", children: [_jsx("rect", { x: "0", y: "0", width: "4.67", height: "4.5", rx: "1.2" }), _jsx("rect", { x: "5.67", y: "0", width: "4.67", height: "4.5", rx: "1.2" }), _jsx("rect", { x: "0", y: "5.5", width: "4.67", height: "4.5", rx: "1.2" }), _jsx("rect", { x: "5.67", y: "5.5", width: "4.67", height: "4.5", rx: "1.2" })] }), _jsxs("b", { children: [count, " Items"] }), gallery.saved && " Saved"] }), _jsxs("div", { className: "tm-im-deck-cards", style: { width, height }, children: [[3, 2, 1].map((depth) => {
-                            const item = rest[depth - 1] ?? front;
+        const [width, height] = DECK_CARD;
+        const videos = gallery.items.filter((item) => item.video).length;
+        const noun = videos === gallery.items.length ? "Videos" : videos ? "Items" : "Photos";
+        // Up to four cards show behind the front one, each smaller, further out, and more turned.
+        const depths = [4, 3, 2, 1].filter((depth) => depth < count);
+        return (_jsxs("div", { className: "tm-im-deck tm-bubble-content", children: [_jsxs("div", { className: "tm-im-deck-label", children: [_jsxs("svg", { width: "10.33", height: "10", viewBox: "0 0 10.33 10", "aria-hidden": "true", children: [_jsx("rect", { x: "0", y: "0", width: "4.67", height: "4.5", rx: "1.2" }), _jsx("rect", { x: "5.67", y: "0", width: "4.67", height: "4.5", rx: "1.2" }), _jsx("rect", { x: "0", y: "5.5", width: "4.67", height: "4.5", rx: "1.2" }), _jsx("rect", { x: "5.67", y: "5.5", width: "4.67", height: "4.5", rx: "1.2" })] }), _jsxs("b", { children: [count, " ", noun] }), gallery.saved && " Saved"] }), _jsxs("div", { className: "tm-im-deck-cards", style: { width, height }, children: [depths.map((depth) => {
+                            const item = rest[(depth - 1) % Math.max(1, rest.length)] ?? front;
                             return (_jsx("div", { className: "tm-im-card", "data-depth": depth, children: picture(item) }, depth));
-                        }), _jsxs("div", { className: "tm-im-card", children: [picture(front), front.video && _jsx(ImPlay, { size: 42 })] })] })] }));
+                        }), _jsxs("div", { className: "tm-im-card", children: [picture(front), front.video && _jsx(ImPlay, { size: 42 })] }), save] })] }));
     }
-    return (_jsxs("div", { className: "tm-im-collage tm-bubble-content", children: [gallery.items.slice(0, 4).map((item, index) => {
-                const [width, height] = mediaBox(item.width, item.height, [220.67, 229]);
-                return (_jsxs("div", { className: "tm-im-card", "data-at": index % 2 ? "start" : "end", 
+    return (_jsxs("div", { className: "tm-im-collage tm-bubble-content", children: [gallery.items.slice(0, 3).map((item, index) => {
+                const [width, height] = item.width >= item.height ? COLLAGE_WIDE : COLLAGE_TALL;
+                return (_jsxs("div", { className: "tm-im-card", "data-at": index === 2 ? "middle" : index ? "start" : "end", 
                     // Each photo tucks under the one above, a taller one further.
                     style: {
                         width,
                         height,
                         marginTop: index ? -Math.round(Math.max(8, height * 0.173 - 14.9) * 3) / 3 : 0,
                     }, children: [picture(item), item.video && _jsx(ImPlay, { size: 32 }), item.live && _jsx(ImLive, {})] }, index));
-            }), !gallery.saved && (_jsx("span", { className: "tm-im-save", "aria-hidden": "true", children: _jsx("svg", { width: "16", height: "17", viewBox: "0 0 16 17", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: _jsx("path", { d: "M5 5.5H3.5a2 2 0 0 0-2 2v6.5a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7.5a2 2 0 0 0-2-2H11M8 1v9.5M5 7.5l3 3 3-3" }) }) }))] }));
+            }), save] }));
 }
 /** The Live Photo badge: a dot inside a solid ring inside a dotted ring. */
 function ImLive() {
@@ -787,9 +822,21 @@ function MapArt({ seed, pin = true, square = false }) {
             : "";
     const px = 30 + r(8) * 70;
     const py = 20 + r(9) * 30;
-    return (_jsxs("svg", { className: "tm-map-art", viewBox: square ? "0 -70 300 300" : "0 0 300 160", preserveAspectRatio: "xMidYMid slice", "aria-hidden": "true", children: [_jsx("rect", { x: "-10", y: "-80", width: "320", height: "320", fill: "var(--tm-map-land)" }), _jsx("path", { d: `M${px} ${py} h${60 + r(10) * 30} q8 0 8 8 v${34 + r(11) * 22} q0 8 -8 8 h-${60 + r(10) * 30} q-8 0 -8 -8 v-${34 + r(11) * 22} q0 -8 8 -8Z`, fill: "var(--tm-map-park)", transform: `rotate(${angle} 150 80)` }), _jsxs("g", { transform: `rotate(${angle} 150 80)`, stroke: "var(--tm-map-road)", fill: "none", children: [_jsxs("g", { strokeWidth: "2.6", stroke: "var(--tm-map-casing)", children: [lines(r(12) * step, 30).map((x) => _jsx("path", { d: `M${x} -200 V360` }, `a${x}`)), lines(r(13) * step, 30).map((y) => _jsx("path", { d: `M-200 ${y} H500` }, `b${y}`))] }), _jsxs("g", { strokeWidth: "1.8", children: [lines(r(12) * step, 30).map((x) => _jsx("path", { d: `M${x} -200 V360` }, `c${x}`)), lines(r(13) * step, 30).map((y) => _jsx("path", { d: `M-200 ${y} H500` }, `d${y}`))] }), _jsx("path", { d: `M-200 ${70 + r(14) * 30} H500`, strokeWidth: "6", stroke: "var(--tm-map-casing)" }), _jsx("path", { d: `M-200 ${70 + r(14) * 30} H500`, strokeWidth: "4.6" }), _jsx("path", { d: `M${120 + r(15) * 60} -200 V360`, strokeWidth: "6", stroke: "var(--tm-map-casing)" }), _jsx("path", { d: `M${120 + r(15) * 60} -200 V360`, strokeWidth: "4.6" })] }), water && _jsx("path", { d: water, fill: "var(--tm-map-water)" }), _jsx("path", { d: `M-10 ${150 - r(16) * 40} C90 ${120 - r(17) * 40} 180 ${60 + r(18) * 40} 310 ${20 + r(19) * 40}`, fill: "none", stroke: "var(--tm-map-highway-casing)", strokeWidth: "7" }), _jsx("path", { d: `M-10 ${150 - r(16) * 40} C90 ${120 - r(17) * 40} 180 ${60 + r(18) * 40} 310 ${20 + r(19) * 40}`, fill: "none", stroke: "var(--tm-map-highway)", strokeWidth: "5" }), pin && (_jsxs("g", { transform: "translate(150 80)", className: "tm-map-pin", children: [_jsx("ellipse", { cx: "0", cy: "1", rx: "4", ry: "1.6", fill: "#00000033" }), _jsx("path", { d: "M0 0 L-3.6 -8.5 A15 15 0 1 1 3.6 -8.5Z", fill: "#fff" }), _jsx("circle", { cx: "0", cy: "-22", r: "13.2", fill: "#ff3b30" }), _jsx("path", { d: "M-1.6 -1.6 L-3 -9 h6 L1.6 -1.6Z", fill: "#ff3b30" }), _jsx("circle", { cx: "0", cy: "-22", r: "4.6", fill: "#fff" })] }))] }));
+    return (_jsxs("svg", { className: "tm-map-art", viewBox: square ? "0 -70 300 300" : "0 0 300 160", preserveAspectRatio: "xMidYMid slice", "aria-hidden": "true", children: [_jsx("rect", { x: "-10", y: "-80", width: "320", height: "320", fill: "var(--tm-map-land)" }), _jsx("path", { d: `M${px} ${py} h${60 + r(10) * 30} q8 0 8 8 v${34 + r(11) * 22} q0 8 -8 8 h-${60 + r(10) * 30} q-8 0 -8 -8 v-${34 + r(11) * 22} q0 -8 8 -8Z`, fill: "var(--tm-map-park)", transform: `rotate(${angle} 150 80)` }), _jsxs("g", { transform: `rotate(${angle} 150 80)`, stroke: "var(--tm-map-road)", fill: "none", children: [_jsxs("g", { strokeWidth: "2.6", stroke: "var(--tm-map-casing)", children: [lines(r(12) * step, 30).map((x) => _jsx("path", { d: `M${x} -200 V360` }, `a${x}`)), lines(r(13) * step, 30).map((y) => _jsx("path", { d: `M-200 ${y} H500` }, `b${y}`))] }), _jsxs("g", { strokeWidth: "1.8", children: [lines(r(12) * step, 30).map((x) => _jsx("path", { d: `M${x} -200 V360` }, `c${x}`)), lines(r(13) * step, 30).map((y) => _jsx("path", { d: `M-200 ${y} H500` }, `d${y}`))] }), _jsx("path", { d: `M-200 ${70 + r(14) * 30} H500`, strokeWidth: "6", stroke: "var(--tm-map-casing)" }), _jsx("path", { d: `M-200 ${70 + r(14) * 30} H500`, strokeWidth: "4.6" }), _jsx("path", { d: `M${120 + r(15) * 60} -200 V360`, strokeWidth: "6", stroke: "var(--tm-map-casing)" }), _jsx("path", { d: `M${120 + r(15) * 60} -200 V360`, strokeWidth: "4.6" })] }), water && _jsx("path", { d: water, fill: "var(--tm-map-water)" }), _jsx("path", { d: `M-10 ${150 - r(16) * 40} C90 ${120 - r(17) * 40} 180 ${60 + r(18) * 40} 310 ${20 + r(19) * 40}`, fill: "none", stroke: "var(--tm-map-highway-casing)", strokeWidth: "7" }), _jsx("path", { d: `M-10 ${150 - r(16) * 40} C90 ${120 - r(17) * 40} 180 ${60 + r(18) * 40} 310 ${20 + r(19) * 40}`, fill: "none", stroke: "var(--tm-map-highway)", strokeWidth: "5" }), pin && _jsx(MapPinShape, {})] }));
 }
-/** "search" for an Apple Maps search with no place in it, "place" for any other Apple Maps link. */
+/** The red Maps pin, its point on the middle of the map. */
+function MapPinShape() {
+    return (_jsxs("g", { transform: "translate(150 80)", className: "tm-map-pin", children: [_jsx("ellipse", { cx: "0", cy: "1", rx: "4", ry: "1.6", fill: "#00000033" }), _jsx("path", { d: "M0 0 L-3.6 -8.5 A15 15 0 1 1 3.6 -8.5Z", fill: "#fff" }), _jsx("circle", { cx: "0", cy: "-22", r: "13.2", fill: "#ff3b30" }), _jsx("path", { d: "M-1.6 -1.6 L-3 -9 h6 L1.6 -1.6Z", fill: "#ff3b30" }), _jsx("circle", { cx: "0", cy: "-22", r: "4.6", fill: "#fff" })] }));
+}
+/** The iOS 26 Maps marker: a white-ringed red disc with a pushpin, its point below the middle. */
+function MapMarker() {
+    return (_jsxs("svg", { className: "tm-map-marker", width: "32", height: "40", viewBox: "-16 -16 32 40", "aria-hidden": "true", children: [_jsx("defs", { children: _jsxs("linearGradient", { id: "tm-marker-red", x1: "0", y1: "-13", x2: "0", y2: "13", gradientUnits: "userSpaceOnUse", children: [_jsx("stop", { stopColor: "#f2638f" }), _jsx("stop", { offset: "1", stopColor: "#dc1340" })] }) }), _jsx("path", { d: "M0-15.17a15.17 15.17 0 0 1 3.4 29.95L0 18.5l-3.4-3.72A15.17 15.17 0 0 1 0-15.17Z", fill: "#fff" }), _jsx("circle", { r: "13.17", fill: "url(#tm-marker-red)" }), _jsx("circle", { cy: "-4.5", r: "3.67", fill: "#fff" }), _jsx("path", { d: "M-.83-1.5h1.66v8.33a.83.83 0 0 1-1.66 0Z", fill: "#fff" })] }));
+}
+/**
+ * What an Apple Maps link points at: "search" for a search with no place in it, "pin" for bare
+ * coordinates (Messages draws those as a dropped pin, even with a search beside them), and
+ * "place" for any other Apple Maps link.
+ */
 function appleMaps(url) {
     if (!url)
         return undefined;
@@ -797,7 +844,10 @@ function appleMaps(url) {
         const { hostname, searchParams } = new URL(url);
         if (hostname !== "maps.apple.com" && hostname !== "maps.apple")
             return undefined;
-        const place = ["ll", "address", "sll", "daddr", "auid", "place-id"].some((key) => searchParams.has(key));
+        const has = (keys) => keys.some((key) => searchParams.has(key));
+        if (has(["ll", "sll"]) && !has(["address", "daddr", "auid", "place-id"]))
+            return "pin";
+        const place = has(["ll", "address", "sll", "daddr", "auid", "place-id"]);
         return searchParams.has("q") && !place ? "search" : "place";
     }
     catch {
@@ -931,7 +981,7 @@ function NativeInteraction({ slots, scene, time }) {
     const message = scene.messages.find((message) => message.id === picker?.messageId);
     if (picker?.visible && message) {
         const outgoing = !!scene.participants.find((person) => person.id === message.senderId)?.isSelf;
-        const link = scene.platform === "imessage" && message.link?.tint ? linkColors(message.link.tint, scene) : undefined;
+        const link = scene.platform === "imessage" && message.link?.tint ? linkColors(message.link.tint, scene, compactLink(message.link) ? 2.5 : 4) : undefined;
         const groups = groupedReactions(message, scene);
         return (_jsxs("div", { className: "tm-native-overlay tm-reaction-overlay", "data-native-interaction": "tapback", "aria-hidden": "true", children: [scene.platform === "imessage" && groups.length > 0 && (_jsxs("div", { className: "tm-reaction-attributions", children: [groups.slice(0, 3).map((group) => (_jsxs("div", { title: `${group.emoji}: ${group.names.join(", ")}`, children: [_jsxs("span", { children: [group.emoji, group.names.length > 1 && (_jsx("small", { children: group.names.length }))] }), _jsxs("div", { children: [message.reactions
                                             .filter((reaction) => reaction.emoji === group.emoji)
@@ -1258,6 +1308,10 @@ function emojiOnly(text) {
     return ([
         ...new Intl.Segmenter("en", { granularity: "grapheme" }).segment(text.replace(/\s+/gu, "")),
     ].length <= 3);
+}
+/** Messages' one-row card: a link without an image that isn't an Apple Maps link or a text post. */
+function compactLink(link) {
+    return !link.image && !appleMaps(link.url) && !(link.icon && link.description);
 }
 function safeHostname(url) {
     try {
