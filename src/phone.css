@@ -5917,8 +5917,9 @@
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  font-size: 15px;
-  line-height: 18px;
+  font-size: 13px;
+  line-height: 16px;
+  letter-spacing: -0.08px;
   font-weight: 400;
   white-space: nowrap;
   text-overflow: ellipsis;
