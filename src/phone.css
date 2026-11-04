@@ -26,7 +26,7 @@
   --tm-tint: #0085ff;
   --tm-field: rgb(255 255 255 / 0.8);
   --tm-line: rgb(60 60 67 / 0.17);
-  --tm-keyboard: #e2e4e8;
+  --tm-keyboard: color(display-p3 0.8902 0.9059 0.9373); /* iOS 26 device, default contrast */
   --tm-key: #fff;
   --tm-key-mod: #fff;
   --tm-key-down: #c4c7cd;
@@ -94,9 +94,9 @@
   --tm-tint: #2d9aff;
   --tm-field: rgb(30 30 32 / 0.84);
   --tm-line: rgb(160 160 166 / 0.28);
-  --tm-keyboard: #1b1b1d;
-  --tm-key: #404041;
-  --tm-key-mod: #404041;
+  --tm-keyboard: #161617;
+  --tm-key: #3c3c3c;
+  --tm-key-mod: #3c3c3c;
   --tm-key-down: #6c6c6e;
   --tm-kb-divider: #36363a;
   --tm-kb-predict: #b0b0b2;
@@ -4246,9 +4246,11 @@
    Measured from iOS 26 screenshots; geometry stays in logical points. */
 .tm-phone[data-platform="imessage"] {
   --tm-ink: #000;
-  --tm-receipt: #636368;
-  --tm-out: #2457dc;
-  --tm-in: #dedee0;
+  --tm-receipt: #89898d;
+  --tm-out: color(display-p3 0.19 0.65 0.99);
+  --tm-in: #e9e9eb;
+  --tm-placeholder: #bfbfc1;
+  --tm-mic: #aeb2b9;
   --tm-glass: rgb(249 249 249 / 0.94);
   --tm-glass-shadow:
     inset 0 0 0 0.67px #fff,
@@ -4257,16 +4259,19 @@
 }
 .tm-phone[data-platform="imessage"][data-theme="dark"] {
   --tm-ink: #fff;
-  --tm-receipt: #98989f;
-  --tm-in: #303033; /* iOS 26.6 device, dark: received bubbles and their tapback badges */
-  --tm-glass: rgb(44 44 47 / 0.88);
+  --tm-receipt: #8d8d93;
+  --tm-out: color(display-p3 0.137 0.588 1);
+  --tm-in: #262629; /* iOS 26.6 device, dark: received bubbles and their tapback badges */
+  --tm-placeholder: #5a5a5d;
+  --tm-mic: #5e5f61;
+  --tm-glass: rgb(23 23 23 / 0.88);
   --tm-glass-shadow:
     inset 0 0.5px 0 rgb(255 255 255 / 0.12),
     0 0 0 0.5px rgb(255 255 255 / 0.06),
     0 6px 20px rgb(0 0 0 / 0.45);
 }
 .tm-phone[data-platform="imessage"] .tm-bubble[data-side="out"] {
-  background: linear-gradient(180deg, #2c66e1, #2356db);
+  background: linear-gradient(var(--tm-out-top), var(--tm-out-bottom));
 }
 /* The scroll edge effect, measured on iOS 26 screenshots: content under the top bar keeps
    about an eighth of its contrast, then returns over the 100pt below the contact.
@@ -4429,10 +4434,7 @@
   letter-spacing: 0;
 }
 .tm-phone[data-platform="imessage"] .tm-composer-placeholder {
-  color: #717175;
-}
-.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-composer-placeholder {
-  color: #8e8e93;
+  color: var(--tm-placeholder);
 }
 .tm-phone[data-platform="imessage"] .tm-add > svg {
   color: var(--tm-ink);
@@ -4440,12 +4442,8 @@
 .tm-phone[data-platform="imessage"] .tm-composer-field > .tm-im-mic {
   flex: none;
   margin-right: 1px;
-  color: #aeb2b9;
+  color: var(--tm-mic);
   opacity: 1;
-}
-.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-composer-field > .tm-im-mic {
-  color: #8e8e93;
-  opacity: 0.8;
 }
 .tm-phone[data-platform="imessage"] .tm-composer-field .tm-send {
   width: 30px;
@@ -4592,8 +4590,12 @@
   contain: layout;
 }
 .tm-phone[data-platform="imessage"] {
-  --tm-out-top: color(display-p3 0.1855 0.4353 0.8914);
-  --tm-out-bottom: color(display-p3 0.0855 0.229 0.829);
+  --tm-out-top: color(display-p3 0.3712 0.7865 0.9801);
+  --tm-out-bottom: color(display-p3 0.0091 0.5152 1);
+}
+.tm-phone[data-platform="imessage"][data-theme="dark"] {
+  --tm-out-top: color(display-p3 0.2661 0.6113 0.9998);
+  --tm-out-bottom: color(display-p3 0.0083 0.5649 0.9997);
 }
 .tm-phone[data-platform="imessage"] .tm-thread-content {
   padding: 0 20px 8px;
@@ -4636,7 +4638,7 @@
   min-width: 40px;
   min-height: 40px;
   box-sizing: border-box;
-  padding: 9.86px 14.07px;
+  padding: 10.03px 14.07px; /* 40.33pt single line: iOS 26 device, Text Size L */
   /* Keep the measured 20.28pt line at 17pt, including when Dynamic Type grows it. */
   line-height: calc(var(--tm-type) * 1.1929411765);
   letter-spacing: 0;
@@ -4725,7 +4727,7 @@
 }
 .tm-phone[data-platform="imessage"] .tm-thread-content {
   padding-top: 152px;
-  padding-bottom: calc(90px + var(--tm-composer-extra, 0px));
+  padding-bottom: calc(87px + var(--tm-composer-extra, 0px));
 }
 .tm-phone[data-platform="imessage"] .tm-screen[data-keyboard] .tm-thread-content {
   padding-bottom: calc(
