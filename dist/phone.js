@@ -139,7 +139,7 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                     (os === "android" ? (_jsx("div", { className: "tm-cutout", "aria-hidden": "true" })) : (_jsx("div", { className: "tm-island", "aria-hidden": "true", children: _jsx("i", {}) })))) : (scene.device.frame === "iphone" && (_jsx("div", { className: "tm-island", "aria-hidden": "true", children: _jsx("i", {}) })))), _jsx(PhoneHeader, { slots: slots, scene: scene, person: other }), scene.platform !== "imessage" && pinned?.visible && (_jsx(PinnedBanner, { slots: slots, scene: scene })), _jsx("div", { className: "tm-thread", "data-textmock-thread": true, "data-has-pinned": (scene.platform !== "imessage" && pinned?.visible) || undefined, children: _jsxs("div", { className: "tm-thread-content", children: [threadMessages.map((message, index) => {
                                             const person = scene.participants.find((participant) => participant.id === message.senderId);
                                             const outgoing = person.isSelf;
-                                            const link = scene.platform === "imessage" && message.link?.tint ? linkColors(message.link.tint, scene, compactLink(message.link) ? 2.5 : 4) : undefined;
+                                            const link = scene.platform === "imessage" && message.link?.tint && !message.link.tapToLoad ? linkColors(message.link.tint, scene, compactLink(message.link) ? 2.5 : 4) : undefined;
                                             const previous = threadMessages[index - 1];
                                             const next = threadMessages[index + 1];
                                             const editing = scene.platform === "imessage" &&
@@ -252,12 +252,12 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                                                             emojiOnly(message.text)) ||
                                                                             undefined, "data-selected": selected === message.id || undefined, "data-effect": message.effect, "data-scheduled": !!message.scheduledAt || undefined, "data-interactive": (!!onSelectMessage && !exporting) || undefined, style: {
                                                                             ...messageStyle(message, playhead, time !== undefined, scene.platform === "imessage" ? (outgoing ? "out" : "in") : undefined),
-                                                                            ...(message.link?.tint && {
+                                                                            ...(message.link?.tint && !message.link.tapToLoad && {
                                                                                 "--tm-link-tint": message.link.tint,
                                                                                 "--tm-link-surface": link?.surface,
                                                                                 "--tm-link-domain": link?.domain,
                                                                             }),
-                                                                        }, "data-tint": link?.tone ?? (message.link?.tint ? legacyLinkTone(message.link.tint) : undefined), role: onSelectMessage && !exporting ? "button" : undefined, tabIndex: onSelectMessage && !exporting ? 0 : undefined, "data-message-id": message.id, "aria-label": `${person.name}: ${message.text || message.kind}${message.status === "read" ? ", read" : ""}`, onClick: onSelectMessage && !exporting
+                                                                        }, "data-tint": link?.tone ?? (message.link?.tint && !message.link.tapToLoad ? legacyLinkTone(message.link.tint) : undefined), role: onSelectMessage && !exporting ? "button" : undefined, tabIndex: onSelectMessage && !exporting ? 0 : undefined, "data-message-id": message.id, "aria-label": `${person.name}: ${message.text || message.kind}${message.status === "read" ? ", read" : ""}`, onClick: onSelectMessage && !exporting
                                                                             ? () => onSelectMessage(message.id)
                                                                             : undefined, onKeyDown: onSelectMessage && !exporting
                                                                             ? (event) => {
@@ -521,6 +521,10 @@ function MessageContent({ slots, message, scene, time, tail = false, }) {
         message.link.description)
         // A text post (an X post, say): its words, then the author under a small picture.
         content = (_jsxs("div", { className: "tm-link-post tm-bubble-content", children: [_jsx("p", { children: message.link.description }), _jsxs("div", { children: [_jsx(slots.Image, { src: message.link.icon, alt: "", referrerPolicy: "no-referrer" }), _jsxs("span", { children: [_jsx("strong", { children: message.link.title }), _jsx("small", { children: safeHostname(message.link.url) })] })] })] }));
+    else if (message.kind === "link" && scene.platform === "imessage" && message.link?.tapToLoad)
+        // A preview Messages hasn't loaded, from an iOS 26 device capture: a 160pt card, an 80pt gray
+        // face reading "Tap to Load Preview" over a 34pt footer with the domain and a chevron.
+        content = (_jsxs("div", { className: "tm-link-tap tm-bubble-content", children: [_jsx("div", { children: "Tap to Load Preview" }), _jsxs("div", { children: [_jsx("small", { children: safeHostname(message.link.url) }), _jsx("svg", { className: "tm-im-pin-chevron", width: "6.33", height: "11.33", viewBox: "0 0 6.33 11.33", "aria-hidden": "true", children: _jsx("path", { d: "M1 1l4.33 4.67L1 10.33", fill: "none", stroke: "currentColor", strokeWidth: "1.67", strokeLinecap: "round", strokeLinejoin: "round" }) })] })] }));
     else if (message.kind === "link" &&
         scene.platform === "imessage" &&
         !message.link?.image &&
@@ -981,7 +985,7 @@ function NativeInteraction({ slots, scene, time }) {
     const message = scene.messages.find((message) => message.id === picker?.messageId);
     if (picker?.visible && message) {
         const outgoing = !!scene.participants.find((person) => person.id === message.senderId)?.isSelf;
-        const link = scene.platform === "imessage" && message.link?.tint ? linkColors(message.link.tint, scene, compactLink(message.link) ? 2.5 : 4) : undefined;
+        const link = scene.platform === "imessage" && message.link?.tint && !message.link.tapToLoad ? linkColors(message.link.tint, scene, compactLink(message.link) ? 2.5 : 4) : undefined;
         const groups = groupedReactions(message, scene);
         return (_jsxs("div", { className: "tm-native-overlay tm-reaction-overlay", "data-native-interaction": "tapback", "aria-hidden": "true", children: [scene.platform === "imessage" && groups.length > 0 && (_jsxs("div", { className: "tm-reaction-attributions", children: [groups.slice(0, 3).map((group) => (_jsxs("div", { title: `${group.emoji}: ${group.names.join(", ")}`, children: [_jsxs("span", { children: [group.emoji, group.names.length > 1 && (_jsx("small", { children: group.names.length }))] }), _jsxs("div", { children: [message.reactions
                                             .filter((reaction) => reaction.emoji === group.emoji)
@@ -1311,7 +1315,7 @@ function emojiOnly(text) {
 }
 /** Messages' one-row card: a link without an image that isn't an Apple Maps link or a text post. */
 function compactLink(link) {
-    return !link.image && !appleMaps(link.url) && !(link.icon && link.description);
+    return !link.tapToLoad && !link.image && !appleMaps(link.url) && !(link.icon && link.description);
 }
 function safeHostname(url) {
     try {

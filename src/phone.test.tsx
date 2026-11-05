@@ -248,6 +248,24 @@ describe("Phone", () => {
     expect(gallery(2)).toContain("width:174.67px;height:228.33px");
     expect(gallery(4)).toContain("width:250px;height:333.33px");
   });
+  test("iMessage draws a link it hasn't loaded as Tap to Load Preview, whatever its preview", () => {
+    const tap = (link: Record<string, unknown>) =>
+      renderToStaticMarkup(
+        <Phone
+          scene={parseScene({
+            ...defaultScene,
+            messages: [{ ...defaultScene.messages[0], kind: "link", text: "", link: { title: "Example", ...link } }],
+          })}
+        />,
+      );
+    const html = tap({ url: "https://www.example.com/page", tapToLoad: true, tint: "#336699" });
+    expect(html).toContain("tm-link-tap");
+    expect(html).toContain("Tap to Load Preview");
+    expect(html).toContain("<small>example.com</small>");
+    expect(html).not.toContain("data-tint");
+    expect(html).not.toContain("tm-link-compact");
+    expect(tap({ url: "https://www.example.com/page" })).not.toContain("tm-link-tap");
+  });
   test("iMessage draws a shared pin as a map with the Maps marker, over a supplied map", () => {
     const pin = (map?: string) =>
       renderToStaticMarkup(

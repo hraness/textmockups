@@ -5886,6 +5886,55 @@
   color: rgb(235 235 245 / 0.65);
 }
 
+/* A preview Messages hasn't loaded, from an iOS 26 light capture on the 16 Pro Max: a 160pt card,
+   an 80pt face in a darker gray with "Tap to Load Preview" centered, over a 34pt footer with the
+   domain in gray 16pt in, cut off 21.67pt before a chevron 12.67pt from the end. The colors don't follow a tint. */
+.tm-phone[data-platform="imessage"] .tm-bubble:has(> .tm-link-tap) {
+  --tm-link-tint: #e9e9eb;
+  --tm-link-face: #dbdbdd;
+}
+.tm-phone[data-platform="imessage"][data-theme="dark"] .tm-bubble:has(> .tm-link-tap) {
+  --tm-link-tint: #262628;
+  --tm-link-face: #3a3a3c;
+}
+.tm-link-tap {
+  width: 160px;
+  overflow: hidden;
+  border-radius: var(--tm-radius);
+  color: var(--tm-ink);
+}
+.tm-link-tap > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+  background: var(--tm-link-face);
+  font-size: 13.33px;
+  line-height: 18px;
+  letter-spacing: -0.08px;
+}
+.tm-link-tap > div:last-child {
+  display: flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 12.67px 0 16px;
+}
+.tm-link-tap small {
+  flex: 1;
+  min-width: 0;
+  padding-right: 9.33px;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 16px;
+  letter-spacing: -0.08px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #808084;
+}
+.tm-phone[data-theme="dark"] .tm-link-tap small {
+  color: rgb(235 235 245 / 0.6);
+}
+
 /* A shared pin, from an iOS 26.6 light capture on the 17 Pro Max: a 290.67 x 187.33pt map with
    the Maps marker on its middle, over a 37.33pt frosted footer naming it in 15pt regular, 15pt
    in from each side, with a gray chevron at the end. */
