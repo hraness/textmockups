@@ -130,7 +130,7 @@ jobs:
           printf '%s\n' \
             'Textmockups now ships a compiled package from GitHub Releases. The scene format and phone renderer are unchanged.' \
             '' '## Changes' '' \
-            '- Install the same checked package in Textmock, TextButler, and other React apps.' \
+            '- Install the checked package in React apps.' \
             '- Verify package checksums and GitHub’s signed release attestation.' \
             '- Optional npm publication mirrors the GitHub package without repacking it.' \
             '' '## Install' '' '```sh' \

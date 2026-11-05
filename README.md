@@ -2,8 +2,6 @@
 
 Textmockups is a React component library for realistic iMessage, WhatsApp, Telegram, Instagram, and Google Messages chat mockups. You describe a conversation as a small JSON scene, and the `Phone` component draws it on an iPhone, Pixel, or Galaxy with the app's own bubbles, header, composer, receipts, and reactions.
 
-It is the renderer behind [textmock.com](https://textmock.com), where you can [make one without code](https://textmock.com).
-
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/hero-imessage-dark.png">
@@ -123,7 +121,7 @@ Each message has an `at` time in seconds, and `timeline.tracks` can change any f
 <Phone scene={scene} time={2.5} />
 ```
 
-`evaluateScene(scene, seconds)` returns the scene as it looks at that moment, and `sceneTime(scene, seconds)` applies the scene's duration and looping. Both are deterministic, so the same scene and time always draw the same frame, which is how textmock.com exports video.
+`evaluateScene(scene, seconds)` returns the scene as it looks at that moment, and `sceneTime(scene, seconds)` applies the scene's duration and looping. Both are deterministic, so the same scene and time always draw the same frame.
 
 ## Bring your own media
 
@@ -162,11 +160,6 @@ Version 1 is fixed. Changes that would make an existing scene parse or draw diff
 ### Languages
 
 Set `locale` to a BCP 47 tag, such as `"ja"` or `"pt-BR"`, and iMessage draws its own words in that language: receipts ("Delivered", "Read"), the composer, the message menu, and the + menu. It supports English, Spanish, French, German, Italian, Portuguese, Japanese, Korean, and Simplified and Traditional Chinese, and falls back to English. Text you write in the scene, such as `dateLabel`, `statusText`, and times, is drawn as written. `stringsFor(locale)` returns the same words for an editor's own labels.
-
-## Used by
-
-- [Textmock](https://textmock.com): an editor for fake text message screenshots and videos in iMessage, WhatsApp, Telegram, and Instagram.
-- [TextButler](https://textbutler.app): the chat mockups on its homepage and launch post.
 
 ## Check it
 
