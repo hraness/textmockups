@@ -3979,23 +3979,48 @@ function predictions(scene: Scene): string[] {
   return [`\u201c${word}\u201d`, done[0] ?? "", done[1] ?? ""];
 }
 
+/**
+ * iOS 26's typing indicator, from ChatKit's own layers: each dot fades 0.2 → 0.45 and back
+ * over 0.5 s each way (autoreversing, with its own ease), the next dot 0.25 s behind.
+ */
 function TypingDots({ time }: { time: number }) {
   return (
     <div className="tm-typing" aria-label="Typing">
       {[0, 1, 2].map((index) => (
-        <i
-          key={index}
-          style={{
-            opacity:
-              0.35 + 0.65 * Math.max(0, Math.sin(time * 5 - index * 0.8)),
-            transform: `translateY(${-1.5 * Math.max(0, Math.sin(time * 5 - index * 0.8))}px)`,
-          }}
-        />
+        <i key={index} style={{ opacity: typingDotOpacity(time - index * 0.25) }} />
       ))}
       <b />
       <b />
     </div>
   );
+}
+
+function typingDotOpacity(local: number): number {
+  if (!(local > 0)) return 0.2;
+  const cycle = local % 1;
+  const progress = cycle < 0.5 ? cycle * 2 : 2 - cycle * 2;
+  return Math.round((0.2 + 0.25 * typingEase(progress)) * 1000) / 1000;
+}
+
+/** cubic-bezier(0.75673, 0.015306, 0.58, 1), solved for x by Newton's method with a bisection fallback. */
+function typingEase(x: number): number {
+  const [x1, y1, x2, y2] = [0.75673, 0.015306, 0.58, 1];
+  const at = (t: number, a: number, b: number) => 3 * a * t * (1 - t) ** 2 + 3 * b * t ** 2 * (1 - t) + t ** 3;
+  const slope = (t: number) => 3 * x1 * (1 - t) ** 2 + 6 * (x2 - x1) * t * (1 - t) + 3 * (1 - x2) * t ** 2;
+  let t = x;
+  for (let i = 0; i < 8; i++) {
+    const d = slope(t);
+    if (Math.abs(d) < 1e-6) break;
+    t -= (at(t, x1, x2) - x) / d;
+  }
+  if (!(t >= 0 && t <= 1) || Math.abs(at(t, x1, x2) - x) > 1e-5) {
+    let lo = 0, hi = 1;
+    for (let i = 0; i < 30; i++) {
+      t = (lo + hi) / 2;
+      if (at(t, x1, x2) < x) lo = t; else hi = t;
+    }
+  }
+  return at(t, y1, y2);
 }
 
 function ScreenEffect({

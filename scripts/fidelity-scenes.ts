@@ -23,6 +23,11 @@ export const fidelityScenes: Scene[] = [
       { id: "sticker", senderId: "me", kind: "sticker", sticker: { emoji: "✨" } },
     ],
   })),
+  // ChatKit's typing indicator under a received message, dots mid-pulse.
+  conversation("typing", {
+    messages: [{ id: "t", senderId: "jamie", text: "Hang on, writing it out", dateLabel: "Today 9:41 AM" }],
+    composer: { ...defaultScene.composer, typing: { visible: true, participantId: "jamie" } },
+  }),
   // iOS 26 reply runs: one compact quote of a text original, a spine with loops past my
   // replies and an arc into my last one, and a single reply bracketed to its quote.
   conversation("reply-runs", {

@@ -248,6 +248,29 @@ describe("Phone", () => {
     expect(gallery(2)).toContain("width:174.67px;height:228.33px");
     expect(gallery(4)).toContain("width:250px;height:333.33px");
   });
+  test("the typing dots pulse like ChatKit's: 0.2 to 0.45 opacity, each 0.25 s behind the last, never moving", () => {
+    const dots = (time: number) => {
+      const html = renderToStaticMarkup(
+        <Phone
+          scene={parseScene({ ...defaultScene, composer: { ...defaultScene.composer, typing: { visible: true, participantId: "jamie" } } })}
+          time={time}
+        />,
+      );
+      const typing = html.slice(html.indexOf('class="tm-typing"'));
+      expect(typing).not.toContain("transform");
+      return [...typing.matchAll(/<i style="opacity:([\d.]+)"/g)].slice(0, 3).map((match) => Number(match[1]));
+    };
+    expect(dots(0)).toEqual([0.2, 0.2, 0.2]);
+    // Dot one peaks at 0.5 s, when dot two is a quarter-cycle in and dot three just starting.
+    const peak = dots(0.5);
+    expect(peak[0]).toBe(0.45);
+    expect(peak[1]!).toBeGreaterThan(0.2);
+    expect(peak[1]!).toBeLessThan(0.45);
+    expect(peak[2]).toBe(0.2);
+    // Autoreversing: back to rest a full second after each dot starts.
+    expect(dots(1)[0]).toBe(0.2);
+    expect(dots(1.25)[1]).toBe(0.2);
+  });
   test("iMessage draws a link it hasn't loaded as Tap to Load Preview, whatever its preview", () => {
     const tap = (link: Record<string, unknown>) =>
       renderToStaticMarkup(
