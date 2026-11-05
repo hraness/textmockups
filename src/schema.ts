@@ -337,6 +337,11 @@ export const MessageSchema = z
         icon: assetUrl.optional(),
         /** The card's footer color, sampled from the image the way iOS 26 does. */
         tint: color.optional(),
+        /**
+         * iMessage only: the preview hasn't loaded, as when Messages holds back a link from an
+         * unknown sender. Draws the gray "Tap to Load Preview" card with the domain under it.
+         */
+        tapToLoad: z.boolean().optional(),
       })
       .optional(),
     /** Photos and videos sent together: iMessage staggers a few and stacks many. */

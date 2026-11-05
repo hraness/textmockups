@@ -343,7 +343,7 @@ export function Phone({
                   (participant) => participant.id === message.senderId,
                 )!;
                 const outgoing = person.isSelf;
-                const link = scene.platform === "imessage" && message.link?.tint ? linkColors(message.link.tint, scene, compactLink(message.link) ? 2.5 : 4) : undefined;
+                const link = scene.platform === "imessage" && message.link?.tint && !message.link.tapToLoad ? linkColors(message.link.tint, scene, compactLink(message.link) ? 2.5 : 4) : undefined;
                 const previous = threadMessages[index - 1];
                 const next = threadMessages[index + 1];
                 const editing =
@@ -647,13 +647,13 @@ export function Phone({
                               time !== undefined,
                               scene.platform === "imessage" ? (outgoing ? "out" : "in") : undefined,
                             ),
-                            ...(message.link?.tint && {
+                            ...(message.link?.tint && !message.link.tapToLoad && {
                               "--tm-link-tint": message.link.tint,
                               "--tm-link-surface": link?.surface,
                               "--tm-link-domain": link?.domain,
                             }),
                           }}
-                          data-tint={link?.tone ?? (message.link?.tint ? legacyLinkTone(message.link.tint) : undefined)}
+                          data-tint={link?.tone ?? (message.link?.tint && !message.link.tapToLoad ? legacyLinkTone(message.link.tint) : undefined)}
                           role={
                             onSelectMessage && !exporting ? "button" : undefined
                           }
@@ -1736,6 +1736,20 @@ function MessageContent({ slots,
             <strong>{message.link.title}</strong>
             <small>{safeHostname(message.link.url)}</small>
           </span>
+        </div>
+      </div>
+    );
+  else if (message.kind === "link" && scene.platform === "imessage" && message.link?.tapToLoad)
+    // A preview Messages hasn't loaded, from an iOS 26 device capture: a 160pt card, an 80pt gray
+    // face reading "Tap to Load Preview" over a 34pt footer with the domain and a chevron.
+    content = (
+      <div className="tm-link-tap tm-bubble-content">
+        <div>Tap to Load Preview</div>
+        <div>
+          <small>{safeHostname(message.link.url)}</small>
+          <svg className="tm-im-pin-chevron" width="6.33" height="11.33" viewBox="0 0 6.33 11.33" aria-hidden="true">
+            <path d="M1 1l4.33 4.67L1 10.33" fill="none" stroke="currentColor" strokeWidth="1.67" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </div>
       </div>
     );
@@ -3115,7 +3129,7 @@ function NativeInteraction({ slots, scene, time }: {
     const outgoing = !!scene.participants.find(
       (person) => person.id === message.senderId,
     )?.isSelf;
-    const link = scene.platform === "imessage" && message.link?.tint ? linkColors(message.link.tint, scene, compactLink(message.link) ? 2.5 : 4) : undefined;
+    const link = scene.platform === "imessage" && message.link?.tint && !message.link.tapToLoad ? linkColors(message.link.tint, scene, compactLink(message.link) ? 2.5 : 4) : undefined;
     const groups = groupedReactions(message, scene);
     return (
       <div
@@ -4135,7 +4149,7 @@ function emojiOnly(text: string): boolean {
 }
 /** Messages' one-row card: a link without an image that isn't an Apple Maps link or a text post. */
 function compactLink(link: NonNullable<Message["link"]>): boolean {
-  return !link.image && !appleMaps(link.url) && !(link.icon && link.description);
+  return !link.tapToLoad && !link.image && !appleMaps(link.url) && !(link.icon && link.description);
 }
 function safeHostname(url?: string): string {
   try {
