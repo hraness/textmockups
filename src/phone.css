@@ -20,6 +20,7 @@
   --tm-ink: #08090c;
   --tm-muted: #89898e;
   --tm-in: #e9e9eb;
+  --tm-typing-dot: #000;
   --tm-out: #26a5fa;
   --tm-out-ink: #fff;
   --tm-chrome: rgb(255 255 255 / 0.84);
@@ -89,6 +90,7 @@
   --tm-ink: #f7f7f9;
   --tm-muted: #96969d;
   --tm-in: #27272a;
+  --tm-typing-dot: #fff;
   --tm-out: #0788fa;
   --tm-chrome: rgb(27 27 29 / 0.9);
   --tm-tint: #2d9aff;
@@ -684,39 +686,47 @@
   color: var(--tm-muted);
   font-size: 11px;
 }
+/* ChatKit's CKTypingIndicatorLayer (iOS 26): a 57.5×35 pill, three 8.5pt dots 12.5pt apart,
+   black or white at 0.2–0.45 opacity, and two circles trailing down to the left. */
 .tm-typing {
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 56px;
-  height: 34px;
-  gap: 4px;
+  flex: none;
+  width: 57.5px;
+  height: 35px;
   background: var(--tm-in);
-  border-radius: 19px;
+  border-radius: 17.5px;
   margin-left: 3px;
-  margin-bottom: 4px;
+  margin-bottom: 7px;
 }
 .tm-typing i {
-  width: 7px;
-  height: 7px;
+  position: absolute;
+  top: 13.333px;
+  left: 11.667px;
+  width: 8.5px;
+  height: 8.5px;
   border-radius: 50%;
-  background: var(--tm-muted);
+  background: var(--tm-typing-dot);
+}
+.tm-typing i:nth-child(2) {
+  left: 24.167px;
+}
+.tm-typing i:nth-child(3) {
+  left: 36.667px;
 }
 .tm-typing b {
   position: absolute;
-  width: 10px;
-  height: 10px;
-  left: -1px;
-  bottom: -1px;
+  left: -0.11px;
+  top: 26.545px;
+  width: 11.5px;
+  height: 11.5px;
   background: var(--tm-in);
   border-radius: 50%;
 }
 .tm-typing b:last-child {
+  left: -4.95px;
+  top: 36.71px;
   width: 5px;
   height: 5px;
-  bottom: -5px;
-  left: -5px;
 }
 .tm-empty-conversation {
   display: flex;
