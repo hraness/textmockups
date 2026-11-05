@@ -1,5 +1,6 @@
 import { defaultScene } from "../src/presets.js";
 import { parseScene, type Scene } from "../src/schema.js";
+import { aicon, art, frame, vicon } from "./link-fixtures.js";
 
 const conversation = (id: string, changes: Record<string, unknown>): Scene =>
   parseScene({
@@ -23,6 +24,20 @@ export const fidelityScenes: Scene[] = [
       { id: "sticker", senderId: "me", kind: "sticker", sticker: { emoji: "✨" } },
     ],
   })),
+  // A video link and an App Store link as iOS 26 draws them.
+  conversation("link-rich", {
+    messages: [
+      { id: "intro", senderId: "jamie", text: "Watch this", dateLabel: "Today 9:41 AM" },
+      {
+        id: "video", senderId: "jamie", kind: "link",
+        link: { url: "https://video.example.com/watch?v=abc", title: "sam", description: "2K likes, 140 comments. \"A slow walk past the station at dusk\"", image: frame, icon: vicon, tint: "#908c91", video: true },
+      },
+      {
+        id: "app", senderId: "me", kind: "link",
+        link: { url: "https://apps.example.com/app/slides", title: "Slides: Make Presentations", description: "Build and present your story", image: art, icon: aicon, tint: "#373737", app: true },
+      },
+    ],
+  }),
   // ChatKit's typing indicator under a received message, dots mid-pulse.
   conversation("typing", {
     messages: [{ id: "t", senderId: "jamie", text: "Hang on, writing it out", dateLabel: "Today 9:41 AM" }],

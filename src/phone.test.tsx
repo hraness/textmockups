@@ -348,6 +348,44 @@ describe("Phone", () => {
     expect(html).toContain("tm-link-post");
     expect(html).toContain("<p>A thought worth sharing.</p>");
   });
+  test("a video link draws a play button and a post-style footer; an App Store link its app footer", () => {
+    const link = (extra: Record<string, unknown>) =>
+      renderToStaticMarkup(
+        <Phone
+          scene={parseScene({
+            ...defaultScene,
+            messages: [{
+              ...defaultScene.messages[0],
+              kind: "link",
+              text: "",
+              link: {
+                url: "https://video.example.com/watch",
+                title: "sam",
+                description: "A slow walk",
+                image: "https://example.com/frame.jpg",
+                icon: "https://example.com/icon.png",
+                ...extra,
+              },
+            }],
+          })}
+        />,
+      );
+    const video = link({ video: true });
+    expect(video).toContain("tm-link-media");
+    expect(video).toContain('aria-label="Play"');
+    expect(video).toContain("<p>A slow walk</p>");
+    expect(video).toContain("<small>video.example.com</small>");
+    const app = link({ app: true });
+    expect(app).toContain("tm-link-app");
+    expect(app).toContain("<small>A slow walk</small>");
+    expect(app).not.toContain("video.example.com</small>");
+    // Without either flag the card stays the plain image card.
+    const plain = link({});
+    expect(plain).not.toContain("tm-link-media");
+    expect(plain).not.toContain("tm-link-app");
+    // A video without a caption keeps the plain footer but still shows its play button.
+    expect(link({ video: true, description: "" })).toContain('aria-label="Play"');
+  });
   test("iMessage keeps a set receipt above their reply and sets its time in regular weight", () => {
     const base = { ...defaultScene.messages[0], dateLabel: "", statusText: "" };
     const scene = (statusText: string) =>

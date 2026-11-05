@@ -288,6 +288,8 @@ export declare const MessageSchema: z.ZodObject<{
         icon: z.ZodOptional<z.ZodString>;
         tint: z.ZodOptional<z.ZodString>;
         tapToLoad: z.ZodOptional<z.ZodBoolean>;
+        video: z.ZodOptional<z.ZodBoolean>;
+        app: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strict>>;
     gallery: z.ZodOptional<z.ZodObject<{
         items: z.ZodArray<z.ZodObject<{
@@ -628,6 +630,8 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
             icon: z.ZodOptional<z.ZodString>;
             tint: z.ZodOptional<z.ZodString>;
             tapToLoad: z.ZodOptional<z.ZodBoolean>;
+            video: z.ZodOptional<z.ZodBoolean>;
+            app: z.ZodOptional<z.ZodBoolean>;
         }, z.core.$strict>>;
         gallery: z.ZodOptional<z.ZodObject<{
             items: z.ZodArray<z.ZodObject<{
@@ -893,6 +897,8 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
             icon?: string | undefined;
             tint?: string | undefined;
             tapToLoad?: boolean | undefined;
+            video?: boolean | undefined;
+            app?: boolean | undefined;
         } | undefined;
         gallery?: {
             items: {
@@ -1159,6 +1165,8 @@ declare const SceneBaseSchema: z.ZodPipe<z.ZodObject<{
             icon?: string | undefined;
             tint?: string | undefined;
             tapToLoad?: boolean | undefined;
+            video?: boolean | undefined;
+            app?: boolean | undefined;
         } | undefined;
         gallery?: {
             items: {
@@ -1578,6 +1586,8 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
             icon: z.ZodOptional<z.ZodString>;
             tint: z.ZodOptional<z.ZodString>;
             tapToLoad: z.ZodOptional<z.ZodBoolean>;
+            video: z.ZodOptional<z.ZodBoolean>;
+            app: z.ZodOptional<z.ZodBoolean>;
         }, z.core.$strict>>;
         gallery: z.ZodOptional<z.ZodObject<{
             items: z.ZodArray<z.ZodObject<{
@@ -1843,6 +1853,8 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
             icon?: string | undefined;
             tint?: string | undefined;
             tapToLoad?: boolean | undefined;
+            video?: boolean | undefined;
+            app?: boolean | undefined;
         } | undefined;
         gallery?: {
             items: {
@@ -2109,6 +2121,8 @@ export declare const SceneSchema: z.ZodPipe<z.ZodObject<{
             icon?: string | undefined;
             tint?: string | undefined;
             tapToLoad?: boolean | undefined;
+            video?: boolean | undefined;
+            app?: boolean | undefined;
         } | undefined;
         gallery?: {
             items: {

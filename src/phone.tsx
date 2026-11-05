@@ -343,7 +343,7 @@ export function Phone({
                   (participant) => participant.id === message.senderId,
                 )!;
                 const outgoing = person.isSelf;
-                const link = scene.platform === "imessage" && message.link?.tint && !message.link.tapToLoad ? linkColors(message.link.tint, scene, compactLink(message.link) ? 2.5 : 4) : undefined;
+                const link = scene.platform === "imessage" && message.link?.tint && !message.link.tapToLoad ? linkColors(message.link.tint, scene, linkLean(message.link)) : undefined;
                 const previous = threadMessages[index - 1];
                 const next = threadMessages[index + 1];
                 const editing =
@@ -1739,6 +1739,55 @@ function MessageContent({ slots,
         </div>
       </div>
     );
+  else if (
+    message.kind === "link" &&
+    scene.platform === "imessage" &&
+    message.link?.image &&
+    message.link.icon &&
+    message.link.app
+  )
+    // An App Store page, from an iOS 26 device capture: the artwork over a footer with the 30pt
+    // app icon beside its name and subtitle, and no domain.
+    content = (
+      <div className="tm-link-card tm-link-app tm-bubble-content">
+        <slots.Image src={message.link.image} alt="" referrerPolicy="no-referrer" />
+        <div>
+          <slots.Image src={message.link.icon} alt="" referrerPolicy="no-referrer" />
+          <span>
+            <strong>{message.link.title}</strong>
+            {message.link.description && <small>{message.link.description}</small>}
+          </span>
+        </div>
+      </div>
+    );
+  else if (
+    message.kind === "link" &&
+    scene.platform === "imessage" &&
+    message.link?.image &&
+    message.link.icon &&
+    message.link.description &&
+    message.link.video
+  )
+    // A video page (YouTube), from an iOS 26 device capture: the 4:3 frame with a frosted play
+    // button, then the caption, then the channel beside the site's icon over the domain.
+    content = (
+      <div className="tm-link-card tm-link-media tm-bubble-content">
+        <div className="tm-link-shot">
+          <slots.Image src={message.link.image} alt="" referrerPolicy="no-referrer" />
+          <PlayDisc />
+        </div>
+        <div>
+          <p>{message.link.description}</p>
+          <div>
+            <slots.Image src={message.link.icon} alt="" referrerPolicy="no-referrer" />
+            <span>
+              <strong>{message.link.title}</strong>
+              <small>{safeHostname(message.link.url)}</small>
+            </span>
+          </div>
+        </div>
+      </div>
+    );
   else if (message.kind === "link" && scene.platform === "imessage" && message.link?.tapToLoad)
     // A preview Messages hasn't loaded, from an iOS 26 device capture: a 160pt card, an 80pt gray
     // face reading "Tap to Load Preview" over a 34pt footer with the domain and a chevron.
@@ -1847,7 +1896,12 @@ function MessageContent({ slots,
   } else if (message.kind === "link")
     content = (
       <div className="tm-link-card tm-bubble-content">
-        {message.link?.image ? (
+        {message.link?.image && message.link.video && scene.platform === "imessage" ? (
+          <div className="tm-link-shot">
+            <slots.Image src={message.link.image} alt="" referrerPolicy="no-referrer" />
+            <PlayDisc />
+          </div>
+        ) : message.link?.image ? (
           <slots.Image
             src={message.link.image}
             alt=""
@@ -3129,7 +3183,7 @@ function NativeInteraction({ slots, scene, time }: {
     const outgoing = !!scene.participants.find(
       (person) => person.id === message.senderId,
     )?.isSelf;
-    const link = scene.platform === "imessage" && message.link?.tint && !message.link.tapToLoad ? linkColors(message.link.tint, scene, compactLink(message.link) ? 2.5 : 4) : undefined;
+    const link = scene.platform === "imessage" && message.link?.tint && !message.link.tapToLoad ? linkColors(message.link.tint, scene, linkLean(message.link)) : undefined;
     const groups = groupedReactions(message, scene);
     return (
       <div
@@ -3983,6 +4037,24 @@ function predictions(scene: Scene): string[] {
  * iOS 26's typing indicator, from ChatKit's own layers: each dot fades 0.2 → 0.45 and back
  * over 0.5 s each way (autoreversing, with its own ease), the next dot 0.25 s behind.
  */
+/** The contrast at which a link footer takes white ink (see linkColors). */
+function linkLean(link: NonNullable<Message["link"]>): number | undefined {
+  if (compactLink(link)) return 2.5;
+  if (link.video && link.image && link.icon && link.description) return 3.2;
+  return undefined;
+}
+
+/** Messages' play button on a video link: a 78pt frosted disc with a white triangle. */
+function PlayDisc() {
+  return (
+    <span className="tm-link-play" aria-label="Play">
+      <svg viewBox="0 0 30 34" width="30" height="34" aria-hidden="true">
+        <path d="M3 4.2C3 2.1 5.2.9 7 2l20.3 12.8c1.6 1 1.6 3.4 0 4.4L7 32c-1.8 1.1-4-.1-4-2.2Z" fill="#fff" />
+      </svg>
+    </span>
+  );
+}
+
 function TypingDots({ time }: { time: number }) {
   return (
     <div className="tm-typing" aria-label="Typing">

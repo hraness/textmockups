@@ -342,6 +342,17 @@ export const MessageSchema = z
          * unknown sender. Draws the gray "Tap to Load Preview" card with the domain under it.
          */
         tapToLoad: z.boolean().optional(),
+        /**
+         * iMessage only: a video page, like YouTube. Draws a play button on the image; with an icon
+         * and a description, the card reads like a post: the picture, its caption, then the title
+         * (the author) beside the icon over the domain.
+         */
+        video: z.boolean().optional(),
+        /**
+         * iMessage only: an App Store page. The footer shows the icon as the app's icon beside the
+         * title, with the description as its subtitle in place of the domain.
+         */
+        app: z.boolean().optional(),
       })
       .optional(),
     /** Photos and videos sent together: iMessage staggers a few and stacks many. */

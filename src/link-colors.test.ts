@@ -35,3 +35,8 @@ test("a custom scene surface is composited before transparent link colors", () =
   const scene = { ...defaultScene, theme: "dark" as const, appearance: { ...defaultScene.appearance, wallpaper: "custom" as const, color: "#ffffff" } };
   expect(linkColors("#00000000", scene)).toMatchObject({ tone: "light", surface: "rgb(255 255 255)" });
 });
+
+test("a video card's mid-gray footer takes white ink and a muted domain, as on an iOS 26 device", () => {
+  expect(linkColors("#908c91", defaultScene, 3.2)).toMatchObject({ tone: "dark", domain: "rgb(255 255 255 / 0.62)" });
+  expect(linkColors("#908c91", defaultScene)).toMatchObject({ tone: "light" });
+});
