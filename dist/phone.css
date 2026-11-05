@@ -5515,6 +5515,111 @@
   color: #000;
 }
 
+/* A video link wraps its frame so the play button can sit on it; the frame sizes as an image does.
+   The video and App Store cards always span the bubble, as the device draws them. */
+.tm-phone[data-platform="imessage"] .tm-bubble:is([data-kind="link"], [data-kind="location"]) .tm-link-card:has(> .tm-link-shot):not(.tm-link-media) {
+  width: min-content;
+}
+.tm-phone[data-platform="imessage"] .tm-bubble:is([data-kind="link"], [data-kind="location"]) .tm-link-card:is(.tm-link-media, .tm-link-app) {
+  width: calc(var(--tm-thread-w) - 89.67px);
+}
+.tm-phone[data-platform="imessage"] .tm-link-media > .tm-link-shot > img {
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  aspect-ratio: 4 / 3;
+}
+.tm-phone[data-platform="imessage"] .tm-link-app > img {
+  width: 100%;
+  max-width: none;
+}
+.tm-phone[data-platform="imessage"] .tm-link-shot {
+  position: relative;
+}
+.tm-phone[data-platform="imessage"] .tm-link-shot > img {
+  display: block;
+  width: auto;
+  height: auto;
+  min-width: 236px;
+  max-width: calc(var(--tm-thread-w) - 89.67px);
+  max-height: 236px;
+  object-fit: cover;
+}
+/* Measured on device: a 78pt frosted disc on the frame's middle, its triangle nudged right. */
+.tm-link-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: 78px;
+  height: 78px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.32);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  transform: translate(-50%, -50%);
+}
+.tm-link-play > svg {
+  margin-left: 4px;
+}
+/* The video card's footer reads like a post: a 2-line caption, then the channel beside the icon. */
+.tm-phone[data-platform="imessage"] .tm-link-media > div:last-child {
+  padding: 8px 15.67px 11px;
+}
+.tm-phone[data-platform="imessage"] .tm-link-media p {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin: 0 0 7.7px;
+  font-size: 16.15px;
+  line-height: 21px;
+  font-weight: 400;
+}
+.tm-link-media > div:last-child > div,
+.tm-link-app > div:last-child {
+  display: flex;
+  align-items: center;
+}
+.tm-link-media > div:last-child > div {
+  gap: 10.33px;
+}
+.tm-link-media > div:last-child img {
+  flex: none;
+  width: 25px;
+  height: 25px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+:is(.tm-link-media, .tm-link-app) span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.tm-phone[data-platform="imessage"] .tm-link-media small {
+  margin-top: 1.67px;
+}
+/* The App Store footer, measured on device: a 30pt icon 12pt in, the name 13pt past it. */
+.tm-phone[data-platform="imessage"] .tm-link-app > div:last-child {
+  gap: 13px;
+  padding: 6.65px 12px;
+}
+.tm-link-app > div:last-child > img {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  object-fit: cover;
+}
+.tm-phone[data-platform="imessage"] .tm-link-app :is(strong, small) {
+  display: block;
+  overflow: hidden;
+  margin: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 /* iOS 26 groups: 32pt monograms lit from above, level with the tail, and gray 11pt names
    inset to the bubble text. */
 .tm-phone[data-platform="imessage"] .tm-avatar {

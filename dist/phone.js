@@ -139,7 +139,7 @@ export function Phone({ scene: source, time, selectedMessageId, onSelectMessage,
                                     (os === "android" ? (_jsx("div", { className: "tm-cutout", "aria-hidden": "true" })) : (_jsx("div", { className: "tm-island", "aria-hidden": "true", children: _jsx("i", {}) })))) : (scene.device.frame === "iphone" && (_jsx("div", { className: "tm-island", "aria-hidden": "true", children: _jsx("i", {}) })))), _jsx(PhoneHeader, { slots: slots, scene: scene, person: other }), scene.platform !== "imessage" && pinned?.visible && (_jsx(PinnedBanner, { slots: slots, scene: scene })), _jsx("div", { className: "tm-thread", "data-textmock-thread": true, "data-has-pinned": (scene.platform !== "imessage" && pinned?.visible) || undefined, children: _jsxs("div", { className: "tm-thread-content", children: [threadMessages.map((message, index) => {
                                             const person = scene.participants.find((participant) => participant.id === message.senderId);
                                             const outgoing = person.isSelf;
-                                            const link = scene.platform === "imessage" && message.link?.tint && !message.link.tapToLoad ? linkColors(message.link.tint, scene, compactLink(message.link) ? 2.5 : 4) : undefined;
+                                            const link = scene.platform === "imessage" && message.link?.tint && !message.link.tapToLoad ? linkColors(message.link.tint, scene, linkLean(message.link)) : undefined;
                                             const previous = threadMessages[index - 1];
                                             const next = threadMessages[index + 1];
                                             const editing = scene.platform === "imessage" &&
@@ -521,6 +521,23 @@ function MessageContent({ slots, message, scene, time, tail = false, }) {
         message.link.description)
         // A text post (an X post, say): its words, then the author under a small picture.
         content = (_jsxs("div", { className: "tm-link-post tm-bubble-content", children: [_jsx("p", { children: message.link.description }), _jsxs("div", { children: [_jsx(slots.Image, { src: message.link.icon, alt: "", referrerPolicy: "no-referrer" }), _jsxs("span", { children: [_jsx("strong", { children: message.link.title }), _jsx("small", { children: safeHostname(message.link.url) })] })] })] }));
+    else if (message.kind === "link" &&
+        scene.platform === "imessage" &&
+        message.link?.image &&
+        message.link.icon &&
+        message.link.app)
+        // An App Store page, from an iOS 26 device capture: the artwork over a footer with the 30pt
+        // app icon beside its name and subtitle, and no domain.
+        content = (_jsxs("div", { className: "tm-link-card tm-link-app tm-bubble-content", children: [_jsx(slots.Image, { src: message.link.image, alt: "", referrerPolicy: "no-referrer" }), _jsxs("div", { children: [_jsx(slots.Image, { src: message.link.icon, alt: "", referrerPolicy: "no-referrer" }), _jsxs("span", { children: [_jsx("strong", { children: message.link.title }), message.link.description && _jsx("small", { children: message.link.description })] })] })] }));
+    else if (message.kind === "link" &&
+        scene.platform === "imessage" &&
+        message.link?.image &&
+        message.link.icon &&
+        message.link.description &&
+        message.link.video)
+        // A video page (YouTube), from an iOS 26 device capture: the 4:3 frame with a frosted play
+        // button, then the caption, then the channel beside the site's icon over the domain.
+        content = (_jsxs("div", { className: "tm-link-card tm-link-media tm-bubble-content", children: [_jsxs("div", { className: "tm-link-shot", children: [_jsx(slots.Image, { src: message.link.image, alt: "", referrerPolicy: "no-referrer" }), _jsx(PlayDisc, {})] }), _jsxs("div", { children: [_jsx("p", { children: message.link.description }), _jsxs("div", { children: [_jsx(slots.Image, { src: message.link.icon, alt: "", referrerPolicy: "no-referrer" }), _jsxs("span", { children: [_jsx("strong", { children: message.link.title }), _jsx("small", { children: safeHostname(message.link.url) })] })] })] })] }));
     else if (message.kind === "link" && scene.platform === "imessage" && message.link?.tapToLoad)
         // A preview Messages hasn't loaded, from an iOS 26 device capture: a 160pt card, an 80pt gray
         // face reading "Tap to Load Preview" over a 34pt footer with the domain and a chevron.
@@ -556,7 +573,7 @@ function MessageContent({ slots, message, scene, time, tail = false, }) {
         content = (_jsxs("div", { className: "tm-link-card tm-bubble-content", "data-maps": search ? "search" : "place", children: [_jsx("div", { className: "tm-link-map", children: face(!search) }), _jsxs("div", { children: [_jsx("span", { className: "tm-link-glass", "aria-hidden": "true", children: face(false) }), _jsxs("strong", { children: [search && (_jsxs("svg", { className: "tm-link-search", viewBox: "0 0 16 16", width: "16", height: "16", "aria-hidden": "true", children: [_jsx("circle", { cx: "6.6", cy: "6.6", r: "4.9", fill: "none", stroke: "currentColor", strokeWidth: "2" }), _jsx("path", { d: "m10.3 10.3 4 4", stroke: "currentColor", strokeWidth: "2.3", strokeLinecap: "round" })] })), message.link?.title || "Maps"] }), _jsx("small", { children: "Maps" })] })] }));
     }
     else if (message.kind === "link")
-        content = (_jsxs("div", { className: "tm-link-card tm-bubble-content", children: [message.link?.image ? (_jsx(slots.Image, { src: message.link.image, alt: "", referrerPolicy: "no-referrer" })) : isMapLink(message.link?.url) ? (_jsx("div", { className: "tm-link-map", children: _jsx(MapArt, { seed: message.link.url }) })) : (_jsxs("div", { className: "tm-link-art", children: [_jsx("span", { children: "\u2197" }), _jsx("span", { children: safeHostname(message.link?.url) })] })), _jsxs("div", { children: [_jsx("strong", { children: message.link?.title }), message.link?.description && _jsx("p", { children: message.link.description }), _jsx("small", { children: safeHostname(message.link?.url) })] })] }));
+        content = (_jsxs("div", { className: "tm-link-card tm-bubble-content", children: [message.link?.image && message.link.video && scene.platform === "imessage" ? (_jsxs("div", { className: "tm-link-shot", children: [_jsx(slots.Image, { src: message.link.image, alt: "", referrerPolicy: "no-referrer" }), _jsx(PlayDisc, {})] })) : message.link?.image ? (_jsx(slots.Image, { src: message.link.image, alt: "", referrerPolicy: "no-referrer" })) : isMapLink(message.link?.url) ? (_jsx("div", { className: "tm-link-map", children: _jsx(MapArt, { seed: message.link.url }) })) : (_jsxs("div", { className: "tm-link-art", children: [_jsx("span", { children: "\u2197" }), _jsx("span", { children: safeHostname(message.link?.url) })] })), _jsxs("div", { children: [_jsx("strong", { children: message.link?.title }), message.link?.description && _jsx("p", { children: message.link.description }), _jsx("small", { children: safeHostname(message.link?.url) })] })] }));
     if (message.kind === "location" && scene.platform !== "imessage")
         content = (_jsxs("div", { className: "tm-location tm-bubble-content", children: [_jsx("div", { className: "tm-map", children: _jsx(MapArt, { seed: `${message.location?.latitude},${message.location?.longitude}` }) }), _jsx("strong", { children: message.location?.label }), _jsx("small", { children: message.location?.address ||
                         `${message.location?.latitude}, ${message.location?.longitude}` })] }));
@@ -985,7 +1002,7 @@ function NativeInteraction({ slots, scene, time }) {
     const message = scene.messages.find((message) => message.id === picker?.messageId);
     if (picker?.visible && message) {
         const outgoing = !!scene.participants.find((person) => person.id === message.senderId)?.isSelf;
-        const link = scene.platform === "imessage" && message.link?.tint && !message.link.tapToLoad ? linkColors(message.link.tint, scene, compactLink(message.link) ? 2.5 : 4) : undefined;
+        const link = scene.platform === "imessage" && message.link?.tint && !message.link.tapToLoad ? linkColors(message.link.tint, scene, linkLean(message.link)) : undefined;
         const groups = groupedReactions(message, scene);
         return (_jsxs("div", { className: "tm-native-overlay tm-reaction-overlay", "data-native-interaction": "tapback", "aria-hidden": "true", children: [scene.platform === "imessage" && groups.length > 0 && (_jsxs("div", { className: "tm-reaction-attributions", children: [groups.slice(0, 3).map((group) => (_jsxs("div", { title: `${group.emoji}: ${group.names.join(", ")}`, children: [_jsxs("span", { children: [group.emoji, group.names.length > 1 && (_jsx("small", { children: group.names.length }))] }), _jsxs("div", { children: [message.reactions
                                             .filter((reaction) => reaction.emoji === group.emoji)
@@ -1216,6 +1233,18 @@ function predictions(scene) {
  * iOS 26's typing indicator, from ChatKit's own layers: each dot fades 0.2 → 0.45 and back
  * over 0.5 s each way (autoreversing, with its own ease), the next dot 0.25 s behind.
  */
+/** The contrast at which a link footer takes white ink (see linkColors). */
+function linkLean(link) {
+    if (compactLink(link))
+        return 2.5;
+    if (link.video && link.image && link.icon && link.description)
+        return 3.2;
+    return undefined;
+}
+/** Messages' play button on a video link: a 78pt frosted disc with a white triangle. */
+function PlayDisc() {
+    return (_jsx("span", { className: "tm-link-play", "aria-label": "Play", children: _jsx("svg", { viewBox: "0 0 30 34", width: "30", height: "34", "aria-hidden": "true", children: _jsx("path", { d: "M3 4.2C3 2.1 5.2.9 7 2l20.3 12.8c1.6 1 1.6 3.4 0 4.4L7 32c-1.8 1.1-4-.1-4-2.2Z", fill: "#fff" }) }) }));
+}
 function TypingDots({ time }) {
     return (_jsxs("div", { className: "tm-typing", "aria-label": "Typing", children: [[0, 1, 2].map((index) => (_jsx("i", { style: { opacity: typingDotOpacity(time - index * 0.25) } }, index))), _jsx("b", {}), _jsx("b", {})] }));
 }
