@@ -1,5 +1,7 @@
 # Textmockups
 
+**Retired on 6 November 2026.** Public development and releases have ended. The source, documentation, licenses, assets, and existing release and package files are preserved for reference and existing consumers. The instructions below describe the historical library.
+
 Textmockups is a React component library for realistic iMessage, WhatsApp, Telegram, Instagram, and Google Messages chat mockups. You describe a conversation as a small JSON scene, and the `Phone` component draws it on an iPhone, Pixel, or Galaxy with the app's own bubbles, header, composer, receipts, and reactions.
 
 <p align="center">
