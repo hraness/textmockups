@@ -1,5 +1,7 @@
 # Contributing
 
+**Retired.** Textmockups is closed to new public development and releases. The contribution and publication procedures below are historical reference. The former publishing workflows are preserved in [docs/retired-workflows](docs/retired-workflows/README.md) and are inactive.
+
 Issues and focused pull requests are welcome.
 
 Open an issue before starting a broad change to the scene format or the `Phone` props. Version 1 scenes must keep parsing and drawing the same way; incompatible changes need a new scene version.

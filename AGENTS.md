@@ -12,9 +12,11 @@
 - `dist/` – committed build output that consumers install from tags. `bun run build` regenerates it.
 - `scripts/` – the build, the packed-package smoke test, and the gallery that renders presets and the README images in `docs/`.
 - `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `LICENSE`, `STYLE.md`, `WRITING.md` – public usage, policy, terms, and prose contracts.
+- `.github/workflows/` – retained CI and dependency auditing; `docs/retired-workflows/` preserves the inactive tagging and publication workflows.
 
 # Guidelines
 
+- Textmockups was retired on 2026-11-06. Preserve source, history, scene formats, assets, licenses, existing tags, releases, and package files for existing consumers. Keep the required CI checks and do not reactivate public tagging or publication. This retirement does not change the package version or create a new release.
 - Use Bun 1.3.14 for repository commands.
 - Keep scene version 1 deterministic and stable. Validate foreign documents with `parseScene` before rendering; bound document bytes, element counts, and animation duration. Never change how an existing v1 scene parses or draws without a new scene or renderer version, except for fidelity fixes that make an app look more like the real app; call those out in the pull request with before and after images.
 - Keep `Phone` free of hooks, effects, browser globals, and framework-specific imports so it renders on the server and in static HTML. Storage, uploads, export, editing, and accounts belong to consuming apps; media reaches the renderer only through the `media` slots.
@@ -23,7 +25,7 @@
 - Use synthetic people and content in presets, tests, and images.
 - Run `bun run check` before handing off a change. For visual changes, compare `bun run gallery --shots` output before and after with the browser provisioned for the pinned `playwright-core`.
 - Deliver changes to `main` through a current-head pull request with the `Required` CI job green. Never force-push or bypass the gate.
-- Treat a `v*` tag as a release request. Keep the tag equal to `v<package.json version>` on `main`. Merging a version bump to `main` creates its annotated tag automatically once CI passes (`.github/workflows/auto-tag.yml`).
-- GitHub Releases are the canonical distribution: pack the checked commit, smoke-test that exact tarball, upload it with `SHA256SUMS` to a prerelease draft, and verify readback. Publish without changing Latest, then require actual immutability and signed release/asset attestations before stable/Latest promotion. Keep the publisher contents-only; it cannot read the administration-only immutable-releases setting. Never rewrite existing tags or replace assets. npm is an optional exact-byte OIDC mirror after promotion.
+- Historical tagging: a `v*` tag was a release request equal to `v<package.json version>` on `main`. After a version bump passed CI, the workflow now preserved at `docs/retired-workflows/auto-tag.yml` created its annotated tag. This automation is inactive.
+- Historical publication: GitHub Releases were the canonical distribution, with the checked tarball and `SHA256SUMS` verified before immutable stable/Latest promotion and an optional exact-byte OIDC npm mirror. The original workflow remains unchanged at `docs/retired-workflows/release.yml`. Never rewrite existing tags, replace assets, or republish the retired package.
 - Provision Playwright browsers with `PLAYWRIGHT_SKIP_BROWSER_GC=1` so installation does not remove another checkout's cached browser.
 - Public copy follows `STYLE.md`; internal prose follows `WRITING.md`.

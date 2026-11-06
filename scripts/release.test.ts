@@ -1,11 +1,20 @@
 import { expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
-const workflow = readFileSync(new URL("../.github/workflows/release.yml", import.meta.url), "utf8");
+const workflow = readFileSync(new URL("../docs/retired-workflows/release.yml", import.meta.url), "utf8");
 const npm = workflow.slice(workflow.indexOf("\n  npm:"));
+
+test("retired publication stays outside Actions while Required CI remains", () => {
+  const active = new URL("../.github/workflows/", import.meta.url);
+  const names = readdirSync(active).filter(name => /\.ya?ml$/u.test(name)).sort();
+  expect(names).toEqual(["ci.yml", "dependency-audit.yml"]);
+  expect(readFileSync(new URL("ci.yml", active), "utf8")).toContain("name: Required");
+  for (const name of names) expect(readFileSync(new URL(name, active), "utf8")).not.toMatch(/(?:contents|id-token):\s*write/u);
+  expect(readFileSync(new URL("../docs/retired-workflows/auto-tag.yml", import.meta.url), "utf8")).toContain("workflow_run:");
+});
 
 test("GitHub releases publish the checked package and checksum before locking assets", () => {
   expect(workflow).toContain("SHA256SUMS");
